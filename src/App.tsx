@@ -9,16 +9,28 @@ import RegisterPage from './pages/auth/RegisterPage';
 import CategoriesPage from './pages/categories/CategoriesPage';
 import QuizPage from './pages/quizzes/QuizPage';
 import ProfilePage from './pages/profile/ProfilePage';
+import Home from './pages/Home';
+import Admin from './pages/Admin';
 import { useAuthStore } from './store';
 import './App.css';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
-  // const { isAuthenticated } = useAuthStore();
-  // const location = useLocation();
+  const { isAuthenticated } = useAuthStore();
 
-  // if (!isAuthenticated) {
-  //   return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
+// Admin route component
+const AdminRoute = ({ children }: { children: React.ReactElement }) => {
+  const { isAuthenticated, user } = useAuthStore();
+
+  // if (!isAuthenticated || user?.role !== 'admin') {
+  //   return <Navigate to="/" replace />;
   // }
 
   return children;
@@ -34,7 +46,7 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/categories" replace />} />
+      <Route path="/" element={<Home />} />
 
       {/* Auth routes */}
       <Route
@@ -77,6 +89,16 @@ function App() {
           <ProtectedRoute>
             <ProfilePage />
           </ProtectedRoute>
+        }
+      />
+
+      {/* Admin routes */}
+      <Route
+        path="/admin"
+        element={
+          <AdminRoute>
+            <Admin />
+          </AdminRoute>
         }
       />
 

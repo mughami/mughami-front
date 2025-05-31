@@ -7,6 +7,7 @@ import {
   MenuOutlined,
   CloseOutlined,
   QuestionCircleOutlined,
+  DashboardOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../store';
 
@@ -15,7 +16,7 @@ const Header = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const { logout } = useAuthStore();
+  const { logout, user } = useAuthStore();
 
   const handleLogout = () => {
     logout();
@@ -28,13 +29,15 @@ const Header = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
+  const isAdmin = user?.role === 'admin';
+
   return (
     <header className="bg-auth-gradient shadow-md relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/categories">
+              <Link to="/">
                 <img
                   className="h-8 w-8 sm:h-10 sm:w-10 rounded-full"
                   src="/favicon.jpeg"
@@ -73,6 +76,16 @@ const Header = () => {
               <TrophyOutlined className="mr-1" />
               ლიდერბორდი
             </Link>
+
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors"
+              >
+                <DashboardOutlined className="mr-1" />
+                ადმინ პანელი
+              </Link>
+            )}
 
             <div className="ml-4 relative flex-shrink-0">
               <div>
@@ -117,6 +130,17 @@ const Header = () => {
               <TrophyOutlined className="mr-1" />
               ლიდერბორდი
             </Link>
+
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <DashboardOutlined className="mr-1" />
+                ადმინ პანელი
+              </Link>
+            )}
 
             <Link
               to="/profile"
