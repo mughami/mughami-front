@@ -1,7 +1,8 @@
 import apiClient from './client';
+import { UserRole } from '../../types';
 
 export interface LoginCredentials {
-  email: string;
+  mail: string;
   password: string;
 }
 
@@ -9,14 +10,16 @@ export interface RegisterData {
   email: string;
   password: string;
   name: string;
+  lastname: string;
+  username: string;
 }
 
 export interface User {
-  id: string;
   name: string;
+  lastname: string;
   email: string;
-  createdAt: string;
-  role: 'user' | 'admin';
+  password: string;
+  role: UserRole;
 }
 
 export interface AuthResponse {
@@ -26,17 +29,27 @@ export interface AuthResponse {
 
 const authService = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>('/auth/login', credentials);
+    const response = await apiClient.post<AuthResponse>('/authentication/login', credentials);
     return response.data;
   },
 
   register: async (data: RegisterData): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>('/auth/register', data);
+    const response = await apiClient.post<AuthResponse>('/app/user/register', data);
+    return response.data;
+  },
+
+  verifyAccount: async (email: string, otp: string): Promise<void> => {
+    const response = await apiClient.put(`/app/user/verify-account?email=${email}&otp=${otp}`);
+    return response.data;
+  },
+
+  resendOTP: async (email: string): Promise<void> => {
+    const response = await apiClient.get(`/app/otp?email=${email}`);
     return response.data;
   },
 
   getCurrentUser: async (): Promise<User> => {
-    const response = await apiClient.get<User>('/auth/me');
+    const response = await apiClient.get<User>('/app/user/');
     return response.data;
   },
 

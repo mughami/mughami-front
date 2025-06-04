@@ -4,6 +4,8 @@ import type { SubmitHandler } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { EyeOutlined, EyeInvisibleOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import Footer from '../../components/Footer';
+import { useAuthStore } from '../../store/authStore';
+import { notification } from 'antd';
 
 type LoginFormInputs = {
   email: string;
@@ -18,15 +20,24 @@ const LoginPage = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormInputs>();
-
+  const { login: loginUser, error: authError } = useAuthStore();
+  const [api, contextHolder] = notification.useNotification();
   const onSubmit: SubmitHandler<LoginFormInputs> = (data) => {
-    console.log(data);
-    // Handle login logic here
-    navigate('/categories');
+    loginUser(data.email, data.password);
+
+    if (authError) {
+      api['error']({
+        message: 'შეცდომა',
+        description: authError,
+      });
+    } else {
+      navigate('/categories');
+    }
   };
 
   return (
     <>
+      {contextHolder}
       <div className="auth-container">
         <div className="auth-form-container">
           <div className="logo-container">
@@ -52,7 +63,7 @@ const LoginPage = () => {
                   </div>
                   <input
                     id="email"
-                    type="email"
+                    // type="email"
                     autoComplete="email"
                     placeholder="თქვენი ელ-ფოსტა"
                     className={`form-input ${
@@ -60,10 +71,10 @@ const LoginPage = () => {
                     }`}
                     {...register('email', {
                       required: 'ელ-ფოსტა აუცილებელია',
-                      pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: 'არასწორი ელ-ფოსტის ფორმატი',
-                      },
+                      // pattern: {
+                      //   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      //   message: 'არასწორი ელ-ფოსტის ფორმატი',
+                      // },
                     })}
                   />
                 </div>
@@ -88,10 +99,10 @@ const LoginPage = () => {
                     }`}
                     {...register('password', {
                       required: 'პაროლი აუცილებელია',
-                      minLength: {
-                        value: 6,
-                        message: 'პაროლი უნდა შეიცავდეს მინიმუმ 6 სიმბოლოს',
-                      },
+                      // minLength: {
+                      //   value: 6,
+                      //   message: 'პაროლი უნდა შეიცავდეს მინიმუმ 6 სიმბოლოს',
+                      // },
                     })}
                   />
                   <button
@@ -110,13 +121,13 @@ const LoginPage = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="checkbox-container">
+            <div className="flex items-center justify-end">
+              {/* <div className="checkbox-container">
                 <input id="remember-me" name="remember-me" type="checkbox" className="checkbox" />
                 <label htmlFor="remember-me" className="checkbox-label">
                   დამიმახსოვრე
                 </label>
-              </div>
+              </div> */}
 
               <div className="text-sm">
                 <Link to="/forgot-password" className="form-link">

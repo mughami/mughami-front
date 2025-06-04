@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 // Base API configuration
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const DEV_API_URL = 'http://localhost:54321';
+const API_URL = import.meta.env.VITE_API_URL || DEV_API_URL;
 
 // Create axios instance with base configuration
 const apiClient = axios.create({
@@ -29,9 +30,9 @@ apiClient.interceptors.response.use(
   (error) => {
     // Handle 401 Unauthorized errors
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      // localStorage.removeItem('token');
+      // localStorage.removeItem('user');
+      // window.location.href = '/login';
     }
     return Promise.reject(error);
   },

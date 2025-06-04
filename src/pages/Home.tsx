@@ -13,8 +13,6 @@ import {
   CrownOutlined,
   DownOutlined,
 } from '@ant-design/icons';
-import Layout from '../components/Layout';
-import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 const { Title, Paragraph } = Typography;
@@ -254,8 +252,8 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Scroll Down Button - Enhanced Visibility */}
-          <div className="absolute bottom-8 right-8 z-10 hidden lg:block">
+          {/* Scroll Down Button - Enhanced Visibility
+          <div className="fixed bottom-8 right-8 z-10 hidden lg:block">
             <button
               onClick={scrollToPolls}
               className="group relative flex flex-col items-center justify-center p-5 rounded-full bg-white/20 backdrop-blur-md border-2 border-white/60 hover:bg-white/30 hover:border-white shadow-2xl hover:shadow-white/30 transition-all duration-500 hover:scale-125 animate-bounce"
@@ -271,23 +269,20 @@ const Home = () => {
                 <div className="mt-2 w-1 h-8 bg-gradient-to-b from-white to-white/30 rounded-full group-hover:from-yellow-200 group-hover:to-yellow-400/50 transition-all duration-300 shadow-lg"></div>
               </div>
 
-              {/* Enhanced Ripple Effects */}
               <div className="absolute inset-0 rounded-full border-3 border-white/40 animate-ping"></div>
               <div className="absolute inset-0 rounded-full border-2 border-white/20 animate-pulse delay-300"></div>
               <div className="absolute inset-0 rounded-full border border-yellow-300/30 animate-ping delay-700"></div>
 
-              {/* Glow Effect */}
               <div className="absolute inset-0 rounded-full bg-white/10 animate-pulse delay-1000"></div>
             </button>
 
-            {/* Floating Tooltip */}
             <div className="absolute -left-32 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
               <div className="bg-white/90 backdrop-blur-sm text-gray-800 text-sm font-medium px-3 py-2 rounded-lg shadow-lg">
                 👇 გამოკითხვები
               </div>
               <div className="absolute right-0 top-1/2 transform translate-x-2 -translate-y-1/2 w-0 h-0 border-l-8 border-l-white/90 border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
             </div>
-          </div>
+          </div> */}
         </section>
 
         {/* Hero Section

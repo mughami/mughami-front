@@ -6,12 +6,14 @@ import {
 } from 'react-router-dom';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+import VerifyEmailPage from './pages/auth/VerifyEmailPage';
 import CategoriesPage from './pages/categories/CategoriesPage';
 import QuizPage from './pages/quizzes/QuizPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import Home from './pages/Home';
 import Admin from './pages/Admin';
 import { useAuthStore } from './store';
+import { UserRole } from './types';
 import './App.css';
 
 // Protected route component
@@ -29,20 +31,21 @@ const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
 const AdminRoute = ({ children }: { children: React.ReactElement }) => {
   const { isAuthenticated, user } = useAuthStore();
 
-  // if (!isAuthenticated || user?.role !== 'admin') {
-  //   return <Navigate to="/" replace />;
-  // }
+  if (!isAuthenticated || user?.role !== UserRole.ADMIN) {
+    return <Navigate to="/" replace />;
+  }
 
   return children;
 };
 
-function App() {
+const AuthRoute = ({ children }: { children: React.ReactElement }) => {
   const { isAuthenticated } = useAuthStore();
 
+  return isAuthenticated ? <Navigate to="/categories" replace /> : children;
+};
+
+function App() {
   // Redirect authenticated users away from auth pages
-  const AuthRoute = ({ children }: { children: React.ReactElement }) => {
-    return isAuthenticated ? <Navigate to="/categories" replace /> : children;
-  };
 
   return (
     <Routes>
@@ -62,6 +65,14 @@ function App() {
         element={
           <AuthRoute>
             <RegisterPage />
+          </AuthRoute>
+        }
+      />
+      <Route
+        path="/verify-email"
+        element={
+          <AuthRoute>
+            <VerifyEmailPage />
           </AuthRoute>
         }
       />

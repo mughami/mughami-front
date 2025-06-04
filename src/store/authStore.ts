@@ -9,7 +9,13 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (
+    name: string,
+    lastname: string,
+    username: string,
+    email: string,
+    password: string,
+  ) => Promise<void>;
   logout: () => void;
   clearError: () => void;
 }
@@ -26,7 +32,7 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         try {
           set({ isLoading: true, error: null });
-          const response = await authService.login({ email, password });
+          const response = await authService.login({ mail: email, password });
 
           localStorage.setItem('token', response.token);
           localStorage.setItem('user', JSON.stringify(response.user));
@@ -45,20 +51,16 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      register: async (name: string, email: string, password: string) => {
+      register: async (
+        name: string,
+        lastname: string,
+        username: string,
+        email: string,
+        password: string,
+      ) => {
         try {
           set({ isLoading: true, error: null });
-          const response = await authService.register({ name, email, password });
-
-          localStorage.setItem('token', response.token);
-          localStorage.setItem('user', JSON.stringify(response.user));
-
-          set({
-            user: response.user,
-            token: response.token,
-            isAuthenticated: true,
-            isLoading: false,
-          });
+          await authService.register({ name, lastname, username, email, password });
         } catch (error) {
           set({
             isLoading: false,
