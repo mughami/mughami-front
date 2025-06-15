@@ -10,6 +10,7 @@ import {
   DashboardOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../store';
+import { UserRole } from '../types';
 
 const Header = () => {
   const location = useLocation();
@@ -29,7 +30,7 @@ const Header = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.userRole === UserRole.ADMIN;
 
   return (
     <header className="bg-auth-gradient shadow-md relative">
