@@ -37,14 +37,14 @@ const Header = () => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/">
+              <Link to="/" className="flex items-center">
                 <img
                   className="h-8 w-8 sm:h-10 sm:w-10 rounded-full"
                   src="/favicon.jpeg"
                   alt="მუღამი"
                 />
+                <span className="ml-3 text-lg sm:text-xl font-bold text-white">მუღამი</span>
               </Link>
-              <span className="ml-3 text-lg sm:text-xl font-bold text-white">მუღამი</span>
             </div>
           </div>
 

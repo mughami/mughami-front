@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Card, Progress, Radio, Space, Typography, Carousel } from 'antd';
+import { Button, Card, Progress, Radio, Space, Typography, Carousel, Spin } from 'antd';
 import {
   TrophyOutlined,
   QuestionCircleOutlined,
@@ -11,26 +11,35 @@ import {
   ClockCircleOutlined,
   ArrowRightOutlined,
   CrownOutlined,
-  DownOutlined,
 } from '@ant-design/icons';
 import Footer from '../components/Footer';
+import { usePollStore } from '../store/pollStore';
+import { useAuthStore } from '../store';
 
 const { Title, Paragraph } = Typography;
 
 const Home = () => {
-  const [selectedPolls, setSelectedPolls] = useState<Record<number, string>>({});
-  const [votedPolls, setVotedPolls] = useState<number[]>([]);
-  const [showResults, setShowResults] = useState<Record<number, boolean>>({});
+  const { polls, loading, fetchPolls, vote } = usePollStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const [selectedPolls, setSelectedPolls] = useState<Record<number, number>>({});
+  const [votedPolls, setVotedPolls] = useState<number[]>(() => {
+    const savedVotes = localStorage.getItem('votedPolls');
+    return savedVotes ? JSON.parse(savedVotes) : [];
+  });
+  const [showResults, setShowResults] = useState<Record<number, boolean>>(() => {
+    const savedResults = localStorage.getItem('showResults');
+    return savedResults ? JSON.parse(savedResults) : {};
+  });
 
-  const scrollToPolls = () => {
-    const pollsSection = document.getElementById('polls-section');
-    if (pollsSection) {
-      pollsSection.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    }
-  };
+  useEffect(() => {
+    fetchPolls(0, 10);
+  }, [fetchPolls]);
+
+  // Save voted polls to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('votedPolls', JSON.stringify(votedPolls));
+    localStorage.setItem('showResults', JSON.stringify(showResults));
+  }, [votedPolls, showResults]);
 
   const features = [
     {
@@ -49,13 +58,6 @@ const Home = () => {
       description: 'შეეჯიბრეთ სხვა მონაწილეებს და გახდით საუკეთესო',
     },
   ];
-
-  // const stats = [
-  //   { title: 'მონაწილე', value: '1,234', icon: <UserOutlined /> },
-  //   { title: 'ქვიზი', value: '100+', icon: <QuestionCircleOutlined /> },
-  //   { title: 'კონკურსი', value: '45', icon: <TrophyOutlined /> },
-  //   { title: 'პრიზი', value: '₾50,000+', icon: <StarOutlined /> },
-  // ];
 
   const testimonials = [
     {
@@ -87,44 +89,30 @@ const Home = () => {
     },
   ];
 
-  const polls = [
-    {
-      id: 1,
-      question: 'რომელი მუღამია თქვენი ფავორიტი?',
-      options: [
-        { id: 'a', text: 'შაჰნაზი', votes: 45, color: '#1890ff' },
-        { id: 'b', text: 'მაჰური', votes: 30, color: '#52c41a' },
-        { id: 'c', text: 'რასთი', votes: 25, color: '#722ed1' },
-      ],
-    },
-    {
-      id: 2,
-      question: 'რომელი ინსტრუმენტი გირჩევნიათ?',
-      options: [
-        { id: 'a', text: 'ტარი', votes: 40, color: '#fa8c16' },
-        { id: 'b', text: 'ქამანჩა', votes: 35, color: '#eb2f96' },
-        { id: 'c', text: 'დოლი', votes: 25, color: '#13c2c2' },
-      ],
-    },
-  ];
-
-  const handleVote = (pollId: number, optionId: string) => {
-    setSelectedPolls((prev) => ({ ...prev, [pollId]: optionId }));
-  };
-
-  const submitVote = (pollId: number) => {
-    if (selectedPolls[pollId]) {
-      setVotedPolls((prev) => [...prev, pollId]);
-      setShowResults((prev) => ({ ...prev, [pollId]: true }));
+  const handleVote = (pollId: number, optionId: number) => {
+    if (!votedPolls.includes(pollId)) {
+      setSelectedPolls((prev) => ({ ...prev, [pollId]: optionId }));
     }
   };
 
-  const getTotalVotes = (options: { votes: number }[]) => {
-    return options.reduce((sum, option) => sum + option.votes, 0);
+  const submitVote = async (pollId: number) => {
+    if (selectedPolls[pollId] && !votedPolls.includes(pollId)) {
+      try {
+        await vote(pollId, selectedPolls[pollId]);
+        setVotedPolls((prev) => [...prev, pollId]);
+        setShowResults((prev) => ({ ...prev, [pollId]: true }));
+      } catch (error) {
+        console.error('Error submitting vote:', error);
+      }
+    }
+  };
+
+  const getTotalVotes = (options: { result: number }[]) => {
+    return options.reduce((sum, option) => sum + option.result, 0);
   };
 
   const calculatePercentage = (votes: number, total: number) => {
-    return Math.round((votes / total) * 100);
+    return total === 0 ? 0 : Math.round((votes / total) * 100);
   };
 
   return (
@@ -170,14 +158,28 @@ const Home = () => {
                 level={1}
                 className="!text-white mb-6 text-4xl sm:text-5xl lg:text-6xl font-extrabold bg-clip-text bg-gradient-to-"
               >
-                🎉 მზად ხართ დაიწყოთ თავგადასავალი?
+                {isAuthenticated ? (
+                  <>
+                    მოგესალმებით, <span className="text-yellow-300">{user?.name}</span>! 🎉
+                  </>
+                ) : (
+                  'მზად ხართ დაიწყოთ თავგადასავალი?'
+                )}
               </Title>
 
               {/* Subtitle */}
               <Paragraph className="text-xl sm:text-2xl mb-8 max-w-3xl mx-auto text-white/95 leading-relaxed font-medium">
-                შეუერთდით <span className="text-yellow-300 font-bold">ათასობით მონაწილეს</span> და
-                დაიწყეთ
-                <span className="text-green-300 font-bold"> ქვიზების გავლა</span> ახლავე! 🚀
+                {isAuthenticated ? (
+                  <>
+                    შეუერთდით <span className="text-yellow-300 font-bold">ათასობით მონაწილეს</span> და
+                    დაიწყეთ <span className="text-green-300 font-bold">ქვიზების გავლა</span> ახლავე! 🚀
+                  </>
+                ) : (
+                  <>
+                    შეუერთდით <span className="text-yellow-300 font-bold">ათასობით მონაწილეს</span> და
+                    დაიწყეთ <span className="text-green-300 font-bold">ქვიზების გავლა</span> ახლავე! 🚀
+                  </>
+                )}
               </Paragraph>
 
               {/* Features List */}
@@ -201,24 +203,38 @@ const Home = () => {
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-6 items-center justify-center">
-                <Link to="/register">
-                  <Button
-                    size="large"
-                    className="bg-gradient-to-r from-white to-gray-100 text-primary hover:from-yellow-100 hover:to-white border-0 h-16 px-12 text-xl font-bold rounded-2xl shadow-2xl hover:shadow-yellow-300/30 transform hover:scale-105 transition-all duration-300"
-                  >
-                    🎯 დარეგისტრირდი ახლავე
-                    <RightOutlined className="ml-2" />
-                  </Button>
-                </Link>
-                <Link to="/categories">
-                  <Button
-                    size="large"
-                    className="text-white bg-transparent border-2 border-white/50 hover:bg-white/10 hover:border-white h-16 px-12 text-xl font-bold rounded-2xl backdrop-blur-sm transform hover:scale-105 transition-all duration-300"
-                  >
-                    🚀 დაიწყე ქვიზი
-                    <ArrowRightOutlined className="ml-2" />
-                  </Button>
-                </Link>
+                {isAuthenticated ? (
+                  <Link to="/categories">
+                    <Button
+                      size="large"
+                      className="bg-gradient-to-r from-white to-gray-100 text-primary hover:from-yellow-100 hover:to-white border-0 h-16 px-12 text-xl font-bold rounded-2xl shadow-2xl hover:shadow-yellow-300/30 transform hover:scale-105 transition-all duration-300"
+                    >
+                      🚀 დაიწყე ქვიზი
+                      <RightOutlined className="ml-2" />
+                    </Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link to="/register">
+                      <Button
+                        size="large"
+                        className="bg-gradient-to-r from-white to-gray-100 text-primary hover:from-yellow-100 hover:to-white border-0 h-16 px-12 text-xl font-bold rounded-2xl shadow-2xl hover:shadow-yellow-300/30 transform hover:scale-105 transition-all duration-300"
+                      >
+                        🎯 დარეგისტრირდი ახლავე
+                        <RightOutlined className="ml-2" />
+                      </Button>
+                    </Link>
+                    <Link to="/login">
+                      <Button
+                        size="large"
+                        className="text-white bg-transparent border-2 border-white/50 hover:bg-white/10 hover:border-white h-16 px-12 text-xl font-bold rounded-2xl backdrop-blur-sm transform hover:scale-105 transition-all duration-300"
+                      >
+                        🔑 შესვლა
+                        <ArrowRightOutlined className="ml-2" />
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
 
               {/* Bottom Stats */}
@@ -244,45 +260,15 @@ const Home = () => {
               </div>
 
               {/* Final Encouragement */}
-              <div className="mt-12 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 backdrop-blur-sm rounded-2xl p-6 max-w-2xl mx-auto border border-yellow-300/30">
-                <p className="text-yellow-100 text-lg font-medium">
-                  💫 <strong>ყოველდღე ახალი შანსი!</strong> რეგისტრაცია მხოლოდ 30 წამში
-                </p>
-              </div>
+              {!isAuthenticated && (
+                <div className="mt-12 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 backdrop-blur-sm rounded-2xl p-6 max-w-2xl mx-auto border border-yellow-300/30">
+                  <p className="text-yellow-100 text-lg font-medium">
+                    💫 <strong>ყოველდღე ახალი შანსი!</strong> რეგისტრაცია მხოლოდ 30 წამში
+                  </p>
+                </div>
+              )}
             </div>
           </div>
-
-          {/* Scroll Down Button - Enhanced Visibility
-          <div className="fixed bottom-8 right-8 z-10 hidden lg:block">
-            <button
-              onClick={scrollToPolls}
-              className="group relative flex flex-col items-center justify-center p-5 rounded-full bg-white/20 backdrop-blur-md border-2 border-white/60 hover:bg-white/30 hover:border-white shadow-2xl hover:shadow-white/30 transition-all duration-500 hover:scale-125 animate-bounce"
-              style={{
-                boxShadow: '0 0 30px rgba(255, 255, 255, 0.3), 0 0 60px rgba(255, 255, 255, 0.1)',
-              }}
-            >
-              <span className="text-white text-sm font-bold mb-2 group-hover:text-yellow-200 transition-colors drop-shadow-lg">
-                გამოკითხვები
-              </span>
-              <div className="flex flex-col items-center">
-                <DownOutlined className="text-2xl text-white group-hover:text-yellow-200 transition-all duration-300 group-hover:transform group-hover:translate-y-2 drop-shadow-lg" />
-                <div className="mt-2 w-1 h-8 bg-gradient-to-b from-white to-white/30 rounded-full group-hover:from-yellow-200 group-hover:to-yellow-400/50 transition-all duration-300 shadow-lg"></div>
-              </div>
-
-              <div className="absolute inset-0 rounded-full border-3 border-white/40 animate-ping"></div>
-              <div className="absolute inset-0 rounded-full border-2 border-white/20 animate-pulse delay-300"></div>
-              <div className="absolute inset-0 rounded-full border border-yellow-300/30 animate-ping delay-700"></div>
-
-              <div className="absolute inset-0 rounded-full bg-white/10 animate-pulse delay-1000"></div>
-            </button>
-
-            <div className="absolute -left-32 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-              <div className="bg-white/90 backdrop-blur-sm text-gray-800 text-sm font-medium px-3 py-2 rounded-lg shadow-lg">
-                👇 გამოკითხვები
-              </div>
-              <div className="absolute right-0 top-1/2 transform translate-x-2 -translate-y-1/2 w-0 h-0 border-l-8 border-l-white/90 border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
-            </div>
-          </div> */}
         </section>
 
         {/* Hero Section
@@ -363,126 +349,134 @@ const Home = () => {
                 გაიარეთ ჩვენი ინტერაქტიული გამოკითხვები და გაუზიარეთ თქვენი მოსაზრება საზოგადოებას
               </Paragraph>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-              {polls.map((poll) => {
-                const totalVotes = getTotalVotes(poll.options);
-                const hasVoted = votedPolls.includes(poll.id);
-                const showPollResults = showResults[poll.id];
+            {loading ? (
+              <div className="flex justify-center items-center min-h-[400px]">
+                <Spin size="large" />
+              </div>
+            ) : (
+              <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
+                {polls.map((poll) => {
+                  const totalVotes = getTotalVotes(poll.options);
+                  const hasVoted = votedPolls.includes(poll.id);
+                  const showPollResults = showResults[poll.id];
 
-                return (
-                  <Card
-                    key={poll.id}
-                    className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-0 shadow-lg bg-white/80 backdrop-blur-sm"
-                    title={
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gradient-to-r from-red-400 to-red-600 rounded-full flex items-center justify-center mr-3">
-                            <FireOutlined className="text-white text-sm" />
+                  return (
+                    <Card
+                      key={poll.id}
+                      className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-0 shadow-lg bg-white/80 backdrop-blur-sm"
+                      title={
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <div className="w-8 h-8 bg-gradient-to-r from-red-400 to-red-600 rounded-full flex items-center justify-center mr-3">
+                              <FireOutlined className="text-white text-sm" />
+                            </div>
+                            <span className="text-lg font-bold text-gray-800">{poll.title}</span>
                           </div>
-                          <span className="text-lg font-bold text-gray-800">{poll.question}</span>
+                          {hasVoted && (
+                            <span className="text-sm text-white bg-green-500 px-3 py-1 rounded-full font-medium">
+                              ✅ ხმა ჩაწერილია
+                            </span>
+                          )}
                         </div>
-                        {hasVoted && (
-                          <span className="text-sm text-white bg-green-500 px-3 py-1 rounded-full font-medium">
-                            ✅ ხმა ჩაწერილია
-                          </span>
-                        )}
-                      </div>
-                    }
-                  >
-                    {!showPollResults ? (
-                      <div className="space-y-4">
-                        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mb-6">
-                          <p className="text-blue-800 font-medium">
-                            👆 აირჩიეთ თქვენი ვარიანტი და მიიღეთ მონაწილეობა!
-                          </p>
+                      }
+                    >
+                      {!showPollResults ? (
+                        <div className="space-y-4">
+                          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mb-6">
+                            <p className="text-blue-800 font-medium">
+                              👆 აირჩიეთ თქვენი ვარიანტი და მიიღეთ მონაწილეობა!
+                            </p>
+                          </div>
+                          <Radio.Group
+                            onChange={(e) => handleVote(poll.id, e.target.value as number)}
+                            value={selectedPolls[poll.id]}
+                            className="w-full"
+                            disabled={hasVoted}
+                          >
+                            <Space direction="vertical" className="w-full">
+                              {poll.options.map((option) => (
+                                <div
+                                  key={option.id}
+                                  className={`w-full p-4 rounded-xl transition-all duration-300 cursor-pointer ${
+                                    selectedPolls[poll.id] === option.id
+                                      ? 'bg-primary/20 border-primary shadow-md transform scale-105'
+                                      : 'hover:bg-gray-50 border-gray-200 hover:shadow-sm'
+                                  } border-2`}
+                                >
+                                  <Radio value={option.id} className="w-full">
+                                    <div className="flex justify-between items-center w-full">
+                                      <span className="font-semibold text-gray-700">
+                                        {option.name}
+                                      </span>
+                                      {selectedPolls[poll.id] === option.id && (
+                                        <span className="text-primary">✨</span>
+                                      )}
+                                    </div>
+                                  </Radio>
+                                </div>
+                              ))}
+                            </Space>
+                          </Radio.Group>
+                          <Button
+                            type="primary"
+                            size="large"
+                            className="w-full mt-6 h-14 rounded-xl text-lg font-semibold bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary"
+                            onClick={() => submitVote(poll.id)}
+                            disabled={!selectedPolls[poll.id] || hasVoted}
+                          >
+                            {hasVoted ? '✅ ხმა ჩაწერილია' : '🗳️ ხმის მიცემა'}
+                          </Button>
                         </div>
-                        <Radio.Group
-                          onChange={(e) => handleVote(poll.id, e.target.value)}
-                          value={selectedPolls[poll.id]}
-                          className="w-full"
-                          disabled={hasVoted}
-                        >
-                          <Space direction="vertical" className="w-full">
-                            {poll.options.map((option) => (
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg mb-6">
+                            <p className="text-green-800 font-medium">
+                              🎉 მადლობა მონაწილეობისთვის! ნახეთ შედეგები:
+                            </p>
+                          </div>
+                          {poll.options.map((option) => {
+                            const percentage = calculatePercentage(option.result, totalVotes);
+                            const isSelected = selectedPolls[poll.id] === option.id;
+
+                            return (
                               <div
                                 key={option.id}
-                                className={`w-full p-4 rounded-xl transition-all duration-300 cursor-pointer ${
-                                  selectedPolls[poll.id] === option.id
-                                    ? 'bg-primary/20 border-primary shadow-md transform scale-105'
-                                    : 'hover:bg-gray-50 border-gray-200 hover:shadow-sm'
+                                className={`p-4 rounded-xl transition-all duration-300 ${
+                                  isSelected
+                                    ? 'bg-primary/20 border-primary shadow-md'
+                                    : 'bg-gray-50 border-gray-200'
                                 } border-2`}
                               >
-                                <Radio value={option.id} className="w-full">
-                                  <div className="flex justify-between items-center w-full">
-                                    <span className="font-semibold text-gray-700">{option.text}</span>
-                                    {selectedPolls[poll.id] === option.id && (
-                                      <span className="text-primary">✨</span>
-                                    )}
-                                  </div>
-                                </Radio>
+                                <div className="flex justify-between items-center mb-3">
+                                  <span className="font-semibold text-gray-700">{option.name}</span>
+                                  <span className="text-gray-600 font-bold">{percentage}%</span>
+                                </div>
+                                <Progress
+                                  percent={percentage}
+                                  showInfo={false}
+                                  strokeColor="#1890ff"
+                                  className="mb-2"
+                                  strokeWidth={10}
+                                />
+                                <div className="flex justify-between text-sm text-gray-500">
+                                  <span>📊 {option.result} ხმა</span>
+                                  {isSelected && (
+                                    <span className="text-primary font-bold">👤 თქვენი არჩევანი</span>
+                                  )}
+                                </div>
                               </div>
-                            ))}
-                          </Space>
-                        </Radio.Group>
-                        <Button
-                          type="primary"
-                          size="large"
-                          className="w-full mt-6 h-14 rounded-xl text-lg font-semibold bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary"
-                          onClick={() => submitVote(poll.id)}
-                          disabled={!selectedPolls[poll.id] || hasVoted}
-                        >
-                          {hasVoted ? '✅ ხმა ჩაწერილია' : '🗳️ ხმის მიცემა'}
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg mb-6">
-                          <p className="text-green-800 font-medium">
-                            🎉 მადლობა მონაწილეობისთვის! ნახეთ შედეგები:
-                          </p>
+                            );
+                          })}
+                          <div className="text-center text-gray-600 mt-6 p-3 bg-gray-100 rounded-lg">
+                            <strong>სულ ხმები: {totalVotes}</strong>
+                          </div>
                         </div>
-                        {poll.options.map((option) => {
-                          const percentage = calculatePercentage(option.votes, totalVotes);
-                          const isSelected = selectedPolls[poll.id] === option.id;
-
-                          return (
-                            <div
-                              key={option.id}
-                              className={`p-4 rounded-xl transition-all duration-300 ${
-                                isSelected
-                                  ? 'bg-primary/20 border-primary shadow-md'
-                                  : 'bg-gray-50 border-gray-200'
-                              } border-2`}
-                            >
-                              <div className="flex justify-between items-center mb-3">
-                                <span className="font-semibold text-gray-700">{option.text}</span>
-                                <span className="text-gray-600 font-bold">{percentage}%</span>
-                              </div>
-                              <Progress
-                                percent={percentage}
-                                showInfo={false}
-                                strokeColor={option.color}
-                                className="mb-2"
-                                strokeWidth={10}
-                              />
-                              <div className="flex justify-between text-sm text-gray-500">
-                                <span>📊 {option.votes} ხმა</span>
-                                {isSelected && (
-                                  <span className="text-primary font-bold">👤 თქვენი არჩევანი</span>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                        <div className="text-center text-gray-600 mt-6 p-3 bg-gray-100 rounded-lg">
-                          <strong>სულ ხმები: {totalVotes}</strong>
-                        </div>
-                      </div>
-                    )}
-                  </Card>
-                );
-              })}
-            </div>
+                      )}
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
             <div className="text-center mt-12">
               <p className="text-gray-600 text-lg">
                 💡 <strong>რჩევა:</strong> მონაწილეობა მიიღეთ ყველა გამოკითხვაში და გაიგეთ სხვების

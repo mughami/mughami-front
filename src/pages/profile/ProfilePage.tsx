@@ -2,20 +2,28 @@ import { useState, useEffect } from 'react';
 import {
   UserOutlined,
   MailOutlined,
-  CalendarOutlined,
+  // CalendarOutlined,
   LogoutOutlined,
   EditOutlined,
   QuestionCircleOutlined,
+  SafetyOutlined,
+  WarningOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { useAuthStore } from '../../store';
+import { notification, Tooltip } from 'antd';
+import { authService } from '../../services';
+import { UserStatus } from '../../types';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [api, contextHolder] = notification.useNotification();
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -32,16 +40,16 @@ const ProfilePage = () => {
   }, [user]);
 
   // Format date to be more readable
-  const formatDate = (dateString: string) => {
-    if (!dateString) return '';
+  // const formatDate = (dateString: string) => {
+  //   if (!dateString) return '';
 
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ka-GE', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
+  //   const date = new Date(dateString);
+  //   return date.toLocaleDateString('ka-GE', {
+  //     year: 'numeric',
+  //     month: 'long',
+  //     day: 'numeric',
+  //   });
+  // };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -64,6 +72,49 @@ const ProfilePage = () => {
     navigate('/login');
   };
 
+  const handleRequestOTP = async () => {
+    if (!user?.email) return;
+
+    try {
+      setIsVerifying(true);
+      await authService.resendOTP(user.email);
+      api['success']({
+        message: 'OTP კოდი გაიგზავნა',
+        description: 'გთხოვთ შეამოწმოთ თქვენი ელ-ფოსტა',
+      });
+    } catch (error) {
+      console.error('OTP request error:', error);
+      api['error']({
+        message: 'OTP კოდის მიღების შეცდომა',
+        description: 'გთხოვთ სცადოთ ხელახლა',
+      });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleVerifyEmail = async () => {
+    if (!user?.email || !otp) return;
+
+    try {
+      setIsVerifying(true);
+      await authService.verifyAccount(user.email, otp);
+      api['success']({
+        message: 'ელ-ფოსტა წარმატებით დადასტურდა',
+        description: 'თქვენი ანგარიში ახლა გააქტიურებულია',
+      });
+      setOtp('');
+    } catch (error) {
+      console.error('Verification error:', error);
+      api['error']({
+        message: 'ელ-ფოსტის დადასტურების შეცდომა',
+        description: 'არასწორი კოდი. გთხოვთ სცადოთ ხელახლა',
+      });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
   //   if (!user) {
   //     return (
   //       <Layout>
@@ -79,6 +130,7 @@ const ProfilePage = () => {
 
   return (
     <Layout>
+      {contextHolder}
       <div className="max-w-2xl mx-auto">
         <h1 className="page-title">პროფილი</h1>
 
@@ -149,7 +201,14 @@ const ProfilePage = () => {
                     {user?.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="ml-4">
-                    <h2 className="text-xl font-bold text-gray-900">{user?.name}</h2>
+                    <div className="flex items-center">
+                      <h2 className="text-xl font-bold text-gray-900">{user?.name}</h2>
+                      {user?.userStatus !== UserStatus.VERIFIED && (
+                        <Tooltip title="თქვენი ელ-ფოსტა არ არის დადასტურებული">
+                          <WarningOutlined className="ml-2 text-yellow-500" />
+                        </Tooltip>
+                      )}
+                    </div>
                     <p className="text-gray-600 flex items-center">
                       <MailOutlined className="mr-2" />
                       {user?.email}
@@ -164,10 +223,40 @@ const ProfilePage = () => {
                 </button>
               </div>
 
-              <div className="border-t border-gray-200 pt-4">
-                <div className="flex items-center text-sm text-gray-600 mb-4">
-                  <CalendarOutlined className="mr-2" />
-                  <span>რეგისტრაციის თარიღი: {formatDate(user?.createdAt || '')}</span>
+              {/* Email Verification Section */}
+              <div className="border-t border-gray-200 pt-4 mt-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <SafetyOutlined className="text-gray-400 mr-2" />
+                    <span className="text-gray-600">ელ-ფოსტის დადასტურება</span>
+                  </div>
+                  {user?.userStatus === UserStatus.VERIFIED ? (
+                    <span className="text-green-600 text-sm font-medium">დადასტურებული</span>
+                  ) : (
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="text"
+                        placeholder="OTP კოდი"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        className="form-input w-32"
+                      />
+                      <button
+                        onClick={handleVerifyEmail}
+                        disabled={isVerifying || !otp}
+                        className="px-3 py-1 text-sm bg-primary text-white rounded hover:bg-primary-dark disabled:opacity-50"
+                      >
+                        დადასტურება
+                      </button>
+                      <button
+                        onClick={handleRequestOTP}
+                        disabled={isVerifying}
+                        className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50"
+                      >
+                        კოდის მიღება
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

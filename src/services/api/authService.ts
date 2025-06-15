@@ -1,5 +1,5 @@
 import apiClient from './client';
-import { UserRole } from '../../types';
+import { UserRole, UserStatus, Status } from '../../types';
 
 export interface LoginCredentials {
   mail: string;
@@ -15,16 +15,27 @@ export interface RegisterData {
 }
 
 export interface User {
+  id: string;
   name: string;
   lastname: string;
   email: string;
   password: string;
-  role: UserRole;
+  userRole: UserRole;
+  userStatus: UserStatus;
+  status: Status;
+  username: string;
+  permissions: string[];
 }
 
 export interface AuthResponse {
-  user: User;
   token: string;
+  refreshToken: string;
+}
+
+export interface ForgotPasswordData {
+  email: string;
+  otp: string;
+  newPass: string;
 }
 
 const authService = {
@@ -55,7 +66,13 @@ const authService = {
 
   logout: (): void => {
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem('refreshToken');
+    location.href = '/login';
+  },
+
+  forgotPassword: async (data: ForgotPasswordData): Promise<void> => {
+    const response = await apiClient.put('/app/user/forgot-password', data);
+    return response.data;
   },
 };
 
