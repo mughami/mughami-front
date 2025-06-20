@@ -72,7 +72,7 @@ export const Users = () => {
       name: user.name,
       lastname: user.lastname,
       email: user.email,
-      status: user.status,
+      status: user,
     });
     setIsEditModalVisible(true);
   };

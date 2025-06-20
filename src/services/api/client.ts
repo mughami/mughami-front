@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Base API configuration
-const DEV_API_URL = 'http://localhost:54321';
+const DEV_API_URL = 'https://sawfly-brave-slowly.ngrok-free.app';
 const API_URL = import.meta.env.VITE_API_URL || DEV_API_URL;
 
 // Create axios instance with base configuration
@@ -19,6 +19,7 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    config.headers['ngrok-skip-browser-warning'] = 'true';
     return config;
   },
   (error) => Promise.reject(error),
