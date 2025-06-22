@@ -70,30 +70,14 @@ const AdminRoute = ({ children }: { children: React.ReactElement }) => {
     return <div>Loading...</div>;
   }
 
-  console.log(isAuthenticated, user, isLoading);
   if (!isAuthenticated || user?.userRole !== UserRole.ADMIN) {
-    //go back previous page
-    navigate(-1);
+    navigate('/login');
   }
 
   return children;
 };
 
 const AuthRoute = ({ children }: { children: React.ReactElement }) => {
-  const { isAuthenticated, user, getCurrentUser } = useAuthStore();
-  useEffect(() => {
-    getCurrentUser();
-  }, [getCurrentUser]);
-
-  //if role is admin naviagate to /admin
-  if (isAuthenticated && user?.userRole === UserRole.ADMIN) {
-    return <Navigate to="/admin" replace />;
-  }
-
-  if (isAuthenticated && user?.userRole !== UserRole.ADMIN) {
-    return <Navigate to="/categories" replace />;
-  }
-
   return children;
 };
 

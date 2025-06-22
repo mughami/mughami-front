@@ -9,7 +9,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User | null>;
   register: (
     name: string,
     lastname: string,
@@ -53,7 +53,7 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      login: async (email: string, password: string) => {
+      login: async (email: string, password: string): Promise<User | null> => {
         try {
           set({ isLoading: true, error: null });
           const response = await authService.login({ mail: email, password });
@@ -72,11 +72,13 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
             isLoading: false,
           });
+          return userData;
         } catch (error) {
           set({
             isLoading: false,
             error: error instanceof Error ? error.message : 'შეცდომა ავტორიზაციისას',
           });
+          return null;
         }
       },
 

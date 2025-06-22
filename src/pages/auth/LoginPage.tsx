@@ -6,6 +6,7 @@ import { EyeOutlined, EyeInvisibleOutlined, LockOutlined, MailOutlined } from '@
 import Footer from '../../components/Footer';
 import { useAuthStore } from '../../store/authStore';
 import { notification } from 'antd';
+import { UserRole } from '../../types';
 
 type LoginFormInputs = {
   email: string;
@@ -22,16 +23,20 @@ const LoginPage = () => {
   } = useForm<LoginFormInputs>();
   const { login: loginUser, error: authError } = useAuthStore();
   const [api, contextHolder] = notification.useNotification();
-  const onSubmit: SubmitHandler<LoginFormInputs> = (data) => {
-    loginUser(data.email, data.password);
-
-    if (authError) {
+  const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
+    const user = await loginUser(data.email, data.password);
+    console.log(user);
+    if (!user) {
       api['error']({
         message: 'შეცდომა',
         description: authError,
       });
     } else {
-      navigate('/categories');
+      if (user.userRole === UserRole.ADMIN) {
+        navigate('/admin');
+      } else {
+        navigate('/categories');
+      }
     }
   };
 
