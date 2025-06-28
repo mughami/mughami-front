@@ -1,7 +1,24 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { TrophyOutlined, RightOutlined } from '@ant-design/icons';
 
 const Footer = () => {
+  const location = useLocation();
+
+  // Check if we're on a quiz playing page
+  const isQuizPlaying = location.pathname.startsWith('/quiz/play/');
+
+  // If on quiz playing page, show simplified footer
+  if (isQuizPlaying) {
+    return (
+      <footer className="bg-gray-100 border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="text-center text-gray-500 text-sm">© 2024 მუღამი. ყველა უფლება დაცულია.</div>
+        </div>
+      </footer>
+    );
+  }
+
+  // Regular footer for other pages
   return (
     <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white relative overflow-hidden">
       {/* Decorative background elements */}

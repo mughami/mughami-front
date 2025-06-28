@@ -7,5 +7,13 @@ export { default as paymentService } from './api/paymentService';
 // Re-export types
 export type { User, LoginCredentials, RegisterData, AuthResponse } from './api/authService';
 export type { Category } from './api/categoryService';
-export type { Quiz, QuizQuestion, QuizResult, QuizSubmission } from './api/quizService';
+export type {
+  Quiz,
+  QuizQuestion,
+  QuizAnswer,
+  QuizResponse,
+  QuestionsResponse,
+  CreateQuizRequest,
+  CreateQuestionRequest,
+} from './api/quizService';
 export type { PaymentIntent, PaymentRequest } from './api/paymentService';

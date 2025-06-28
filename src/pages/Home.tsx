@@ -13,6 +13,7 @@ import {
   CrownOutlined,
 } from '@ant-design/icons';
 import Footer from '../components/Footer';
+import QuizSection from '../components/QuizSection';
 import { usePollStore } from '../store/pollStore';
 import { useAuthStore } from '../store';
 
@@ -485,6 +486,9 @@ const Home = () => {
             </div>
           </div>
         </section>
+
+        {/* Quiz Section */}
+        <QuizSection />
 
         {/* Features Section - Enhanced */}
         <section className="py-24 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 relative overflow-hidden">

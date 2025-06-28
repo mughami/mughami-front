@@ -11,6 +11,8 @@ import VerifyEmailPage from './pages/auth/VerifyEmailPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import CategoriesPage from './pages/categories/CategoriesPage';
 import QuizPage from './pages/quizzes/QuizPage';
+import QuizPlayPage from './pages/quizzes/QuizPlayPage';
+import QuizResultsPage from './pages/quizzes/QuizResultsPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import Home from './pages/Home';
 import Admin from './pages/Admin';
@@ -122,23 +124,13 @@ function App() {
         }
       />
 
+      {/* Quiz routes - accessible to all users */}
+      <Route path="/categories" element={<CategoriesPage />} />
+      <Route path="/quizzes/:categoryId" element={<QuizPage />} />
+      <Route path="/quiz/play/:quizId" element={<QuizPlayPage />} />
+      <Route path="/quiz/results" element={<QuizResultsPage />} />
+
       {/* Protected routes */}
-      <Route
-        path="/categories"
-        element={
-          <ProtectedRoute>
-            <CategoriesPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/quizzes/:categoryId"
-        element={
-          <ProtectedRoute>
-            <QuizPage />
-          </ProtectedRoute>
-        }
-      />
       <Route
         path="/profile"
         element={
