@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Card, Button, Spin, Typography, Row, Col, Tag, Empty } from 'antd';
+import { Card, Button, Spin, Typography, Row, Col, Empty } from 'antd';
 import {
   TrophyOutlined,
   PlayCircleOutlined,
@@ -60,23 +60,23 @@ const QuizSection: React.FC = () => {
     navigate(`/quiz/play/${quizId}`);
   };
 
-  const getRandomDifficulty = () => {
-    const difficulties = ['მარტივი', 'საშუალო', 'რთული'];
-    return difficulties[Math.floor(Math.random() * difficulties.length)];
-  };
+  // const getRandomDifficulty = () => {
+  //   const difficulties = ['მარტივი', 'საშუალო', 'რთული'];
+  //   return difficulties[Math.floor(Math.random() * difficulties.length)];
+  // };
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'მარტივი':
-        return 'green';
-      case 'საშუალო':
-        return 'orange';
-      case 'რთული':
-        return 'red';
-      default:
-        return 'blue';
-    }
-  };
+  // const getDifficultyColor = (difficulty: string) => {
+  //   switch (difficulty) {
+  //     case 'მარტივი':
+  //       return 'green';
+  //     case 'საშუალო':
+  //       return 'orange';
+  //     case 'რთული':
+  //       return 'red';
+  //     default:
+  //       return 'blue';
+  //   }
+  // };
 
   if (loading) {
     return (
@@ -114,7 +114,7 @@ const QuizSection: React.FC = () => {
         {quizzes.length > 0 ? (
           <Row gutter={[24, 24]}>
             {quizzes.map((quiz) => {
-              const difficulty = getRandomDifficulty();
+              // const difficulty = getRandomDifficulty();
               const photoUrl = quizPhotos[quiz.quizId];
 
               return (

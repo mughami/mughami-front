@@ -20,6 +20,9 @@ const QuizQuestion = ({
 }: QuizQuestionProps) => {
   const [hovered, setHovered] = useState<number | null>(null);
 
+  // Find the index of the correct answer
+  const correctAnswerIndex = question.answers.findIndex((answer) => answer.isCorrect);
+
   const getOptionClass = (index: number) => {
     if (!showResult) {
       if (selectedOption === index) {
@@ -27,7 +30,7 @@ const QuizQuestion = ({
       }
       return hovered === index ? 'quiz-option bg-gray-50' : 'quiz-option';
     } else {
-      if (index === question.correctAnswer) {
+      if (index === correctAnswerIndex) {
         return 'quiz-option quiz-option-correct';
       } else if (selectedOption === index) {
         return 'quiz-option quiz-option-incorrect';
@@ -45,16 +48,16 @@ const QuizQuestion = ({
       </div>
       <h2 className="quiz-question">{question.question}</h2>
       <div className="quiz-options">
-        {question.options.map((option, index) => (
+        {question.answers.map((answer, index) => (
           <button
-            key={index}
+            key={answer.id}
             className={getOptionClass(index)}
             onClick={() => !showResult && onAnswer(index)}
             onMouseEnter={() => setHovered(index)}
             onMouseLeave={() => setHovered(null)}
             disabled={showResult || selectedOption !== null}
           >
-            {option}
+            {answer.answer}
           </button>
         ))}
       </div>

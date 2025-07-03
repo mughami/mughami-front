@@ -32,6 +32,29 @@
 
 ## განვითარება
 
+### Environment Variables
+
+პროექტის გასაშვებად საჭიროა განსაზღვროთ environment variables:
+
+1. Copy `config.env.example` to `.env.local`:
+
+```bash
+cp config.env.example .env.local
+```
+
+2. Edit `.env.local` and set your API URL:
+
+```bash
+VITE_API_URL=http://localhost:54321
+```
+
+### Available Environment Variables
+
+- `VITE_API_URL`: The base URL for the API (default: http://localhost:54321)
+- `VITE_NODE_ENV`: Environment name (development/production)
+
+### Installation and Running
+
 ```bash
 # დამოკიდებულებების ინსტალაცია
 npm install

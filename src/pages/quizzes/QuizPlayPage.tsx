@@ -737,7 +737,7 @@ const QuizPlayPage: React.FC = () => {
                       </div>
                       <Text className="text-gray-800">
                         {
-                          currentQuestion.answers.find((answer, index) =>
+                          currentQuestion.answers.find((_answer, index) =>
                             isAnswerCorrect(currentQuestion.id, index),
                           )?.answer
                         }

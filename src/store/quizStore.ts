@@ -224,9 +224,12 @@ export const useQuizStore = create<QuizState>((set) => ({
         totalQuizzes: response.totalElements,
         loading: false,
       });
-    } catch (error) {
+    } catch {
+      // Handle 404 or other errors gracefully - just show empty state
+      // Don't set error state for missing quizzes, as this is expected
       set({
-        error: error instanceof Error ? error.message : 'Failed to fetch quizzes by category',
+        quizzes: [],
+        totalQuizzes: 0,
         loading: false,
       });
     }
