@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 // Base API configuration
-const DEV_API_URL = 'http://localhost:54321';
-const API_URL = import.meta.env.VITE_API_URL || DEV_API_URL;
+const DEV_API_URL = 'https://mughamiprod-production.up.railway.app';
+const API_URL = 'https://mughamiprod-production.up.railway.app';
 
 // Create axios instance with base configuration
 const apiClient = axios.create({
