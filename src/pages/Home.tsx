@@ -205,17 +205,37 @@ const Home = () => {
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-6 items-center justify-center">
                 {isAuthenticated ? (
-                  <Link to="/categories">
-                    <Button
-                      size="large"
-                      className="bg-gradient-to-r from-white to-gray-100 text-primary hover:from-yellow-100 hover:to-white border-0 h-16 px-12 text-xl font-bold rounded-2xl shadow-2xl hover:shadow-yellow-300/30 transform hover:scale-105 transition-all duration-300"
-                    >
-                      🚀 დაიწყე ქვიზი
-                      <RightOutlined className="ml-2" />
-                    </Button>
-                  </Link>
+                  <>
+                    <Link to="/categories">
+                      <Button
+                        size="large"
+                        className="bg-gradient-to-r from-white to-gray-100 text-primary hover:from-yellow-100 hover:to-white border-0 h-16 px-12 text-xl font-bold rounded-2xl shadow-2xl hover:shadow-yellow-300/30 transform hover:scale-105 transition-all duration-300"
+                      >
+                        🚀 დაიწყე ქვიზი
+                        <RightOutlined className="ml-2" />
+                      </Button>
+                    </Link>
+                    <Link to="/public-quizzes">
+                      <Button
+                        size="large"
+                        className="text-white bg-gradient-to-r from-green-500 to-green-600 border-0 hover:from-green-600 hover:to-green-700 h-16 px-12 text-xl font-bold rounded-2xl shadow-2xl hover:shadow-green-300/30 transform hover:scale-105 transition-all duration-300"
+                      >
+                        🔓 ღია ვიქტორინები
+                        <RightOutlined className="ml-2" />
+                      </Button>
+                    </Link>
+                  </>
                 ) : (
                   <>
+                    <Link to="/public-quizzes">
+                      <Button
+                        size="large"
+                        className="bg-gradient-to-r from-green-400 to-green-500 text-white hover:from-green-500 hover:to-green-600 border-0 h-16 px-12 text-xl font-bold rounded-2xl shadow-2xl hover:shadow-green-300/30 transform hover:scale-105 transition-all duration-300"
+                      >
+                        🔓 ღია ვიქტორინები
+                        <RightOutlined className="ml-2" />
+                      </Button>
+                    </Link>
                     <Link to="/register">
                       <Button
                         size="large"

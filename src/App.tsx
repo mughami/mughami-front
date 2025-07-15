@@ -13,6 +13,8 @@ import CategoriesPage from './pages/categories/CategoriesPage';
 import QuizPage from './pages/quizzes/QuizPage';
 import QuizPlayPage from './pages/quizzes/QuizPlayPage';
 import QuizResultsPage from './pages/quizzes/QuizResultsPage';
+import PublicQuizPlayPage from './pages/quizzes/PublicQuizPlayPage';
+import PublicQuizzesPage from './pages/quizzes/PublicQuizzesPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import Home from './pages/Home';
 import Admin from './pages/Admin';
@@ -129,6 +131,10 @@ function App() {
       <Route path="/quizzes/:categoryId" element={<QuizPage />} />
       <Route path="/quiz/play/:quizId" element={<QuizPlayPage />} />
       <Route path="/quiz/results" element={<QuizResultsPage />} />
+
+      {/* Public quiz routes - no authentication required */}
+      <Route path="/public-quizzes" element={<PublicQuizzesPage />} />
+      <Route path="/public-quiz/play/:quizId" element={<PublicQuizPlayPage />} />
 
       {/* Protected routes */}
       <Route

@@ -37,6 +37,10 @@ const Header = () => {
   // Check if we're on a quiz playing page
   const isQuizPlaying = location.pathname.startsWith('/quiz/play/');
 
+  // Check if we're on public quiz pages
+  const isPublicPage =
+    location.pathname === '/public-quizzes' || location.pathname.startsWith('/public-quiz/play/');
+
   // If on quiz playing page, show simplified header
   if (isQuizPlaying) {
     return (
@@ -96,6 +100,86 @@ const Header = () => {
     );
   }
 
+  // If on public quiz pages, show simplified header without user-specific features
+  if (isPublicPage) {
+    return (
+      <header className="bg-auth-gradient shadow-md relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex">
+              <div className="flex-shrink-0 flex items-center">
+                <Link to="/" className="flex items-center">
+                  <img
+                    className="h-8 w-8 sm:h-10 sm:w-10 rounded-full"
+                    src="/favicon.jpeg"
+                    alt="მუღამი"
+                  />
+                  <span className="ml-3 text-lg sm:text-xl font-bold text-white">მუღამი</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Mobile menu button */}
+            <div className="flex items-center sm:hidden">
+              <button
+                onClick={toggleMobileMenu}
+                className="text-white hover:bg-primary-dark p-2 rounded-md"
+              >
+                {mobileMenuOpen ? <CloseOutlined /> : <MenuOutlined />}
+              </button>
+            </div>
+
+            {/* Desktop menu - simplified for public pages */}
+            {/* <div className="hidden sm:flex items-center">
+              <Link
+                to="/"
+                className="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors"
+              >
+                <HomeOutlined className="mr-1" />
+                მთავარი
+              </Link>
+
+              <Link
+                to="/public-quizzes"
+                className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                  location.pathname === '/public-quizzes' ? 'bg-primary-dark' : ''
+                }`}
+              >
+                <QuestionCircleOutlined className="mr-1" />
+                ღია ვიქტორინები
+              </Link>
+            </div> */}
+          </div>
+
+          {/* Mobile menu - simplified for public pages */}
+          {mobileMenuOpen && (
+            <div className="sm:hidden py-2 pb-4 space-y-1">
+              {/* <Link
+                to="/"
+                className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <HomeOutlined className="mr-1" />
+                მთავარი
+              </Link> */}
+
+              <Link
+                to="/public-quizzes"
+                className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                  location.pathname === '/public-quizzes' ? 'bg-primary-dark' : ''
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <QuestionCircleOutlined className="mr-1" />
+                ღია ვიქტორინები
+              </Link>
+            </div>
+          )}
+        </div>
+      </header>
+    );
+  }
+
   // Regular header for other pages
   return (
     <header className="bg-auth-gradient shadow-md relative">
@@ -127,8 +211,18 @@ const Header = () => {
           {/* Desktop menu */}
           <div className="hidden sm:flex items-center">
             <Link
-              to="/categories"
+              to="/public-quizzes"
               className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                location.pathname === '/public-quizzes' ? 'bg-primary-dark' : ''
+              }`}
+            >
+              <QuestionCircleOutlined className="mr-1" />
+              ღია ვიქტორინები
+            </Link>
+
+            <Link
+              to="/categories"
+              className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
                 location.pathname === '/categories' ? 'bg-primary-dark' : ''
               }`}
             >
@@ -186,6 +280,17 @@ const Header = () => {
         {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="sm:hidden py-2 pb-4 space-y-1">
+            <Link
+              to="/public-quizzes"
+              className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                location.pathname === '/public-quizzes' ? 'bg-primary-dark' : ''
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <QuestionCircleOutlined className="mr-1" />
+              ღია ვიქტორინები
+            </Link>
+
             <Link
               to="/categories"
               className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
