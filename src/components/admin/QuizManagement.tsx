@@ -20,7 +20,6 @@ import {
 } from 'antd';
 import {
   PlusOutlined,
-  EditOutlined,
   DeleteOutlined,
   UploadOutlined,
   QuestionCircleOutlined,
@@ -54,7 +53,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
     getQuestionPhoto,
   } = useQuizStore();
 
-  const { categories } = useCategoryStore();
+  const { adminCategories } = useCategoryStore();
 
   const [isQuestionModalVisible, setIsQuestionModalVisible] = useState(false);
   const [isPhotoModalVisible, setIsPhotoModalVisible] = useState(false);
@@ -88,9 +87,9 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
   }, [currentQuiz, getQuizPhoto]);
 
   useEffect(() => {
-    // Fetch question photos
-    const fetchQuestionPhotos = async () => {
-      // Clean up previous question photo URLs
+    // Fetch photos for questions that have photos
+    const fetchPhotos = async () => {
+      // Clean up previous blob URLs for questions
       Object.values(questionPhotos).forEach((url) => {
         cleanupBlobUrl(url);
         blobUrlsRef.current.delete(url);
@@ -112,10 +111,10 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
     };
 
     if (currentQuestions.length > 0) {
-      fetchQuestionPhotos();
+      fetchPhotos();
     }
 
-    // Cleanup function to revoke blob URLs when component unmounts
+    // Cleanup function to revoke blob URLs when component unmounts or dependencies change
     return () => {
       blobUrlsRef.current.forEach((url) => cleanupBlobUrl(url));
       blobUrlsRef.current.clear();
@@ -221,8 +220,8 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
   };
 
   const getCategoryName = (categoryId: number) => {
-    const category = categories.find((cat) => cat.id === categoryId.toString());
-    return category ? category.title : 'უცნობი';
+    const category = adminCategories.find((cat) => cat.categoryId === categoryId);
+    return category ? category.categoryName : 'უცნობი';
   };
 
   const questionColumns = [
@@ -280,11 +279,11 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
       ),
     },
     {
-      title: 'მოქმედებები',
+      title: 'ქმედებები',
       key: 'actions',
       width: 200,
       render: (question: QuizQuestion) => (
-        <Space>
+        <Space direction="vertical" size="small">
           <Upload
             beforeUpload={(file) => {
               handleAddQuestionPhoto(question.id, file);
@@ -292,23 +291,28 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
             }}
             showUploadList={false}
             accept="image/*"
+            disabled={question.hasPhoto || uploadingPhoto === question.id}
           >
             <Button
-              type="text"
+              type="link"
               icon={<UploadOutlined />}
-              title="ფოტოს დამატება"
+              size="small"
               loading={uploadingPhoto === question.id}
-            />
+              disabled={question.hasPhoto}
+            >
+              {question.hasPhoto ? 'ფოტო არის' : 'ფოტო'}
+            </Button>
           </Upload>
-          <Button type="text" icon={<EditOutlined />} title="რედაქტირება" />
           <Popconfirm
-            title="კითხვის წაშლა"
-            description="დარწმუნებული ხართ, რომ გსურთ ამ კითხვის წაშლა?"
+            title="დარწმუნებული ხართ?"
+            description="გსურთ ამ კითხვის წაშლა?"
             onConfirm={() => handleDeleteQuestion(question.id)}
             okText="დიახ"
             cancelText="არა"
           >
-            <Button type="text" danger icon={<DeleteOutlined />} title="წაშლა" />
+            <Button type="link" danger icon={<DeleteOutlined />} size="small">
+              წაშლა
+            </Button>
           </Popconfirm>
         </Space>
       ),
@@ -316,11 +320,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
   ];
 
   if (!currentQuiz) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <Text>ვიქტორინა ვერ მოიძებნა</Text>
-      </div>
-    );
+    return <div>ვიქტორინა იტვირთება...</div>;
   }
 
   return (

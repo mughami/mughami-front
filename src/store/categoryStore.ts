@@ -1,13 +1,17 @@
 import { create } from 'zustand';
 import { categoryService, type Category } from '../services';
+import type { CategoryResponse, CategoryRequest } from '../types';
 
 interface CategoryState {
   categories: Category[];
   selectedCategory: Category | null;
+  adminCategories: CategoryResponse[];
   isLoading: boolean;
   error: string | null;
   fetchCategories: () => Promise<void>;
   fetchCategoryById: (id: string) => Promise<void>;
+  fetchAdminCategories: () => Promise<void>;
+  createAdminCategory: (categoryData: CategoryRequest) => Promise<void>;
   searchCategories: (term: string) => Category[];
   clearError: () => void;
 }
@@ -15,6 +19,7 @@ interface CategoryState {
 export const useCategoryStore = create<CategoryState>((set, get) => ({
   categories: [],
   selectedCategory: null,
+  adminCategories: [],
   isLoading: false,
   error: null,
 
@@ -41,6 +46,37 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
         isLoading: false,
         error: error instanceof Error ? error.message : 'შეცდომა კატეგორიის ჩატვირთვისას',
       });
+    }
+  },
+
+  fetchAdminCategories: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      const adminCategories = await categoryService.admin.getCategories();
+      set({ adminCategories, isLoading: false });
+    } catch (error) {
+      set({
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'შეცდომა კატეგორიების ჩატვირთვისას',
+      });
+    }
+  },
+
+  createAdminCategory: async (categoryData: CategoryRequest) => {
+    try {
+      set({ isLoading: true, error: null });
+      const newCategory = await categoryService.admin.createCategory(categoryData);
+      const currentCategories = get().adminCategories;
+      set({
+        adminCategories: [...currentCategories, newCategory],
+        isLoading: false,
+      });
+    } catch (error) {
+      set({
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'შეცდომა კატეგორიის შექმნისას',
+      });
+      throw error; // Re-throw so component can handle it
     }
   },
 

@@ -44,7 +44,7 @@ export const Quizzes: React.FC = () => {
   const { quizzes, loading, fetchAdminQuizzes, createQuiz, addQuizPhoto, getQuizPhoto } =
     useQuizStore();
 
-  const { categories, fetchCategories } = useCategoryStore();
+  const { adminCategories, fetchAdminCategories } = useCategoryStore();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
@@ -56,8 +56,8 @@ export const Quizzes: React.FC = () => {
 
   useEffect(() => {
     fetchAdminQuizzes();
-    fetchCategories();
-  }, [fetchAdminQuizzes, fetchCategories]);
+    fetchAdminCategories();
+  }, [fetchAdminQuizzes, fetchAdminCategories]);
 
   useEffect(() => {
     // Fetch photos for quizzes that have photos
@@ -177,8 +177,12 @@ export const Quizzes: React.FC = () => {
       dataIndex: 'categoryId',
       key: 'categoryId',
       render: (categoryId: number) => {
-        const category = categories.find((cat) => cat.id === categoryId.toString());
-        return category ? <Tag color="blue">{category.title}</Tag> : <Tag color="default">უცნობი</Tag>;
+        const category = adminCategories.find((cat) => cat.categoryId === categoryId);
+        return category ? (
+          <Tag color="blue">{category.categoryName}</Tag>
+        ) : (
+          <Tag color="default">უცნობი</Tag>
+        );
       },
     },
     {
@@ -187,31 +191,36 @@ export const Quizzes: React.FC = () => {
       render: () => <Tag color="green">აქტიური</Tag>,
     },
     {
-      title: 'მოქმედებები',
+      title: 'ქმედებები',
       key: 'actions',
-      width: 200,
       render: (quiz: Quiz) => (
         <Space>
           <Button
-            type="text"
+            type="link"
             icon={<EyeOutlined />}
             onClick={() => handleViewQuiz(quiz.quizId)}
-            title="ნახვა"
-          />
+            size="small"
+          >
+            ნახვა
+          </Button>
           <Button
-            type="text"
+            type="link"
             icon={<EditOutlined />}
             onClick={() => handleEditQuiz(quiz)}
-            title="რედაქტირება"
-          />
+            size="small"
+          >
+            რედაქტირება
+          </Button>
           <Popconfirm
-            title="ვიქტორინის წაშლა"
-            description="დარწმუნებული ხართ, რომ გსურთ ამ ვიქტორინის წაშლა?"
+            title="დარწმუნებული ხართ?"
+            description="გსურთ ამ ვიქტორინის წაშლა?"
             onConfirm={handleDeleteQuiz}
             okText="დიახ"
             cancelText="არა"
           >
-            <Button type="text" danger icon={<DeleteOutlined />} title="წაშლა" />
+            <Button type="link" danger icon={<DeleteOutlined />} size="small">
+              წაშლა
+            </Button>
           </Popconfirm>
         </Space>
       ),
@@ -220,19 +229,19 @@ export const Quizzes: React.FC = () => {
 
   const stats = [
     {
-      title: 'სულ ვიქტორინები',
+      title: 'სულ ვიქტორინა',
       value: quizzes.length,
-      icon: <TrophyOutlined className="text-blue-500" />,
+      icon: <TrophyOutlined />,
     },
     {
       title: 'აქტიური',
-      value: quizzes.length,
-      icon: <QuestionCircleOutlined className="text-green-500" />,
+      value: quizzes.length, // Assuming all are active for now
+      icon: <TrophyOutlined />,
     },
     {
-      title: 'კატეგორიები',
-      value: categories.length,
-      icon: <TrophyOutlined className="text-purple-500" />,
+      title: 'კითხვები',
+      value: 0, // TODO: Add question count when available in Quiz type
+      icon: <QuestionCircleOutlined />,
     },
   ];
 
@@ -321,9 +330,9 @@ export const Quizzes: React.FC = () => {
             rules={[{ required: true, message: 'გთხოვთ აირჩიოთ კატეგორია' }]}
           >
             <Select placeholder="აირჩიეთ კატეგორია">
-              {categories.map((category) => (
-                <Option key={category.id} value={parseInt(category.id)}>
-                  {category.title}
+              {adminCategories.map((category) => (
+                <Option key={category.categoryId} value={category.categoryId}>
+                  {category.categoryName}
                 </Option>
               ))}
             </Select>

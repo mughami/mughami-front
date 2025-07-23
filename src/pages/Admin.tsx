@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { AdminLayout } from '../components/admin/AdminLayout';
 import { Dashboard } from '../components/admin/Dashboard';
 import { Users } from '../components/admin/Users';
+import { Categories } from '../components/admin/Categories';
 import { Polls } from '../components/admin/Polls';
 import { Quizzes } from '../components/admin/Quizzes';
 import { Settings } from '../components/admin/Settings';
@@ -10,6 +11,7 @@ import { usePollStore } from '../store/pollStore';
 import { useQuizStore } from '../store/quizStore';
 import useUserStore from '../store/userStore';
 import useSettingsStore from '../store/settingsStore';
+import { useCategoryStore } from '../store/categoryStore';
 
 const Admin = () => {
   const { fetchStats } = useDashboardStore();
@@ -17,6 +19,7 @@ const Admin = () => {
   const { fetchAdminQuizzes } = useQuizStore();
   const { fetchUsers } = useUserStore();
   const { fetchSettings } = useSettingsStore();
+  const { fetchAdminCategories } = useCategoryStore();
 
   const [selectedKey, setSelectedKey] = useState(() => {
     const savedKey = localStorage.getItem('adminSelectedKey');
@@ -37,10 +40,20 @@ const Admin = () => {
       fetchAdminQuizzes();
     } else if (selectedKey === 'users') {
       fetchUsers();
+    } else if (selectedKey === 'categories') {
+      fetchAdminCategories();
     } else if (selectedKey === 'settings') {
       fetchSettings();
     }
-  }, [selectedKey, fetchStats, fetchPolls, fetchAdminQuizzes, fetchUsers, fetchSettings]);
+  }, [
+    selectedKey,
+    fetchStats,
+    fetchPolls,
+    fetchAdminQuizzes,
+    fetchUsers,
+    fetchAdminCategories,
+    fetchSettings,
+  ]);
 
   const renderContent = () => {
     switch (selectedKey) {
@@ -48,6 +61,8 @@ const Admin = () => {
         return <Dashboard />;
       case 'users':
         return <Users />;
+      case 'categories':
+        return <Categories />;
       case 'polls':
         return <Polls />;
       case 'contests':

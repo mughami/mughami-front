@@ -1,3 +1,6 @@
+import apiClient from './client';
+import type { CategoryResponse, CategoryRequest } from '../../types';
+
 export interface Category {
   id: string;
   title: string;
@@ -9,7 +12,7 @@ export interface Category {
   difficulty: 'easy' | 'medium' | 'hard';
 }
 
-// Dummy categories data
+// Dummy categories data for public use
 const dummyCategories: Category[] = [
   {
     id: '1',
@@ -102,6 +105,7 @@ const dummyCategories: Category[] = [
 ];
 
 const categoryService = {
+  // Existing public methods for backward compatibility
   getCategories: async (): Promise<Category[]> => {
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -117,6 +121,19 @@ const categoryService = {
       throw new Error('კატეგორია ვერ მოიძებნა');
     }
     return category;
+  },
+
+  // Admin methods based on swagger documentation
+  admin: {
+    getCategories: async (): Promise<CategoryResponse[]> => {
+      const response = await apiClient.get<CategoryResponse[]>('/admin/category');
+      return response.data;
+    },
+
+    createCategory: async (categoryData: CategoryRequest): Promise<CategoryResponse> => {
+      const response = await apiClient.post<CategoryResponse>('/admin/category', categoryData);
+      return response.data;
+    },
   },
 };
 
