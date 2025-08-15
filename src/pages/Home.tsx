@@ -11,6 +11,8 @@ import {
   ClockCircleOutlined,
   ArrowRightOutlined,
   CrownOutlined,
+  LeftOutlined,
+  PlayCircleOutlined,
 } from '@ant-design/icons';
 import Footer from '../components/Footer';
 import QuizSection from '../components/QuizSection';
@@ -31,6 +33,28 @@ const Home = () => {
     const savedResults = localStorage.getItem('showResults');
     return savedResults ? JSON.parse(savedResults) : {};
   });
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Safety check to ensure currentSlide is always valid for 2 slides
+  useEffect(() => {
+    if (currentSlide > 1) {
+      setCurrentSlide(0);
+    }
+  }, [currentSlide]);
+
+  // Keyboard navigation for slider
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        setCurrentSlide(currentSlide === 0 ? 1 : currentSlide - 1);
+      } else if (e.key === 'ArrowRight') {
+        setCurrentSlide(currentSlide === 1 ? 0 : currentSlide + 1);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [currentSlide]);
 
   useEffect(() => {
     fetchPolls(0, 10);
@@ -64,7 +88,7 @@ const Home = () => {
     {
       name: 'გიორგი გიორგაძე',
       role: 'ქვიზის გამარჯვებული',
-      text: 'ამ პლატფორმის წყალობით შევძელი მონაწილეობა მიღება სხვადასხვა კონკურსებში და პრიზების მოგება.',
+      text: 'ამ პლატფორმის წყალობით შევძელი მონაწილეობის მიღება სხვადასხვა კონკურსებში და პრიზების მოგება.',
       avatar: '/avatars/user1.jpg',
     },
     {
@@ -75,20 +99,20 @@ const Home = () => {
     },
   ];
 
-  const latestContests = [
-    {
-      title: 'მუღამის ვიქტორინა 2024',
-      date: '15 მაისი, 2024',
-      prize: '₾10,000',
-      image: '/contests/quiz.jpg',
-    },
-    {
-      title: 'მუღამის ოლიმპიადა',
-      date: '1 ივნისი, 2024',
-      prize: '₾5,000',
-      image: '/contests/olympiad.jpg',
-    },
-  ];
+  // const latestContests = [
+  //   {
+  //     title: 'მუღამის ვიქტორინა 2024',
+  //     date: '15 მაისი, 2024',
+  //     prize: '₾10,000',
+  //     image: '/contests/quiz.jpg',
+  //   },
+  //   {
+  //     title: 'მუღამის ოლიმპიადა',
+  //     date: '1 ივნისი, 2024',
+  //     prize: '₾5,000',
+  //     image: '/contests/olympiad.jpg',
+  //   },
+  // ];
 
   const handleVote = (pollId: number, optionId: number) => {
     if (!votedPolls.includes(pollId)) {
@@ -164,23 +188,14 @@ const Home = () => {
                     მოგესალმებით, <span className="text-yellow-300">{user?.name}</span>! 🎉
                   </>
                 ) : (
-                  'მზად ხართ დაიწყოთ თავგადასავალი?'
+                  'მზად ხარ დაიწყო თავგადასავალი?'
                 )}
               </Title>
 
               {/* Subtitle */}
               <Paragraph className="text-xl sm:text-2xl mb-8 max-w-3xl mx-auto text-white/95 leading-relaxed font-medium">
-                {isAuthenticated ? (
-                  <>
-                    შეუერთდით <span className="text-yellow-300 font-bold">ათასობით მონაწილეს</span> და
-                    დაიწყეთ <span className="text-green-300 font-bold">ქვიზების გავლა</span> ახლავე! 🚀
-                  </>
-                ) : (
-                  <>
-                    შეუერთდით <span className="text-yellow-300 font-bold">ათასობით მონაწილეს</span> და
-                    დაიწყეთ <span className="text-green-300 font-bold">ქვიზების გავლა</span> ახლავე! 🚀
-                  </>
-                )}
+                ცეცხლი აინთო თამაში დაიწყო ,{' '}
+                <span className="text-yellow-300 font-bold">პრიზების მოგების დროა!</span>
               </Paragraph>
 
               {/* Features List */}
@@ -192,13 +207,13 @@ const Home = () => {
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/20 transition-all duration-300">
                   <TrophyOutlined className="text-3xl text-yellow-300 mb-3" />
-                  <h3 className="text-lg font-bold mb-2">რეალური პრიზები</h3>
-                  <p className="text-white/80">მოიგეთ ნამდვილი თანხა</p>
+                  <h3 className="text-lg font-bold mb-2">პრიზები</h3>
+                  <p className="text-white/80">მოიგეთ პრიზები ყოველდღე</p>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/20 transition-all duration-300">
                   <TeamOutlined className="text-3xl text-green-300 mb-3" />
-                  <h3 className="text-lg font-bold mb-2">ექსკლუზივური</h3>
-                  <p className="text-white/80">საზოგადოების წევრობა</p>
+                  <h3 className="text-lg font-bold mb-2">პოლები</h3>
+                  <p className="text-white/80">გააკეთე არჩევანი</p>
                 </div>
               </div>
 
@@ -266,8 +281,8 @@ const Home = () => {
                     <div className="text-white/70">აქტიური მომხმარებელი</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-green-300">₾50,000+</div>
-                    <div className="text-white/70">გაცემული პრიზები</div>
+                    <div className="text-3xl font-bold text-green-300">10+</div>
+                    <div className="text-white/70">გამარჯვებულები</div>
                   </div>
                   <div className="text-center">
                     <div className="text-3xl font-bold text-blue-300">100+</div>
@@ -508,7 +523,7 @@ const Home = () => {
         </section>
 
         {/* Quiz Section */}
-        <QuizSection />
+        {/* <QuizSection /> */}
 
         {/* Features Section - Enhanced */}
         <section className="py-24 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 relative overflow-hidden">
@@ -564,74 +579,325 @@ const Home = () => {
             </div>
           </div>
         </section>
-
-        {/* Latest Contests Section - Enhanced */}
-        <section className="py-24 bg-white relative overflow-hidden">
-          {/* Decorative elements */}
+        {/* Facebook Videos Section - Enhanced */}
+        <section className="py-24 bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-100/30 relative overflow-hidden">
+          {/* Animated Background Elements */}
           <div className="absolute inset-0">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
-            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"></div>
+            <div className="absolute top-20 left-1/4 w-72 h-72 bg-gradient-to-br from-blue-400/10 to-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-32 right-1/4 w-96 h-96 bg-gradient-to-br from-indigo-400/10 to-pink-500/10 rounded-full blur-3xl animate-pulse delay-700"></div>
+            <div className="absolute top-1/2 left-10 w-48 h-48 bg-gradient-to-br from-cyan-400/8 to-blue-500/8 rounded-full blur-2xl animate-pulse delay-1000"></div>
           </div>
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-            <div className="flex justify-between items-center mb-12">
-              <div>
-                <Title
-                  level={2}
-                  className="bg-gradient-to-r from-gray-900 via-primary to-purple-600 bg-clip-text text-transparent"
-                >
-                  მიმდინარე კონკურსები
-                </Title>
-                <div className="w-24 h-1 bg-gradient-to-r from-primary to-purple-500 rounded-full mt-2"></div>
+          {/* Floating icons */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-16 right-20 text-4xl animate-bounce delay-300">📱</div>
+            <div className="absolute top-40 left-16 text-3xl animate-pulse delay-500">🎬</div>
+            <div className="absolute bottom-20 right-16 text-4xl animate-bounce delay-700">📺</div>
+            <div className="absolute bottom-40 left-20 text-3xl animate-pulse delay-1000">🎥</div>
+          </div>
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            {/* Enhanced Header */}
+            <div className="text-center mb-20">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-sm rounded-2xl mb-8 group">
+                <div className="text-4xl animate-pulse">🎬</div>
               </div>
-              <Link
-                to="/contests"
-                className="group flex items-center text-primary hover:text-primary-dark transition-colors duration-300"
+
+              <Title
+                level={2}
+                className="mb-6 text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-purple-600 bg-clip-text text-transparent"
               >
-                <span className="font-semibold">ყველა კონკურსი</span>
-                <ArrowRightOutlined className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-              </Link>
+                ✨ ვიდეო კოლექცია
+              </Title>
+
+              {/* <Paragraph className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed mb-8">
+                ნახეთ ჩვენი საუკეთესო მომენტები, გამარჯვებულების ისტორიები და
+                <span className="font-semibold text-blue-600"> შთამაგონებელი ვიდეოები</span>✨ ქვიზების
+                სამყაროდან
+              </Paragraph> */}
+
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <div className="w-8 h-1 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full"></div>
+                <div className="w-16 h-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"></div>
+                <div className="w-8 h-1 bg-gradient-to-r from-pink-500 to-red-400 rounded-full"></div>
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {latestContests.map((contest, index) => (
-                <Card
-                  key={index}
-                  hoverable
-                  className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
-                  cover={
-                    <div className="h-48 overflow-hidden relative">
-                      <img
-                        alt={contest.title}
-                        src={contest.image}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent group-hover:from-black/30 transition-all duration-500"></div>
-                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold text-primary">
-                        ახალი
+
+            {/* Premium Video Slider */}
+            <div className="relative">
+              {/* Ambient Background Glow */}
+              <div className="absolute -inset-8 bg-gradient-to-r from-blue-400/20 via-purple-500/20 to-pink-500/20 rounded-[3rem] blur-3xl opacity-60"></div>
+
+              <div className="relative bg-gradient-to-br from-white/90 via-white/80 to-white/70 backdrop-blur-2xl rounded-[2rem] overflow-hidden shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] border-2 border-white/70 ring-1 ring-white/50">
+                {/* Luxury Navigation Arrows */}
+                <Button
+                  className="absolute left-8 top-1/2 transform -translate-y-1/2 z-40 w-20 h-20 rounded-full bg-gradient-to-br from-white via-blue-50/50 to-white backdrop-blur-xl border-3 border-white/90 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_50px_-12px_rgba(59,130,246,0.25)] flex items-center justify-center hover:scale-110 hover:rotate-6 transition-all duration-500 group ring-2 ring-blue-100/50"
+                  onClick={() => setCurrentSlide(currentSlide === 0 ? 1 : currentSlide - 1)}
+                  icon={
+                    <LeftOutlined className="text-blue-600 text-2xl group-hover:text-blue-700 group-hover:scale-110 transition-all duration-300" />
+                  }
+                />
+
+                <Button
+                  className="absolute right-8 top-1/2 transform -translate-y-1/2 z-40 w-20 h-20 rounded-full bg-gradient-to-br from-white via-purple-50/50 to-white backdrop-blur-xl border-3 border-white/90 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_50px_-12px_rgba(147,51,234,0.25)] flex items-center justify-center hover:scale-110 hover:-rotate-6 transition-all duration-500 group ring-2 ring-purple-100/50"
+                  onClick={() => setCurrentSlide(currentSlide === 1 ? 0 : currentSlide + 1)}
+                  icon={
+                    <RightOutlined className="text-purple-600 text-2xl group-hover:text-purple-700 group-hover:scale-110 transition-all duration-300" />
+                  }
+                />
+
+                {/* Premium Slide Content */}
+                <div className="relative overflow-hidden bg-gradient-to-br from-slate-50/30 to-white/50">
+                  <div
+                    className="flex transition-transform duration-1000 ease-[cubic-bezier(0.4,0,0.2,1)] h-full"
+                    style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                  >
+                    {/* Slide 1 - Main Featured Video */}
+                    <div className="w-full flex-shrink-0 h-full flex items-center">
+                      <div className="p-6 md:p-8 w-full">
+                        <div className="group relative max-w-5xl mx-auto">
+                          <div className="absolute -inset-8 bg-gradient-to-r from-blue-500/25 via-purple-500/25 to-pink-500/25 rounded-[2.5rem] blur-3xl opacity-70 group-hover:opacity-90 transition-all duration-1000"></div>
+                          <div className="relative bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 backdrop-blur-xl rounded-[2rem] overflow-hidden shadow-[0_35px_60px_-12px_rgba(0,0,0,0.3)] border-2 border-white/80 ring-1 ring-blue-100/50">
+                            <div className="aspect-video relative bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-pink-50/50 overflow-hidden">
+                              {/* Decorative Elements */}
+                              <div className="absolute top-4 left-4 w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full opacity-60"></div>
+                              <div className="absolute top-4 left-10 w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full opacity-40"></div>
+                              <div className="absolute top-6 left-6 w-1 h-1 bg-gradient-to-r from-pink-500 to-blue-500 rounded-full opacity-80"></div>
+                              <iframe
+                                src="https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2F61574052881576%2Fvideos%2F763783312907246%2F&show_text=false&width=560&t=0"
+                                width="100%"
+                                height="100%"
+                                style={{ border: 'none', overflow: 'hidden' }}
+                                scrolling="no"
+                                frameBorder="0"
+                                allowFullScreen={true}
+                                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                                className="rounded-[1.5rem] relative z-10"
+                              />
+                              {/* Enhanced Overlay with Premium Animation */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-[1.5rem] pointer-events-none"></div>
+                              <div className="absolute bottom-6 left-6 right-6 bg-gradient-to-r from-black/90 via-black/80 to-black/70 backdrop-blur-xl text-white px-8 py-5 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-700 transform translate-y-6 group-hover:translate-y-0 border border-white/20 shadow-2xl">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
+                                    <PlayCircleOutlined className="text-2xl text-white" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <h4 className="font-bold text-xl mb-1 bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                                      🎥 მთავარი ვიდეო
+                                    </h4>
+                                    <p className="text-blue-200 text-sm leading-relaxed">
+                                      ქვიზების სამყაროში განსაკუთრებული შესაძლებლობები და შთამაგონებელი
+                                      მომენტები
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  }
-                >
-                  <div className="p-6">
-                    <Title
-                      level={4}
-                      className="mb-4 group-hover:text-primary transition-colors duration-300"
-                    >
-                      {contest.title}
-                    </Title>
-                    <div className="space-y-3">
-                      <div className="flex items-center text-gray-500 group-hover:text-gray-700 transition-colors">
-                        <ClockCircleOutlined className="mr-2" />
-                        {contest.date}
-                      </div>
-                      <div className="flex items-center text-primary font-semibold">
-                        <TrophyOutlined className="mr-2" />
-                        პრიზი: {contest.prize}
+
+                    {/* Slide 2 - Secondary Featured Video */}
+                    <div className="w-full flex-shrink-0 h-full flex items-center">
+                      <div className="p-6 md:p-8 w-full">
+                        <div className="group relative max-w-5xl mx-auto">
+                          <div className="absolute -inset-8 bg-gradient-to-r from-cyan-400/25 via-blue-500/25 to-indigo-600/25 rounded-[2.5rem] blur-3xl opacity-70 group-hover:opacity-90 transition-all duration-1000"></div>
+                          <div className="relative bg-gradient-to-br from-white via-cyan-50/30 to-blue-50/30 backdrop-blur-xl rounded-[2rem] overflow-hidden shadow-[0_35px_60px_-12px_rgba(0,0,0,0.3)] border-2 border-white/80 ring-1 ring-cyan-100/50">
+                            <div className="aspect-video relative bg-gradient-to-br from-cyan-50/50 via-blue-50/30 to-indigo-50/50 overflow-hidden">
+                              {/* Decorative Elements */}
+                              <div className="absolute top-4 right-4 w-3 h-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full opacity-60"></div>
+                              <div className="absolute top-4 right-10 w-2 h-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full opacity-40"></div>
+                              <div className="absolute top-6 right-6 w-1 h-1 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-full opacity-80"></div>
+                              <iframe
+                                src="https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2F61574052881576%2Fvideos%2F1186693859893979%2F&show_text=false&width=560&t=0"
+                                width="100%"
+                                height="100%"
+                                style={{ border: 'none', overflow: 'hidden' }}
+                                scrolling="no"
+                                frameBorder="0"
+                                allowFullScreen={true}
+                                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                                className="rounded-[1.5rem] relative z-10"
+                              />
+                              {/* Enhanced Overlay with Premium Animation */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-[1.5rem] pointer-events-none"></div>
+                              <div className="absolute bottom-6 left-6 right-6 bg-gradient-to-r from-black/90 via-black/80 to-black/70 backdrop-blur-xl text-white px-8 py-5 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-700 transform translate-y-6 group-hover:translate-y-0 border border-white/20 shadow-2xl">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-500 rounded-full flex items-center justify-center shadow-lg">
+                                    <TrophyOutlined className="text-2xl text-yellow-300" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <h4 className="font-bold text-xl mb-1 bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent">
+                                      ⭐ შედეგები და გამარჯვებულები
+                                    </h4>
+                                    <p className="text-cyan-200 text-sm leading-relaxed">
+                                      წარმატებული მონაწილეების ისტორიები და მიღწევები
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </Card>
-              ))}
+                </div>
+
+                {/* Luxury Navigation Dots */}
+                <div className="flex justify-center items-center space-x-8 py-8">
+                  {[0, 1].map((index) => (
+                    <button
+                      key={index}
+                      className={`relative transition-all duration-700 group ${
+                        currentSlide === index ? 'w-5 h-5' : 'w-3 h-3 hover:w-4 hover:h-4'
+                      }`}
+                      onClick={() => setCurrentSlide(index)}
+                    >
+                      {/* Main Dot */}
+                      <div
+                        className={`absolute inset-0 rounded-full transition-all duration-700 ${
+                          currentSlide === index
+                            ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 shadow-[0_8px_16px_rgba(147,51,234,0.4)] scale-100 ring-2 ring-white/50'
+                            : 'bg-gradient-to-r from-gray-300 to-gray-400 hover:from-blue-300 hover:to-purple-400 hover:shadow-lg scale-90 group-hover:ring-1 group-hover:ring-white/30'
+                        }`}
+                      />
+
+                      {/* Active Indicator with Pulse */}
+                      {currentSlide === index && (
+                        <>
+                          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-ping opacity-40" />
+                          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 animate-pulse opacity-60" />
+                        </>
+                      )}
+
+                      {/* Hover Glow Effect */}
+                      <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-pink-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-lg" />
+
+                      {/* Index Number (Subtle) */}
+                      <div
+                        className={`absolute inset-0 flex items-center justify-center text-[10px] font-bold transition-opacity duration-500 ${
+                          currentSlide === index
+                            ? 'text-white opacity-90'
+                            : 'text-gray-600 opacity-0 group-hover:opacity-70'
+                        }`}
+                      >
+                        {index + 1}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Premium Social Media Section */}
+                <div className="text-center mt-12">
+                  <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 backdrop-blur-sm rounded-3xl p-8 max-w-4xl mx-auto border border-white/30">
+                    <div className="text-4xl mb-6">🌟</div>
+                    <Title
+                      level={3}
+                      className="mb-6 text-slate-700 bg-gradient-to-r from-slate-700 via-blue-600 to-purple-600 bg-clip-text text-transparent"
+                    >
+                      გამოყევით ჩვენ სოციალურ ქსელებში!
+                    </Title>
+                    <Paragraph className="text-slate-600 mb-8 text-lg max-w-2xl mx-auto">
+                      ყოველდღიური განახლებები, ექსკლუზივური კონტენტი და
+                      <span className="font-semibold text-blue-600"> ახალი ვიდეოები </span>✨
+                    </Paragraph>
+
+                    {/* Social Media Icons */}
+                    <div className="flex flex-wrap justify-center items-center gap-6 mb-6">
+                      {/* Facebook */}
+                      <button
+                        onClick={() =>
+                          window.open(
+                            'https://www.facebook.com/share/17A2ykRSKj/?mibextid=wwXIfr',
+                            '_blank',
+                          )
+                        }
+                        className="group relative w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-110 hover:-rotate-3 transition-all duration-300 flex items-center justify-center ring-2 ring-blue-100/50 hover:ring-blue-200"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-700 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <span className="relative text-white text-2xl font-bold z-10">f</span>
+                        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap">
+                          Facebook
+                        </div>
+                      </button>
+
+                      {/* YouTube */}
+                      {/* <button
+                        onClick={() => window.open('https://www.youtube.com/@mughami', '_blank')}
+                        className="group relative w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-110 hover:rotate-3 transition-all duration-300 flex items-center justify-center ring-2 ring-red-100/50 hover:ring-red-200"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-red-400 to-red-700 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <svg
+                          className="relative w-8 h-8 text-white z-10"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                        </svg>
+                        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-xs px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap">
+                          YouTube
+                        </div>
+                      </button> */}
+
+                      {/* Instagram */}
+                      {/* <button
+                        onClick={() =>
+                          window.open('https://www.instagram.com/mughami_official', '_blank')
+                        }
+                        className="group relative w-16 h-16 bg-gradient-to-br from-pink-500 via-purple-500 to-orange-500 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-110 hover:-rotate-3 transition-all duration-300 flex items-center justify-center ring-2 ring-pink-100/50 hover:ring-pink-200"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-pink-400 via-purple-500 to-orange-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <svg
+                          className="relative w-8 h-8 text-white z-10"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                        </svg>
+                        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-pink-600 text-white text-xs px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap">
+                          Instagram
+                        </div>
+                      </button> */}
+
+                      {/* TikTok */}
+                      <button
+                        onClick={() =>
+                          window.open(
+                            'https://www.tiktok.com/@mugami05?_t=ZS-8ytoTramOor&_r=1',
+                            '_blank',
+                          )
+                        }
+                        className="group relative w-16 h-16 bg-gradient-to-br from-gray-900 to-black rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-110 hover:rotate-3 transition-all duration-300 flex items-center justify-center ring-2 ring-gray-100/50 hover:ring-gray-300"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-black rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <svg
+                          className="relative w-8 h-8 text-white z-10"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M19.321 5.562a5.124 5.124 0 0 1-.443-.258 6.228 6.228 0 0 1-1.137-.966c-.849-.99-1.17-2.107-1.195-3.338h3.775v16.78c0 2.302-1.866 4.22-4.168 4.22-2.302 0-4.168-1.918-4.168-4.22 0-2.302 1.866-4.168 4.168-4.168.459 0 .9.075 1.316.213V9.709a8.117 8.117 0 0 0-1.316-.108c-4.513 0-8.168 3.655-8.168 8.168 0 2.685 1.294 5.066 3.288 6.531.519.381 1.084.704 1.689.947a8.055 8.055 0 0 0 3.191.653c4.513 0 8.168-3.655 8.168-8.168V5.562z" />
+                        </svg>
+                        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap">
+                          TikTok
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Follow Stats */}
+                    <div className="flex items-center justify-center gap-4 text-slate-500">
+                      <div className="flex -space-x-2">
+                        <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full border-2 border-white"></div>
+                        <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full border-2 border-white"></div>
+                        <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-cyan-500 rounded-full border-2 border-white"></div>
+                        <div className="w-8 h-8 bg-gradient-to-r from-red-400 to-orange-500 rounded-full border-2 border-white"></div>
+                      </div>
+                      <span className="text-sm font-medium">+10 000 გამომწერი ყველა პლატფორმაზე</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -726,32 +992,105 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Testimonials Section */}
-        <section className="py-24 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <Title level={2} className="text-center mb-16">
-              რას ამბობენ ჩვენი მონაწილეები
-            </Title>
-            <Carousel autoplay>
+        {/* Premium Testimonials Section */}
+        <section className="py-24 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 relative overflow-hidden">
+          {/* Background Decorations */}
+          <div className="absolute inset-0">
+            <div className="absolute top-20 left-10 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-20 right-10 w-80 h-80 bg-purple-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-400/5 rounded-full blur-3xl animate-pulse delay-500"></div>
+          </div>
+
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Section Header */}
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl mb-6">
+                <span className="text-3xl">💬</span>
+              </div>
+              <Title
+                level={2}
+                className="mb-4 bg-gradient-to-r from-slate-700 via-blue-600 to-purple-600 bg-clip-text text-transparent"
+              >
+                რას ამბობენ ჩვენი მონაწილეები
+              </Title>
+              <Paragraph className="text-xl text-slate-600 max-w-2xl mx-auto">
+                ისაუბრე ჩვენი კმაყოფილი მონაწილეების გამოცდილებაზე და წარმატების ისტორიებზე
+              </Paragraph>
+            </div>
+
+            {/* Testimonials Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
               {testimonials.map((testimonial, index) => (
-                <div key={index} className="px-4">
-                  <Card className="text-center max-w-2xl mx-auto">
-                    <div className="mb-6">
-                      <img
-                        src={testimonial.avatar}
-                        alt={testimonial.name}
-                        className="w-20 h-20 rounded-full mx-auto mb-4"
-                      />
-                      <Paragraph className="text-lg italic mb-4">"{testimonial.text}"</Paragraph>
-                      <Title level={4} className="mb-1">
-                        {testimonial.name}
-                      </Title>
-                      <Paragraph className="text-gray-500">{testimonial.role}</Paragraph>
+                <div key={index} className="group relative">
+                  {/* Background Glow */}
+                  <div className="absolute -inset-4 bg-gradient-to-br from-blue-400/20 via-purple-400/20 to-pink-400/20 rounded-3xl blur-2xl opacity-60 group-hover:opacity-80 transition-all duration-700"></div>
+
+                  {/* Card */}
+                  <div className="relative bg-gradient-to-br from-white via-white/95 to-blue-50/30 backdrop-blur-xl rounded-3xl p-8 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] border-2 border-white/60 hover:border-blue-200/60 transition-all duration-500 group-hover:transform group-hover:scale-105">
+                    {/* Quote Icon */}
+                    <div className="absolute top-6 right-6 w-12 h-12 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center">
+                      <span className="text-2xl text-blue-600/70">"</span>
                     </div>
-                  </Card>
+
+                    {/* Content */}
+                    <div className="space-y-6">
+                      {/* Quote Text */}
+                      <div className="relative">
+                        <Paragraph className="text-lg leading-relaxed text-slate-700 italic font-medium">
+                          "{testimonial.text}"
+                        </Paragraph>
+                      </div>
+
+                      {/* Author Info */}
+                      <div className="flex items-center space-x-4">
+                        {/* Avatar Placeholder with Initials */}
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                          <span className="text-white font-bold text-lg">
+                            {testimonial.name
+                              .split(' ')
+                              .map((n) => n[0])
+                              .join('')}
+                          </span>
+                        </div>
+
+                        {/* Name and Role */}
+                        <div className="flex-1">
+                          <h4 className="font-bold text-slate-800 text-lg">{testimonial.name}</h4>
+                          <p className="text-slate-500 text-sm flex items-center">
+                            <span className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mr-2"></span>
+                            {testimonial.role}
+                          </p>
+                        </div>
+
+                        {/* Rating Stars */}
+                        <div className="flex space-x-1">
+                          {[...Array(5)].map((_, i) => (
+                            <span key={i} className="text-yellow-400 text-lg">
+                              ⭐
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Decorative Elements */}
+                    <div className="absolute bottom-4 left-4 w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full opacity-40"></div>
+                    <div className="absolute bottom-6 left-6 w-1 h-1 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full opacity-60"></div>
+                  </div>
                 </div>
               ))}
-            </Carousel>
+            </div>
+
+            {/* Call to Action */}
+            <div className="text-center mt-16">
+              <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl px-8 py-4 border border-blue-200/50">
+                <span className="text-2xl">🎯</span>
+                <span className="text-slate-600 font-medium">
+                  შეუერთდი ჩვენს კმაყოფილ მონაწილეებს!
+                </span>
+                <span className="text-2xl">🎉</span>
+              </div>
+            </div>
           </div>
         </section>
       </div>

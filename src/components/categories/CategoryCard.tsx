@@ -7,7 +7,7 @@ interface CategoryCardProps {
   description: string;
   image: string;
   quizCount: number;
-  playerCount: number;
+  questionCount: number;
   prize: number;
   difficulty: 'easy' | 'medium' | 'hard';
 }
@@ -18,7 +18,7 @@ const CategoryCard = ({
   description,
   image,
   quizCount,
-  playerCount,
+  questionCount,
   prize,
   difficulty,
 }: CategoryCardProps) => {
@@ -43,16 +43,13 @@ const CategoryCard = ({
       </div>
       <div className="category-content flex-grow flex flex-col">
         <h3 className="category-title">{title}</h3>
-        <p className="category-description flex-grow">{description}</p>
+        {/* <p className="category-description flex-grow">{description}</p> */}
         <div className="category-stats mt-auto">
           <div className="flex items-center">
             <QuestionCircleOutlined className="mr-1" />
-            <span className="text-[0.7rem]">{quizCount} კითხვა</span>
+            <span className="text-[0.7rem]">{quizCount} ქვიზები</span>
           </div>
-          <div className="flex items-center">
-            <TeamOutlined className="mr-1" />
-            <span className="text-[0.7rem]">{playerCount} მოთამაშე</span>
-          </div>
+
           <div className="flex items-center font-medium text-primary">
             <TrophyOutlined className="mr-1" />
             <span className="text-[0.7rem]">{prize} ₾</span>

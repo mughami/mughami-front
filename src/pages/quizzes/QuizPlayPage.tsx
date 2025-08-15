@@ -150,18 +150,23 @@ const QuizPlayPage: React.FC = () => {
     }
   };
 
-  const handleAnswerSelect = (answerIndex: number) => {
+  const handleAnswerSelect = async (answerIndex: number) => {
     if (!quizStarted || quizCompleted) return;
 
     const currentQuestion = currentQuestions[currentQuestionIndex];
-    selectAnswer(currentQuestion.id, answerIndex);
-    setAnswerAnimation(true);
+    try {
+      await selectAnswer(currentQuestion.id, answerIndex);
+      setAnswerAnimation(true);
 
-    // Show answer after a brief delay for animation
-    setTimeout(() => {
-      setShowAnswer(true);
-      setAnswerAnimation(false);
-    }, 300);
+      // Show answer after a brief delay for animation
+      setTimeout(() => {
+        setShowAnswer(true);
+        setAnswerAnimation(false);
+      }, 300);
+    } catch (error) {
+      console.error('Failed to select answer:', error);
+      // Show error or notification to user if needed
+    }
   };
 
   const handleNext = () => {

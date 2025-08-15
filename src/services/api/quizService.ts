@@ -124,13 +124,24 @@ const quizService = {
     return URL.createObjectURL(blob);
   },
 
-  getQuizzesByCategory: async (
+  getQuizzesByCategoryAdmin: async (
     categoryId: number,
     page: number = 0,
     size: number = 10,
   ): Promise<QuizResponse> => {
     const response = await apiClient.get<QuizResponse>(
       `/admin/quiz/quiz-by-category/${categoryId}?page=${page}&size=${size}`,
+    );
+    return response.data;
+  },
+
+  getQuizzesByCategoryUser: async (
+    categoryId: number,
+    page: number = 0,
+    size: number = 10,
+  ): Promise<QuizResponse> => {
+    const response = await apiClient.get<QuizResponse>(
+      `/app/quiz/quiz-by-category/${categoryId}?page=${page}&size=${size}`,
     );
     return response.data;
   },

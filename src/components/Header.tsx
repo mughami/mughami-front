@@ -10,6 +10,7 @@ import {
   DashboardOutlined,
   HistoryOutlined,
   HomeOutlined,
+  BarChartOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../store';
 import { UserRole } from '../types';
@@ -230,6 +231,16 @@ const Header = () => {
             </Link>
 
             <Link
+              to="/polls"
+              className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                location.pathname === '/polls' ? 'bg-primary-dark' : ''
+              }`}
+            >
+              <BarChartOutlined className="mr-1" />
+              კენჭისყრები
+            </Link>
+
+            <Link
               to="/leaderboard"
               className="ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors"
             >
@@ -299,6 +310,17 @@ const Header = () => {
               onClick={() => setMobileMenuOpen(false)}
             >
               კატეგორიები
+            </Link>
+
+            <Link
+              to="/polls"
+              className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                location.pathname === '/polls' ? 'bg-primary-dark' : ''
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <BarChartOutlined className="mr-1" />
+              კენჭისყრები
             </Link>
 
             <Link

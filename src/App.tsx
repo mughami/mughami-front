@@ -18,6 +18,7 @@ import PublicQuizzesPage from './pages/quizzes/PublicQuizzesPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import Home from './pages/Home';
 import Admin from './pages/Admin';
+import PollsPage from './pages/PollsPage';
 import { useAuthStore } from './store';
 import { UserRole } from './types';
 import './App.css';
@@ -131,6 +132,9 @@ function App() {
       <Route path="/quizzes/:categoryId" element={<QuizPage />} />
       <Route path="/quiz/play/:quizId" element={<QuizPlayPage />} />
       <Route path="/quiz/results" element={<QuizResultsPage />} />
+
+      {/* Polls route - accessible to all users */}
+      <Route path="/polls" element={<PollsPage />} />
 
       {/* Public quiz routes - no authentication required */}
       <Route path="/public-quizzes" element={<PublicQuizzesPage />} />

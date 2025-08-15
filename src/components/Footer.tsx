@@ -49,29 +49,32 @@ const Footer = () => {
 
               {/* Social Links */}
               <div className="flex space-x-4">
+                {/* Facebook */}
                 <a
-                  href="#"
-                  className="w-10 h-10 bg-white/10 hover:bg-primary/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+                  href="https://www.facebook.com/share/17A2ykRSKj/?mibextid=wwXIfr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group w-12 h-12 bg-gradient-to-br from-blue-500/20 to-blue-600/20 hover:from-blue-500/40 hover:to-blue-600/40 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 border border-blue-500/30 hover:border-blue-400/50"
                 >
-                  <span className="text-lg">📘</span>
+                  <span className="text-blue-400 group-hover:text-blue-300 text-xl font-bold transition-colors duration-300">
+                    f
+                  </span>
                 </a>
+
+                {/* TikTok */}
                 <a
-                  href="#"
-                  className="w-10 h-10 bg-white/10 hover:bg-blue-500/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+                  href="https://www.tiktok.com/@mugami05?_t=ZS-8ytoTramOor&_r=1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group w-12 h-12 bg-gradient-to-br from-gray-700/20 to-black/20 hover:from-gray-600/40 hover:to-black/40 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 border border-gray-500/30 hover:border-gray-400/50"
                 >
-                  <span className="text-lg">🐦</span>
-                </a>
-                <a
-                  href="#"
-                  className="w-10 h-10 bg-white/10 hover:bg-pink-500/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
-                >
-                  <span className="text-lg">📷</span>
-                </a>
-                <a
-                  href="#"
-                  className="w-10 h-10 bg-white/10 hover:bg-red-500/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
-                >
-                  <span className="text-lg">📺</span>
+                  <svg
+                    className="w-6 h-6 text-white group-hover:text-gray-200 transition-colors duration-300"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M19.321 5.562a5.124 5.124 0 0 1-.443-.258 6.228 6.228 0 0 1-1.137-.966c-.849-.99-1.17-2.107-1.195-3.338h3.775v16.78c0 2.302-1.866 4.22-4.168 4.22-2.302 0-4.168-1.918-4.168-4.22 0-2.302 1.866-4.168 4.168-4.168.459 0 .9.075 1.316.213V9.709a8.117 8.117 0 0 0-1.316-.108c-4.513 0-8.168 3.655-8.168 8.168 0 2.685 1.294 5.066 3.288 6.531.519.381 1.084.704 1.689.947a8.055 8.055 0 0 0 3.191.653c4.513 0 8.168-3.655 8.168-8.168V5.562z" />
+                  </svg>
                 </a>
               </div>
             </div>

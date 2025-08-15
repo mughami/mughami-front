@@ -218,7 +218,11 @@ export const useQuizStore = create<QuizState>((set) => ({
   fetchQuizzesByCategory: async (categoryId: number, page = 0, size = 10) => {
     set({ loading: true, error: null });
     try {
-      const response: QuizResponse = await quizService.getQuizzesByCategory(categoryId, page, size);
+      const response: QuizResponse = await quizService.getQuizzesByCategoryUser(
+        categoryId,
+        page,
+        size,
+      );
       set({
         quizzes: response.content,
         totalQuizzes: response.totalElements,
