@@ -1,5 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
-import { TrophyOutlined, RightOutlined } from '@ant-design/icons';
+import {
+  TrophyOutlined,
+  RightOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  EnvironmentOutlined,
+} from '@ant-design/icons';
 
 const Footer = () => {
   const location = useLocation();
@@ -31,7 +37,7 @@ const Footer = () => {
       <div className="relative z-10">
         {/* Main Footer Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
             {/* Company Info */}
             <div className="lg:col-span-1">
               <div className="flex items-center mb-6">
@@ -79,9 +85,9 @@ const Footer = () => {
               </div>
             </div>
 
-            {/* Quick Links */}
+            {/* Navigation */}
             <div>
-              <h4 className="text-lg font-semibold mb-6 text-white">სწრაფი ლინკები</h4>
+              <h4 className="text-lg font-semibold mb-6 text-white">ნავიგაცია</h4>
               <ul className="space-y-3">
                 <li>
                   <Link
@@ -90,6 +96,15 @@ const Footer = () => {
                   >
                     <RightOutlined className="mr-2 text-xs group-hover:translate-x-1 transition-transform duration-300" />
                     მთავარი
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/public-quizzes"
+                    className="text-gray-300 hover:text-primary transition-colors duration-300 flex items-center group"
+                  >
+                    <RightOutlined className="mr-2 text-xs group-hover:translate-x-1 transition-transform duration-300" />
+                    ღია ვიქტორინები
                   </Link>
                 </li>
                 <li>
@@ -103,63 +118,11 @@ const Footer = () => {
                 </li>
                 <li>
                   <Link
-                    to="/contests"
+                    to="/polls"
                     className="text-gray-300 hover:text-primary transition-colors duration-300 flex items-center group"
                   >
                     <RightOutlined className="mr-2 text-xs group-hover:translate-x-1 transition-transform duration-300" />
-                    კონკურსები
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/leaderboard"
-                    className="text-gray-300 hover:text-primary transition-colors duration-300 flex items-center group"
-                  >
-                    <RightOutlined className="mr-2 text-xs group-hover:translate-x-1 transition-transform duration-300" />
-                    რეიტინგი
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Support */}
-            <div>
-              <h4 className="text-lg font-semibold mb-6 text-white">მხარდაჭერა</h4>
-              <ul className="space-y-3">
-                <li>
-                  <Link
-                    to="/help"
-                    className="text-gray-300 hover:text-primary transition-colors duration-300 flex items-center group"
-                  >
-                    <RightOutlined className="mr-2 text-xs group-hover:translate-x-1 transition-transform duration-300" />
-                    დახმარება
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/faq"
-                    className="text-gray-300 hover:text-primary transition-colors duration-300 flex items-center group"
-                  >
-                    <RightOutlined className="mr-2 text-xs group-hover:translate-x-1 transition-transform duration-300" />
-                    ხშირი კითხვები
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/contact"
-                    className="text-gray-300 hover:text-primary transition-colors duration-300 flex items-center group"
-                  >
-                    <RightOutlined className="mr-2 text-xs group-hover:translate-x-1 transition-transform duration-300" />
-                    კონტაქტი
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/privacy"
-                    className="text-gray-300 hover:text-primary transition-colors duration-300 flex items-center group"
-                  >
-                    <RightOutlined className="mr-2 text-xs group-hover:translate-x-1 transition-transform duration-300" />
-                    კონფიდენციალურობა
+                    პოლები
                   </Link>
                 </li>
               </ul>
@@ -171,36 +134,25 @@ const Footer = () => {
               <div className="space-y-4">
                 <div className="flex items-center text-gray-300">
                   <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center mr-3">
-                    <span className="text-sm">📧</span>
+                    <MailOutlined className="text-primary" />
                   </div>
-                  <span>info@mughami.ge</span>
+                  <a href="mailto:info@mughami.ge" className="hover:text-primary transition-colors">
+                    info@mughami.ge
+                  </a>
                 </div>
                 <div className="flex items-center text-gray-300">
                   <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center mr-3">
-                    <span className="text-sm">📞</span>
+                    <PhoneOutlined className="text-primary" />
                   </div>
-                  <span>+995 32 2 123 456</span>
+                  <a href="tel:+995322123456" className="hover:text-primary transition-colors">
+                    +995 32 2 123 456
+                  </a>
                 </div>
                 <div className="flex items-center text-gray-300">
                   <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center mr-3">
-                    <span className="text-sm">📍</span>
+                    <EnvironmentOutlined className="text-primary" />
                   </div>
                   <span>თბილისი, საქართველო</span>
-                </div>
-              </div>
-
-              {/* Newsletter */}
-              <div className="mt-8">
-                <h5 className="font-semibold mb-3 text-white">გამოწერა</h5>
-                <div className="flex">
-                  <input
-                    type="email"
-                    placeholder="თქვენი ელ. ფოსტა"
-                    className="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-l-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary"
-                  />
-                  <button className="px-4 py-2 bg-gradient-to-r from-primary to-purple-500 rounded-r-lg hover:from-primary-dark hover:to-purple-600 transition-all duration-300">
-                    <RightOutlined />
-                  </button>
                 </div>
               </div>
             </div>

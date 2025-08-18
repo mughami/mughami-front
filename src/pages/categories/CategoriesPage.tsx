@@ -83,7 +83,7 @@ const CategoriesPage = () => {
               description={category.description}
               image={category.image}
               quizCount={category.quizCount}
-              playerCount={category.playerCount}
+              questionCount={category.questionCount}
               prize={category.prize}
               difficulty={category.difficulty}
             />

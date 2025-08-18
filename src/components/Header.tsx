@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   UserOutlined,
   LogoutOutlined,
-  TrophyOutlined,
+  // TrophyOutlined,
   MenuOutlined,
   CloseOutlined,
   QuestionCircleOutlined,
@@ -11,6 +11,7 @@ import {
   HistoryOutlined,
   HomeOutlined,
   BarChartOutlined,
+  MoreOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../store';
 import { UserRole } from '../types';
@@ -19,6 +20,7 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { logout, user } = useAuthStore();
 
@@ -237,53 +239,63 @@ const Header = () => {
               }`}
             >
               <BarChartOutlined className="mr-1" />
-              კენჭისყრები
+              პოლები
             </Link>
 
-            <Link
-              to="/leaderboard"
-              className="ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors"
-            >
-              <TrophyOutlined className="mr-1" />
-              ლიდერბორდი
-            </Link>
-
-            <Link
-              to="/quiz/results"
-              className="ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors"
-            >
-              <HistoryOutlined className="mr-1" />
-              ჩემი შედეგები
-            </Link>
-
-            {isAdmin && (
-              <Link
-                to="/admin"
-                className="ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors"
+            {/* More dropdown to reduce clutter on smaller desktop widths */}
+            <div className="ml-4 relative">
+              <button
+                className="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors inline-flex items-center"
+                onClick={() => setMoreOpen((prev) => !prev)}
               >
-                <DashboardOutlined className="mr-1" />
-                ადმინ პანელი
-              </Link>
-            )}
+                <MoreOutlined className="mr-1" /> მეტი
+              </button>
 
-            <div className="ml-4 relative flex-shrink-0">
-              <div>
-                <Link
-                  to="/profile"
-                  className="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors"
-                >
-                  <UserOutlined className="mr-1" />
-                  პროფილი
-                </Link>
-
-                <button
-                  className="ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors"
-                  onClick={() => setShowLogoutConfirm(true)}
-                >
-                  <LogoutOutlined className="mr-1" />
-                  გასვლა
-                </button>
-              </div>
+              {moreOpen && (
+                <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                  <div className="py-1">
+                    {/* <Link
+                      to="/leaderboard"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setMoreOpen(false)}
+                    >
+                      <TrophyOutlined className="mr-2 text-yellow-500" /> ლიდერბორდი
+                    </Link> */}
+                    <Link
+                      to="/quiz/results"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setMoreOpen(false)}
+                    >
+                      <HistoryOutlined className="mr-2 text-blue-500" /> ჩემი შედეგები
+                    </Link>
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setMoreOpen(false)}
+                      >
+                        <DashboardOutlined className="mr-2 text-purple-500" /> ადმინ პანელი
+                      </Link>
+                    )}
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setMoreOpen(false)}
+                    >
+                      <UserOutlined className="mr-2 text-gray-700" /> პროფილი
+                    </Link>
+                    <button
+                      className="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                      onClick={() => {
+                        setShowLogoutConfirm(true);
+                        setMoreOpen(false);
+                      }}
+                    >
+                      <LogoutOutlined className="mr-2" /> გასვლა
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -320,17 +332,17 @@ const Header = () => {
               onClick={() => setMobileMenuOpen(false)}
             >
               <BarChartOutlined className="mr-1" />
-              კენჭისყრები
+              პოლები
             </Link>
 
-            <Link
+            {/* <Link
               to="/leaderboard"
               className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               <TrophyOutlined className="mr-1" />
               ლიდერბორდი
-            </Link>
+            </Link> */}
 
             <Link
               to="/quiz/results"

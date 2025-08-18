@@ -6,7 +6,6 @@ import {
   PlayCircleOutlined,
   QuestionCircleOutlined,
   TrophyOutlined,
-  TeamOutlined,
 } from '@ant-design/icons';
 import { useQuizStore } from '../../store/quizStore';
 import { useCategoryStore } from '../../store/categoryStore';
@@ -118,11 +117,7 @@ const QuizPage: React.FC = () => {
                 value={currentCategory.quizCount}
                 prefix={<QuestionCircleOutlined />}
               />
-              <Statistic
-                title="მოთამაშეები"
-                value={currentCategory.playerCount}
-                prefix={<TeamOutlined />}
-              />
+
               <Statistic
                 title="საპრიზო თანხა"
                 value={currentCategory.prize}

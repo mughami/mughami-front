@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Card, Progress, Radio, Space, Typography, Carousel, Spin } from 'antd';
+import { Button, Card, Progress, Radio, Space, Typography, Spin } from 'antd';
 import {
   TrophyOutlined,
   QuestionCircleOutlined,
@@ -8,14 +8,12 @@ import {
   RightOutlined,
   FireOutlined,
   UserOutlined,
-  ClockCircleOutlined,
   ArrowRightOutlined,
   CrownOutlined,
   LeftOutlined,
   PlayCircleOutlined,
 } from '@ant-design/icons';
 import Footer from '../components/Footer';
-import QuizSection from '../components/QuizSection';
 import { usePollStore } from '../store/pollStore';
 import { useAuthStore } from '../store';
 
@@ -797,7 +795,7 @@ const Home = () => {
                       level={3}
                       className="mb-6 text-slate-700 bg-gradient-to-r from-slate-700 via-blue-600 to-purple-600 bg-clip-text text-transparent"
                     >
-                      გამოყევით ჩვენ სოციალურ ქსელებში!
+                      გამოგვყევით ჩვენს სოციალურ ქსელებში!
                     </Title>
                     <Paragraph className="text-slate-600 mb-8 text-lg max-w-2xl mx-auto">
                       ყოველდღიური განახლებები, ექსკლუზივური კონტენტი და
