@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Quiz, QuizResponse, QuestionsResponse } from './quizService';
+import type { Quiz, QuizResponse, QuestionsResponse, QuizQuestion } from './quizService';
 
 // Create a separate axios instance for public requests (without auth)
 const DEV_API_URL = 'http://localhost:54321';
@@ -97,3 +97,98 @@ const publicQuizService = {
 };
 
 export default publicQuizService;
+
+// Guest quiz controller endpoints (no auth; session-based)
+export type GuestQuizStartResponse = {
+  quizResponse: {
+    quizId: number;
+    quizName: string;
+    categoryId: number;
+    hasPhoto: boolean;
+  };
+  sessionId: string;
+};
+
+export type QuestionAnswerResponse = {
+  id: number;
+  answer: string;
+  isCorrect: boolean;
+};
+
+export type QuestionStatsResponse = {
+  questionResponse: QuizQuestion;
+  questionAnswerResponse: QuestionAnswerResponse;
+  selectedAnswer: QuestionAnswerResponse;
+};
+
+export type GuestQuizResultsResponse = {
+  quizResponse: {
+    quizId: number;
+    quizName: string;
+    categoryId: number;
+    hasPhoto: boolean;
+  };
+  quizStatsResponse: QuestionStatsResponse[];
+};
+
+export type GuestQuizSubmitResponse = GuestQuizResultsResponse;
+
+export const guestQuizService = {
+  getAvailableQuizzes: async (page: number = 0, size: number = 10): Promise<QuizResponse> => {
+    const response = await publicApiClient.get<QuizResponse>(
+      `/app/guest/quiz/available?page=${page}&size=${size}`,
+    );
+    return response.data;
+  },
+
+  getGuestQuiz: async (quizId: number): Promise<Quiz | null> => {
+    const response = await publicApiClient.get<Quiz>(`/app/guest/quiz/${quizId}`);
+    return response.data ?? null;
+  },
+
+  getGuestQuizQuestions: async (
+    quizId: number,
+    page: number = 0,
+    size: number = 10,
+  ): Promise<QuestionsResponse> => {
+    const response = await publicApiClient.get<QuestionsResponse>(
+      `/app/guest/quiz/quiz-questions/${quizId}?page=${page}&size=${size}`,
+    );
+    return response.data;
+  },
+
+  startGuestQuiz: async (quizId: number): Promise<GuestQuizStartResponse> => {
+    const response = await publicApiClient.post<GuestQuizStartResponse>(
+      `/app/guest/quiz/${quizId}/start`,
+    );
+    return response.data;
+  },
+
+  submitGuestQuizAnswer: async (
+    sessionId: string,
+    quizId: number,
+    questionId: number,
+    answerId: number,
+  ): Promise<boolean> => {
+    const response = await publicApiClient.post<boolean>(
+      `/app/guest/quiz/session/${sessionId}/quiz/${quizId}/answer?questionId=${questionId}&answerId=${answerId}`,
+    );
+    return response.data === true;
+  },
+
+  submitGuestQuiz: async (sessionId: string, email?: string): Promise<GuestQuizSubmitResponse> => {
+    const response = await publicApiClient.post<GuestQuizSubmitResponse>(
+      `/app/guest/quiz/session/${sessionId}/submit${
+        email ? `?email=${encodeURIComponent(email)}` : ''
+      }`,
+    );
+    return response.data;
+  },
+
+  getGuestQuizResults: async (sessionId: string): Promise<GuestQuizResultsResponse> => {
+    const response = await publicApiClient.get<GuestQuizResultsResponse>(
+      `/app/guest/quiz/session/${sessionId}/results`,
+    );
+    return response.data;
+  },
+};

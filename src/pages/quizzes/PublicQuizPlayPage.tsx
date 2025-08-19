@@ -134,22 +134,7 @@ const PublicQuizPlayPage: React.FC = () => {
 
   const handleStartQuiz = async () => {
     if (quizId) {
-      try {
-        const id = parseInt(quizId);
-        await fetchPublicQuiz(id);
-        await fetchPublicQuizQuestions(id, 0, 50);
-        usePublicQuizStore.setState({
-          quizStarted: true,
-          currentQuestionIndex: 0,
-          selectedAnswers: {},
-          loading: false,
-        });
-      } catch (error) {
-        usePublicQuizStore.setState({
-          error: error instanceof Error ? error.message : 'Failed to start quiz',
-          loading: false,
-        });
-      }
+      startQuiz(parseInt(quizId));
     }
   };
 
@@ -575,6 +560,21 @@ const PublicQuizPlayPage: React.FC = () => {
               >
                 {currentQuestion.question}
               </Title>
+
+              {/* Show question image during the question */}
+              {currentQuestion.hasPhoto && questionPhotos[currentQuestion.id] && (
+                <div className="mb-6 text-center">
+                  <div className="relative inline-block">
+                    <Image
+                      src={questionPhotos[currentQuestion.id]}
+                      alt="Question"
+                      className="max-w-full rounded-xl shadow-lg mx-auto"
+                      style={{ maxHeight: '300px', objectFit: 'contain' }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent rounded-xl"></div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Answers */}
@@ -655,20 +655,7 @@ const PublicQuizPlayPage: React.FC = () => {
               <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden">
                 {/* Content area */}
                 <div className="p-8">
-                  {/* Question image */}
-                  {currentQuestion.hasPhoto && questionPhotos[currentQuestion.id] && (
-                    <div className="mb-6 text-center">
-                      <div className="relative inline-block">
-                        <Image
-                          src={questionPhotos[currentQuestion.id]}
-                          alt="Question"
-                          className="max-w-full rounded-xl shadow-lg mx-auto"
-                          style={{ maxHeight: '300px', objectFit: 'contain' }}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent rounded-xl"></div>
-                      </div>
-                    </div>
-                  )}
+                  {/* Question image moved to main card */}
 
                   {/* Question text */}
                   <div className="mb-6 p-4 bg-gray-50 rounded-xl">

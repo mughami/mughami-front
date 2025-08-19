@@ -44,7 +44,7 @@ interface QuizState {
 
   // Quiz playing actions
   startQuiz: (quizId: number) => Promise<void>;
-  selectAnswer: (questionId: number, answerIndex: number) => void;
+  selectAnswer: (questionId: number, answerIndex: number) => Promise<void>;
   nextQuestion: () => void;
   previousQuestion: () => void;
   completeQuiz: () => void;
@@ -382,13 +382,30 @@ export const useQuizStore = create<QuizState>((set) => ({
     }
   },
 
-  selectAnswer: (questionId: number, answerIndex: number) => {
-    set((state) => ({
-      selectedAnswers: {
-        ...state.selectedAnswers,
-        [questionId]: answerIndex,
-      },
-    }));
+  selectAnswer: async (questionId: number, answerIndex: number) => {
+    try {
+      const state = useQuizStore.getState();
+      const currentQuestion = state.currentQuestions.find((q) => q.id === questionId);
+      if (!currentQuestion || !state.currentQuiz) {
+        throw new Error('Quiz or question not found');
+      }
+      const selectedAnswer = currentQuestion.answers[answerIndex];
+      if (!selectedAnswer) {
+        throw new Error('Answer not found');
+      }
+      await quizService.fillQuizAnswer(state.currentQuiz.quizId, questionId, selectedAnswer.id);
+      set((prev) => ({
+        selectedAnswers: {
+          ...prev.selectedAnswers,
+          [questionId]: answerIndex,
+        },
+      }));
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to submit answer',
+      });
+      throw error;
+    }
   },
 
   nextQuestion: () => {

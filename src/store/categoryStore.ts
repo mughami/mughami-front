@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { categoryService, type Category } from '../services';
+import { useAuthStore } from './authStore';
 import type { CategoryResponse, CategoryRequest } from '../types';
 
 interface CategoryState {
@@ -26,7 +27,9 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   fetchCategories: async () => {
     try {
       set({ isLoading: true, error: null });
-      const categories = await categoryService.getCategories();
+      const currentUser = await useAuthStore.getState().getCurrentUser();
+      const isAdmin = currentUser?.userRole === 'ADMIN';
+      const categories = await categoryService.getCategories(isAdmin);
       set({ categories, isLoading: false });
     } catch (error) {
       set({

@@ -1,5 +1,10 @@
 import { create } from 'zustand';
-import publicQuizService from '../services/api/publicQuizService';
+import publicQuizService, {
+  guestQuizService,
+  type GuestQuizStartResponse,
+  type GuestQuizResultsResponse,
+} from '../services/api/publicQuizService';
+import { useAuthStore } from './authStore';
 import type { Quiz, QuizQuestion, QuizResponse, QuestionsResponse } from '../services/api/quizService';
 
 // Helper function to calculate quiz score
@@ -49,6 +54,10 @@ interface PublicQuizState {
     }
   >;
 
+  // Guest session state
+  sessionId: string | null;
+  guestResults: GuestQuizResultsResponse | null;
+
   // Fetch operations
   fetchPublicQuizzes: (page?: number, size?: number) => Promise<void>;
   fetchPublicQuiz: (quizId: number) => Promise<void>;
@@ -56,10 +65,10 @@ interface PublicQuizState {
 
   // Quiz playing actions
   startQuiz: (quizId: number) => Promise<void>;
-  selectAnswer: (questionId: number, answerIndex: number) => void;
+  selectAnswer: (questionId: number, answerIndex: number) => Promise<void> | void;
   nextQuestion: () => void;
   previousQuestion: () => void;
-  completeQuiz: () => void;
+  completeQuiz: (email?: string) => Promise<void> | void;
   resetQuiz: () => void;
 
   // Photo operations
@@ -88,11 +97,17 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
   quizCompleted: false,
   quizScore: 0,
   quizResults: {},
+  sessionId:
+    (typeof localStorage !== 'undefined' && localStorage.getItem('guestQuizSessionId')) || null,
+  guestResults: null,
 
   fetchPublicQuizzes: async (page = 0, size = 10) => {
     set({ loading: true, error: null });
     try {
-      const response: QuizResponse = await publicQuizService.getPublicQuizzes(page, size);
+      const isAuthenticated = useAuthStore.getState().isAuthenticated;
+      const response: QuizResponse = isAuthenticated
+        ? await publicQuizService.getPublicQuizzes(page, size)
+        : await guestQuizService.getAvailableQuizzes(page, size);
       set({
         quizzes: response.content,
         totalQuizzes: response.totalElements,
@@ -121,8 +136,11 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
       let quiz = currentState.quizzes.find((q: Quiz) => q.quizId === quizId);
 
       if (!quiz) {
+        const isAuthenticated = useAuthStore.getState().isAuthenticated;
         // If not found, try to fetch it directly
-        const fetchedQuiz = await publicQuizService.getPublicQuiz(quizId);
+        const fetchedQuiz = isAuthenticated
+          ? await publicQuizService.getPublicQuiz(quizId)
+          : await guestQuizService.getGuestQuiz(quizId);
         quiz = fetchedQuiz || undefined;
       }
 
@@ -145,11 +163,10 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
   fetchPublicQuizQuestions: async (quizId: number, page = 0, size = 10) => {
     set({ loading: true, error: null });
     try {
-      const response: QuestionsResponse = await publicQuizService.getPublicQuizQuestions(
-        quizId,
-        page,
-        size,
-      );
+      const isAuthenticated = useAuthStore.getState().isAuthenticated;
+      const response: QuestionsResponse = isAuthenticated
+        ? await publicQuizService.getPublicQuizQuestions(quizId, page, size)
+        : await guestQuizService.getGuestQuizQuestions(quizId, page, size);
       set({
         currentQuestions: response.content,
         totalQuestions: response.totalElements,
@@ -167,13 +184,44 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
   startQuiz: async (quizId: number) => {
     set({ loading: true, error: null });
     try {
-      await publicQuizService.getPublicQuizQuestions(quizId, 0, 50);
-      set({
-        quizStarted: true,
-        currentQuestionIndex: 0,
-        selectedAnswers: {},
-        loading: false,
-      });
+      const isAuthenticated = useAuthStore.getState().isAuthenticated;
+      console.log('isAuthenticated', isAuthenticated);
+      if (isAuthenticated) {
+        await publicQuizService.getPublicQuizQuestions(quizId, 0, 50);
+        set({
+          quizStarted: true,
+          currentQuestionIndex: 0,
+          selectedAnswers: {},
+          loading: false,
+        });
+      } else {
+        const start: GuestQuizStartResponse = await guestQuizService.startGuestQuiz(quizId);
+        try {
+          localStorage.setItem('guestQuizSessionId', start.sessionId);
+        } catch {
+          // ignore localStorage set failures (private mode etc.)
+        }
+        set({
+          sessionId: start.sessionId,
+          currentQuiz: {
+            quizId: start.quizResponse.quizId,
+            quizName: start.quizResponse.quizName,
+            categoryId: start.quizResponse.categoryId,
+            hasPhoto: start.quizResponse.hasPhoto,
+          },
+          quizStarted: true,
+          currentQuestionIndex: 0,
+          selectedAnswers: {},
+          loading: false,
+        });
+        // Fetch questions for guest flow (optional prefetch)
+        try {
+          const q = await guestQuizService.getGuestQuizQuestions(quizId, 0, 50);
+          set({ currentQuestions: q.content, totalQuestions: q.totalElements });
+        } catch {
+          // ignore prefetch failure
+        }
+      }
     } catch {
       set({
         error: 'Failed to start quiz',
@@ -182,7 +230,29 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
     }
   },
 
-  selectAnswer: (questionId: number, answerIndex: number) => {
+  selectAnswer: async (questionId: number, answerIndex: number) => {
+    const isAuthenticated = useAuthStore.getState().isAuthenticated;
+    if (!isAuthenticated) {
+      const state = get();
+      const sid = state.sessionId || localStorage.getItem('guestQuizSessionId') || null;
+      if (!state.sessionId && sid) {
+        set({ sessionId: sid });
+      }
+      const currentQuestion = state.currentQuestions.find((q) => q.id === questionId);
+      const selectedAnswer = currentQuestion?.answers[answerIndex];
+      if (sid && state.currentQuiz && selectedAnswer) {
+        try {
+          await guestQuizService.submitGuestQuizAnswer(
+            sid,
+            state.currentQuiz.quizId,
+            questionId,
+            selectedAnswer.id,
+          );
+        } catch {
+          // ignore network failure, UI still updates locally
+        }
+      }
+    }
     set((state) => ({
       selectedAnswers: {
         ...state.selectedAnswers,
@@ -203,7 +273,23 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
     }));
   },
 
-  completeQuiz: () => {
+  completeQuiz: async (email?: string) => {
+    const isAuthenticated = useAuthStore.getState().isAuthenticated;
+    if (!isAuthenticated) {
+      const state = get();
+      const sid = state.sessionId || localStorage.getItem('guestQuizSessionId') || null;
+      if (!state.sessionId && sid) {
+        set({ sessionId: sid });
+      }
+      if (sid) {
+        try {
+          const results = await guestQuizService.submitGuestQuiz(sid, email);
+          set({ guestResults: results });
+        } catch {
+          // ignore submit failure here; component can handle retry
+        }
+      }
+    }
     set((state) => {
       const score = calculateScore(state.currentQuestions, state.selectedAnswers);
       const quizResult = {
@@ -233,6 +319,8 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
       quizStarted: false,
       quizCompleted: false,
       quizScore: 0,
+      sessionId: null,
+      guestResults: null,
     });
   },
 

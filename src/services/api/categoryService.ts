@@ -48,9 +48,10 @@ const convertToLegacyCategory = (categoryResponse: CategoryResponse, index: numb
 
 const categoryService = {
   // Public methods that use real API data
-  getCategories: async (): Promise<Category[]> => {
+  getCategories: async (useAdmin: boolean = false): Promise<Category[]> => {
     try {
-      const response = await apiClient.get<CategoryResponse[]>('/admin/category');
+      const endpoint = useAdmin ? '/admin/category' : '/app/category';
+      const response = await apiClient.get<CategoryResponse[]>(endpoint);
       return response.data.map((category, index) => convertToLegacyCategory(category, index));
     } catch (error) {
       console.error('Failed to fetch categories:', error);

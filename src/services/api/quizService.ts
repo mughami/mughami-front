@@ -194,6 +194,14 @@ const quizService = {
     );
     return response.data;
   },
+
+  // User answer submission per question
+  fillQuizAnswer: async (quizId: number, questionId: number, answerId: number): Promise<boolean> => {
+    const response = await apiClient.post<boolean>(
+      `/app/quiz/fill-quiz/${quizId}?questionId=${questionId}&answerId=${answerId}`,
+    );
+    return response.data === true;
+  },
 };
 
 export default quizService;

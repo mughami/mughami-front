@@ -586,6 +586,21 @@ const QuizPlayPage: React.FC = () => {
             <Title level={3} className="mb-4 leading-relaxed">
               {currentQuestion.question}
             </Title>
+
+            {/* Show question image during the question */}
+            {currentQuestion.hasPhoto && questionPhotos[currentQuestion.id] && (
+              <div className="mb-6 text-center">
+                <div className="relative inline-block">
+                  <Image
+                    src={questionPhotos[currentQuestion.id]}
+                    alt="Question"
+                    className="max-w-full rounded-xl shadow-lg mx-auto"
+                    style={{ maxHeight: '300px', objectFit: 'contain' }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent rounded-xl"></div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Answers */}
@@ -665,20 +680,7 @@ const QuizPlayPage: React.FC = () => {
 
               {/* Content area */}
               <div className="p-8">
-                {/* Question image */}
-                {currentQuestion.hasPhoto && questionPhotos[currentQuestion.id] && (
-                  <div className="mb-6 text-center">
-                    <div className="relative inline-block">
-                      <Image
-                        src={questionPhotos[currentQuestion.id]}
-                        alt="Question"
-                        className="max-w-full rounded-xl shadow-lg mx-auto"
-                        style={{ maxHeight: '300px', objectFit: 'contain' }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent rounded-xl"></div>
-                    </div>
-                  </div>
-                )}
+                {/* Question image moved to main card */}
 
                 {/* Question text */}
                 <div className="mb-6 p-4 bg-gray-50 rounded-xl">
