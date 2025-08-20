@@ -10,7 +10,6 @@ import {
   PhoneOutlined,
   LockOutlined,
   RightOutlined,
-  LeftOutlined,
   CheckOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../../store/authStore';
@@ -91,10 +90,6 @@ const RegisterPage = () => {
       console.log('Step data:', currentData);
       setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
     }
-  };
-
-  const prevStep = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
   const getStepTitle = () => {
@@ -452,20 +447,6 @@ const RegisterPage = () => {
 
             {/* Navigation Buttons */}
             <div className="flex justify-between pt-6">
-              <button
-                type="button"
-                onClick={prevStep}
-                disabled={currentStep === 1}
-                className={`flex items-center px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
-                  currentStep === 1
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'
-                }`}
-              >
-                <LeftOutlined className="mr-2" />
-                წინა
-              </button>
-
               {currentStep < totalSteps ? (
                 <button
                   type="button"

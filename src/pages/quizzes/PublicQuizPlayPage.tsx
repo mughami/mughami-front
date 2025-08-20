@@ -49,8 +49,8 @@ const PublicQuizPlayPage: React.FC = () => {
     fetchPublicQuizQuestions,
     startQuiz,
     selectAnswer,
+    submitAnswer,
     nextQuestion,
-    previousQuestion,
     completeQuiz,
     resetQuiz,
     getQuizPhoto,
@@ -62,6 +62,8 @@ const PublicQuizPlayPage: React.FC = () => {
   const blobUrlsRef = useRef<Set<string>>(new Set());
   const [showAnswer, setShowAnswer] = useState(false);
   const [answerAnimation, setAnswerAnimation] = useState(false);
+
+  const [submittedQuestions, setSubmittedQuestions] = useState<Record<number, boolean>>({});
   const [timeSpent, setTimeSpent] = useState(0);
 
   useEffect(() => {
@@ -74,6 +76,8 @@ const PublicQuizPlayPage: React.FC = () => {
       fetchPublicQuizQuestions(id, 0, 50);
     }
   }, [quizId, fetchPublicQuiz, fetchPublicQuizQuestions]);
+
+  // No persisted results (localStorage disabled)
 
   useEffect(() => {
     // Fetch quiz photo
@@ -144,12 +148,22 @@ const PublicQuizPlayPage: React.FC = () => {
     const currentQuestion = currentQuestions[currentQuestionIndex];
     selectAnswer(currentQuestion.id, answerIndex);
     setAnswerAnimation(true);
+    setTimeout(() => setAnswerAnimation(false), 200);
+  };
 
-    // Show answer after a brief delay for animation
-    setTimeout(() => {
-      setShowAnswer(true);
-      setAnswerAnimation(false);
-    }, 300);
+  const handleSubmitAnswer = async () => {
+    const currentQuestion = currentQuestions[currentQuestionIndex];
+    try {
+      await submitAnswer(currentQuestion.id);
+      setAnswerAnimation(true);
+      setTimeout(() => {
+        setShowAnswer(true);
+        setAnswerAnimation(false);
+      }, 200);
+      setSubmittedQuestions((prev) => ({ ...prev, [currentQuestion.id]: true }));
+    } catch (error) {
+      console.error('Failed to submit answer:', error);
+    }
   };
 
   const handleNext = () => {
@@ -164,36 +178,24 @@ const PublicQuizPlayPage: React.FC = () => {
     }
   };
 
-  const handlePrevious = () => {
-    // Instant scroll to top before proceeding
-    window.scrollTo(0, 0);
+  // Previous disabled in this flow
 
-    if (currentQuestionIndex > 0) {
-      previousQuestion();
-      setShowAnswer(false);
-    }
-  };
+  // const handleRestart = () => {
+  //   // Clear all quiz-related localStorage data
+  //   localStorage.removeItem('publicQuizResults');
+  //   localStorage.removeItem('publicQuizzes');
 
-  const handleRestart = () => {
-    // Clear all quiz-related localStorage data
-    localStorage.removeItem('publicQuizResults');
-    localStorage.removeItem('publicQuizzes');
-
-    resetQuiz();
-    setShowAnswer(false);
-    setTimeSpent(0);
-    if (quizId) {
-      startQuiz(parseInt(quizId));
-    }
-  };
+  //   resetQuiz();
+  //   setShowAnswer(false);
+  //   setTimeSpent(0);
+  //   if (quizId) {
+  //     startQuiz(parseInt(quizId));
+  //   }
+  // };
 
   const handleGoHome = () => {
-    // Clear all quiz-related localStorage data
-    localStorage.removeItem('publicQuizResults');
-    localStorage.removeItem('publicQuizzes');
+    // Do not persist partial results; just leave quiz
     resetQuiz();
-
-    // Instant scroll to top before navigation
     window.scrollTo(0, 0);
     navigate('/public-quizzes');
   };
@@ -397,17 +399,6 @@ const PublicQuizPlayPage: React.FC = () => {
             extra={
               <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 w-full">
                 <Button
-                  key="restart"
-                  type="primary"
-                  size="large"
-                  onClick={handleRestart}
-                  className="flex-1 sm:flex-none px-6 py-3 h-auto shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 border-0 font-semibold"
-                  icon={<TrophyOutlined />}
-                  style={{ borderRadius: '12px', minWidth: '160px' }}
-                >
-                  ხელახლა დაწყება
-                </Button>
-                <Button
                   key="home"
                   size="large"
                   onClick={handleGoHome}
@@ -488,8 +479,12 @@ const PublicQuizPlayPage: React.FC = () => {
                 size="large"
                 style={{ borderRadius: '12px' }}
               >
-                <span className="hidden sm:inline">დაბრუნება</span>
-                <span className="sm:hidden">უკან</span>
+                <span className="hidden sm:inline" onClick={() => navigate('/public-quizzes')}>
+                  დაბრუნება
+                </span>
+                <span className="sm:hidden" onClick={() => navigate('/public-quizzes')}>
+                  უკან
+                </span>
               </Button>
               <div className="text-center flex-1">
                 <Title
@@ -582,8 +577,9 @@ const PublicQuizPlayPage: React.FC = () => {
               {currentQuestion.answers.map((answer, index) => {
                 const isSelected = getSelectedAnswer(currentQuestion.id) === index;
                 const isCorrect = isAnswerCorrect(currentQuestion.id, index);
-                const showCorrect = showAnswer && isCorrect;
-                const showIncorrect = showAnswer && isSelected && !isCorrect;
+                const revealed = submittedQuestions[currentQuestion.id] || showAnswer;
+                const showCorrect = revealed && isCorrect;
+                const showIncorrect = revealed && isSelected && !isCorrect;
 
                 return (
                   <Button
@@ -600,7 +596,7 @@ const PublicQuizPlayPage: React.FC = () => {
                         : 'hover:bg-gray-50 hover:shadow-lg border-2 border-gray-200 hover:border-gray-300'
                     } ${answerAnimation && isSelected ? 'animate-pulse' : ''}`}
                     onClick={() => handleAnswerSelect(index)}
-                    disabled={showAnswer}
+                    disabled={submittedQuestions[currentQuestion.id]}
                     icon={
                       showCorrect ? (
                         <CheckCircleOutlined className="text-xl text-green-500" />
@@ -634,12 +630,31 @@ const PublicQuizPlayPage: React.FC = () => {
                 );
               })}
             </div>
+
+            {/* Submit answer action */}
+            <div className="mt-4 flex justify-end">
+              <Button
+                type="primary"
+                size="large"
+                onClick={handleSubmitAnswer}
+                disabled={
+                  submittedQuestions[currentQuestion.id] ||
+                  selectedAnswers[currentQuestion.id] === undefined
+                }
+                className="px-6"
+              >
+                პასუხის დადასტურება
+              </Button>
+            </div>
           </Card>
 
           {/* Answer Result Modal */}
           <Modal
             open={showAnswer}
-            onCancel={() => setShowAnswer(false)}
+            onCancel={() => {
+              setShowAnswer(false);
+              handleNext();
+            }}
             footer={null}
             width={800}
             centered
@@ -756,14 +771,7 @@ const PublicQuizPlayPage: React.FC = () => {
                   </div>
 
                   {/* Action buttons */}
-                  <div className="flex justify-center space-x-4">
-                    <Button
-                      size="large"
-                      onClick={() => setShowAnswer(false)}
-                      className="px-6 py-2 h-auto"
-                    >
-                      დახურვა
-                    </Button>
+                  <div className="flex justify-center">
                     <Button
                       type="primary"
                       size="large"
@@ -782,44 +790,6 @@ const PublicQuizPlayPage: React.FC = () => {
           </Modal>
 
           {/* Navigation */}
-          <Card
-            className="shadow-xl border-0 bg-white/90 backdrop-blur-sm"
-            style={{ borderRadius: '20px' }}
-          >
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
-              <Button
-                icon={<ArrowLeftOutlined />}
-                onClick={handlePrevious}
-                disabled={currentQuestionIndex === 0}
-                size="large"
-                className="hover:scale-105 transition-all duration-300 shadow-lg border-0 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 w-full sm:w-auto"
-                style={{ borderRadius: '12px' }}
-              >
-                <span className="font-medium">წინა</span>
-              </Button>
-
-              <div className="text-center order-first sm:order-none">
-                <div className="text-sm text-gray-500 mb-1">პროგრესი</div>
-                <div className="text-lg font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                  {currentQuestionIndex + 1} / {currentQuestions.length}
-                </div>
-              </div>
-
-              <Button
-                type="primary"
-                icon={<ArrowRightOutlined />}
-                onClick={handleNext}
-                disabled={!showAnswer}
-                size="large"
-                className="hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 border-0 disabled:opacity-50 w-full sm:w-auto"
-                style={{ borderRadius: '12px' }}
-              >
-                <span className="font-medium">
-                  {currentQuestionIndex === currentQuestions.length - 1 ? 'დასრულება' : 'შემდეგი'}
-                </span>
-              </Button>
-            </div>
-          </Card>
         </div>
       </div>
     </Layout>

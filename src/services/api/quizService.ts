@@ -19,6 +19,7 @@ export interface Quiz {
   quizName: string;
   categoryId: number;
   hasPhoto: boolean;
+  quizStatus?: 'PENDING' | 'VERIFIED';
 }
 
 export interface QuizResponse {
@@ -56,6 +57,12 @@ export interface CreateQuestionRequest {
     answer: string;
     isCorrect: boolean;
   }[];
+}
+
+export interface UpdateQuizRequest {
+  name: string;
+  categoryId: number;
+  quizStatus: 'PENDING' | 'VERIFIED';
 }
 
 const quizService = {
@@ -201,6 +208,26 @@ const quizService = {
       `/app/quiz/fill-quiz/${quizId}?questionId=${questionId}&answerId=${answerId}`,
     );
     return response.data === true;
+  },
+
+  // Admin: update quiz
+  updateAdminQuiz: async (quizId: number, data: UpdateQuizRequest): Promise<Quiz> => {
+    const response = await apiClient.put<Quiz>(`/admin/quiz/${quizId}`, {
+      name: data.name,
+      categoryId: data.categoryId,
+      quizStatus: data.quizStatus,
+    });
+    return response.data;
+  },
+
+  // Admin: delete quiz
+  deleteAdminQuiz: async (quizId: number): Promise<void> => {
+    await apiClient.delete(`/admin/quiz/${quizId}`);
+  },
+
+  // Admin: delete question by quiz and question id
+  deleteAdminQuizQuestion: async (quizId: number, questionId: number): Promise<void> => {
+    await apiClient.delete(`/admin/quiz/${quizId}/delete-question/${questionId}`);
   },
 };
 

@@ -46,7 +46,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
     fetchQuiz,
     fetchAdminQuizQuestions,
     createQuestion,
-    deleteQuestion,
+    deleteAdminQuizQuestion,
     addQuizPhoto,
     addQuestionPhoto,
     getQuizPhoto,
@@ -210,7 +210,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
 
   const handleDeleteQuestion = async (questionId: number) => {
     try {
-      await deleteQuestion(questionId);
+      await deleteAdminQuizQuestion(quizId, questionId);
       message.success('კითხვა წარმატებით წაიშალა!');
       // Refresh questions for this quiz
       await fetchAdminQuizQuestions(quizId, 0, 50);

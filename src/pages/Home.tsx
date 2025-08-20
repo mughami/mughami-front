@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Card, Progress, Radio, Space, Typography, Spin } from 'antd';
 import {
@@ -32,6 +32,7 @@ const Home = () => {
     return savedResults ? JSON.parse(savedResults) : {};
   });
   const [currentSlide, setCurrentSlide] = useState(0);
+  const videoIframeRefs = useRef<(HTMLIFrameElement | null)[]>([]);
 
   // Safety check to ensure currentSlide is always valid for 2 slides
   useEffect(() => {
@@ -52,6 +53,17 @@ const Home = () => {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [currentSlide]);
+
+  // Pause Facebook videos on non-active slides by resetting iframe src
+  useEffect(() => {
+    videoIframeRefs.current.forEach((iframe, idx) => {
+      if (iframe && idx !== currentSlide) {
+        const src = iframe.src;
+        // Reset the src to stop playback
+        iframe.src = src;
+      }
+    });
   }, [currentSlide]);
 
   useEffect(() => {
@@ -671,6 +683,9 @@ const Home = () => {
                                 allowFullScreen={true}
                                 allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
                                 className="rounded-[1.5rem] relative z-10"
+                                ref={(el) => {
+                                  videoIframeRefs.current[0] = el;
+                                }}
                               />
                               {/* Enhanced Overlay with Premium Animation */}
                               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-[1.5rem] pointer-events-none"></div>
@@ -717,6 +732,9 @@ const Home = () => {
                                 allowFullScreen={true}
                                 allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
                                 className="rounded-[1.5rem] relative z-10"
+                                ref={(el) => {
+                                  videoIframeRefs.current[1] = el;
+                                }}
                               />
                               {/* Enhanced Overlay with Premium Animation */}
                               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-[1.5rem] pointer-events-none"></div>

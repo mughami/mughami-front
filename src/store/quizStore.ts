@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useAuthStore } from './index';
 import quizService, {
   type Quiz,
   type QuizQuestion,
@@ -6,6 +7,7 @@ import quizService, {
   type QuestionsResponse,
   type CreateQuizRequest,
   type CreateQuestionRequest,
+  type UpdateQuizRequest,
 } from '../services/api/quizService';
 
 interface QuizState {
@@ -45,6 +47,7 @@ interface QuizState {
   // Quiz playing actions
   startQuiz: (quizId: number) => Promise<void>;
   selectAnswer: (questionId: number, answerIndex: number) => Promise<void>;
+  submitAnswer: (questionId: number) => Promise<void>;
   nextQuestion: () => void;
   previousQuestion: () => void;
   completeQuiz: () => void;
@@ -56,6 +59,9 @@ interface QuizState {
   deleteQuestion: (questionId: number) => Promise<void>;
   addQuizPhoto: (quizId: number, photo: File) => Promise<void>;
   addQuestionPhoto: (questionId: number, photo: File) => Promise<void>;
+  updateAdminQuiz: (quizId: number, data: UpdateQuizRequest) => Promise<Quiz>;
+  deleteAdminQuiz: (quizId: number) => Promise<void>;
+  deleteAdminQuizQuestion: (quizId: number, questionId: number) => Promise<void>;
 
   // Photo operations
   getQuizPhoto: (quizId: number) => Promise<string>;
@@ -94,12 +100,7 @@ export const useQuizStore = create<QuizState>((set) => ({
         loading: false,
       });
 
-      // Store quizzes in localStorage for results page
-      const existingQuizzes = JSON.parse(localStorage.getItem('quizzes') || '[]');
-      const newQuizzes = response.content.filter(
-        (quiz: Quiz) => !existingQuizzes.find((existing: Quiz) => existing.quizId === quiz.quizId),
-      );
-      localStorage.setItem('quizzes', JSON.stringify([...existingQuizzes, ...newQuizzes]));
+      // Do not persist quizzes in localStorage
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Failed to fetch quizzes',
@@ -223,9 +224,10 @@ export const useQuizStore = create<QuizState>((set) => ({
         page,
         size,
       );
+      const verified = response.content.filter((q) => q.quizStatus === 'VERIFIED');
       set({
-        quizzes: response.content,
-        totalQuizzes: response.totalElements,
+        quizzes: verified,
+        totalQuizzes: verified.length,
         loading: false,
       });
     } catch {
@@ -290,6 +292,55 @@ export const useQuizStore = create<QuizState>((set) => ({
       set({
         error: error instanceof Error ? error.message : 'Failed to delete question',
         loading: false,
+      });
+      throw error;
+    }
+  },
+
+  updateAdminQuiz: async (quizId: number, data: UpdateQuizRequest) => {
+    set({ loading: true, error: null });
+    try {
+      const updated = await quizService.updateAdminQuiz(quizId, data);
+      set((state) => ({
+        quizzes: state.quizzes.map((q) => (q.quizId === quizId ? updated : q)),
+        currentQuiz: state.currentQuiz?.quizId === quizId ? updated : state.currentQuiz,
+        loading: false,
+      }));
+      return updated;
+    } catch (error) {
+      set({ loading: false, error: error instanceof Error ? error.message : 'Failed to update quiz' });
+      throw error;
+    }
+  },
+
+  deleteAdminQuiz: async (quizId: number) => {
+    set({ loading: true, error: null });
+    try {
+      await quizService.deleteAdminQuiz(quizId);
+      set((state) => ({
+        quizzes: state.quizzes.filter((q) => q.quizId !== quizId),
+        currentQuiz: state.currentQuiz?.quizId === quizId ? null : state.currentQuiz,
+        loading: false,
+      }));
+    } catch (error) {
+      set({ loading: false, error: error instanceof Error ? error.message : 'Failed to delete quiz' });
+      throw error;
+    }
+  },
+
+  deleteAdminQuizQuestion: async (quizId: number, questionId: number) => {
+    set({ loading: true, error: null });
+    try {
+      await quizService.deleteAdminQuizQuestion(quizId, questionId);
+      // remove from currentQuestions if loaded
+      set((state) => ({
+        currentQuestions: state.currentQuestions.filter((q) => q.id !== questionId),
+        loading: false,
+      }));
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : 'Failed to delete question',
       });
       throw error;
     }
@@ -383,27 +434,31 @@ export const useQuizStore = create<QuizState>((set) => ({
   },
 
   selectAnswer: async (questionId: number, answerIndex: number) => {
+    // Only mark selection locally; submission happens on explicit submit
+    set((prev) => ({
+      selectedAnswers: {
+        ...prev.selectedAnswers,
+        [questionId]: answerIndex,
+      },
+    }));
+  },
+
+  submitAnswer: async (questionId: number) => {
     try {
       const state = useQuizStore.getState();
-      const currentQuestion = state.currentQuestions.find((q) => q.id === questionId);
-      if (!currentQuestion || !state.currentQuiz) {
-        throw new Error('Quiz or question not found');
+      const auth = useAuthStore.getState();
+      // Do not call regular user endpoint when admin is logged in
+      if (auth.user?.userRole === 'ADMIN') {
+        return;
       }
-      const selectedAnswer = currentQuestion.answers[answerIndex];
-      if (!selectedAnswer) {
-        throw new Error('Answer not found');
-      }
-      await quizService.fillQuizAnswer(state.currentQuiz.quizId, questionId, selectedAnswer.id);
-      set((prev) => ({
-        selectedAnswers: {
-          ...prev.selectedAnswers,
-          [questionId]: answerIndex,
-        },
-      }));
+      if (!state.currentQuiz) throw new Error('Quiz not started');
+      const selectedIndex = state.selectedAnswers[questionId];
+      const question = state.currentQuestions.find((q) => q.id === questionId);
+      const selected = selectedIndex !== undefined ? question?.answers[selectedIndex] : undefined;
+      if (!selected) throw new Error('No answer selected');
+      await quizService.fillQuizAnswer(state.currentQuiz.quizId, questionId, selected.id);
     } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : 'Failed to submit answer',
-      });
+      set({ error: error instanceof Error ? error.message : 'Failed to submit answer' });
       throw error;
     }
   },
@@ -430,15 +485,15 @@ export const useQuizStore = create<QuizState>((set) => ({
         completedAt: new Date().toISOString(),
       };
 
-      // Save to local storage
-      const existingResults = JSON.parse(localStorage.getItem('quizResults') || '{}');
-      existingResults[quizResult.quizId] = quizResult;
-      localStorage.setItem('quizResults', JSON.stringify(existingResults));
+      const updatedResults = {
+        ...state.quizResults,
+        [quizResult.quizId]: quizResult,
+      };
 
       return {
         quizCompleted: true,
         quizScore: score,
-        quizResults: existingResults,
+        quizResults: updatedResults,
       };
     });
   },

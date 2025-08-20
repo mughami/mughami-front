@@ -66,6 +66,7 @@ interface PublicQuizState {
   // Quiz playing actions
   startQuiz: (quizId: number) => Promise<void>;
   selectAnswer: (questionId: number, answerIndex: number) => Promise<void> | void;
+  submitAnswer: (questionId: number) => Promise<void>;
   nextQuestion: () => void;
   previousQuestion: () => void;
   completeQuiz: (email?: string) => Promise<void> | void;
@@ -108,18 +109,14 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
       const response: QuizResponse = isAuthenticated
         ? await publicQuizService.getPublicQuizzes(page, size)
         : await guestQuizService.getAvailableQuizzes(page, size);
+      const verified = (response.content || []).filter((q: Quiz) => q.quizStatus === 'VERIFIED');
       set({
-        quizzes: response.content,
-        totalQuizzes: response.totalElements,
+        quizzes: verified,
+        totalQuizzes: verified.length,
         loading: false,
       });
 
-      // Store quizzes in localStorage for results page
-      const existingQuizzes = JSON.parse(localStorage.getItem('publicQuizzes') || '[]');
-      const newQuizzes = response.content.filter(
-        (quiz: Quiz) => !existingQuizzes.find((existing: Quiz) => existing.quizId === quiz.quizId),
-      );
-      localStorage.setItem('publicQuizzes', JSON.stringify([...existingQuizzes, ...newQuizzes]));
+      // Do not persist quizzes in localStorage
     } catch {
       set({
         error: 'Failed to fetch public quizzes',
@@ -144,13 +141,13 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
         quiz = fetchedQuiz || undefined;
       }
 
-      if (quiz) {
+      if (quiz && quiz.quizStatus === 'VERIFIED') {
         set({
           currentQuiz: quiz,
           loading: false,
         });
       } else {
-        throw new Error('Quiz not found');
+        throw new Error('Quiz not available');
       }
     } catch {
       set({
@@ -231,34 +228,37 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
   },
 
   selectAnswer: async (questionId: number, answerIndex: number) => {
-    const isAuthenticated = useAuthStore.getState().isAuthenticated;
-    if (!isAuthenticated) {
-      const state = get();
-      const sid = state.sessionId || localStorage.getItem('guestQuizSessionId') || null;
-      if (!state.sessionId && sid) {
-        set({ sessionId: sid });
-      }
-      const currentQuestion = state.currentQuestions.find((q) => q.id === questionId);
-      const selectedAnswer = currentQuestion?.answers[answerIndex];
-      if (sid && state.currentQuiz && selectedAnswer) {
-        try {
-          await guestQuizService.submitGuestQuizAnswer(
-            sid,
-            state.currentQuiz.quizId,
-            questionId,
-            selectedAnswer.id,
-          );
-        } catch {
-          // ignore network failure, UI still updates locally
-        }
-      }
-    }
+    // For both guest and logged-in public flow, only mark selection.
     set((state) => ({
       selectedAnswers: {
         ...state.selectedAnswers,
         [questionId]: answerIndex,
       },
     }));
+  },
+
+  // Explicit submit per question for guest flow
+  submitAnswer: async (questionId: number) => {
+    if (!useAuthStore.getState().isAuthenticated) {
+      const state = get();
+      const sid = state.sessionId || localStorage.getItem('guestQuizSessionId') || null;
+      if (!state.sessionId && sid) {
+        set({ sessionId: sid });
+      }
+      const selectedIndex = state.selectedAnswers[questionId];
+      const question = state.currentQuestions.find((q) => q.id === questionId);
+      const selected = selectedIndex !== undefined ? question?.answers[selectedIndex] : undefined;
+      if (sid && state.currentQuiz && selected) {
+        await guestQuizService.submitGuestQuizAnswer(
+          sid,
+          state.currentQuiz.quizId,
+          questionId,
+          selected.id,
+        );
+      } else {
+        throw new Error('Missing session or selection');
+      }
+    }
   },
 
   nextQuestion: () => {
@@ -299,15 +299,15 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
         completedAt: new Date().toISOString(),
       };
 
-      // Save to local storage
-      const existingResults = JSON.parse(localStorage.getItem('publicQuizResults') || '{}');
-      existingResults[quizResult.quizId] = quizResult;
-      localStorage.setItem('publicQuizResults', JSON.stringify(existingResults));
+      const updatedResults = {
+        ...state.quizResults,
+        [quizResult.quizId]: quizResult,
+      };
 
       return {
         quizCompleted: true,
         quizScore: score,
-        quizResults: existingResults,
+        quizResults: updatedResults,
       };
     });
   },

@@ -31,16 +31,13 @@ const QuizResultsPage: React.FC = () => {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
 
   useEffect(() => {
-    // Load quiz results from localStorage
-    const results = JSON.parse(localStorage.getItem('quizResults') || '{}');
-    setQuizResults(results);
-
-    // Load quizzes from localStorage or fetch from API
-    const savedQuizzes = JSON.parse(localStorage.getItem('quizzes') || '[]');
-    setQuizzes(savedQuizzes);
+    // No localStorage usage as per requirement; keep empty state
+    setQuizResults({});
+    setQuizzes([]);
   }, []);
 
   const getPercentage = (score: number, total: number) => {
+    if (!total || total <= 0) return 0;
     return Math.round((score / total) * 100);
   };
 
@@ -72,9 +69,10 @@ const QuizResultsPage: React.FC = () => {
     if (results.length === 0) return null;
 
     const totalQuizzes = results.length;
-    const totalQuestions = results.reduce((sum, result) => sum + result.totalQuestions, 0);
+    const totalQuestions = results.reduce((sum, result) => sum + (result.totalQuestions || 0), 0);
     const totalCorrect = results.reduce((sum, result) => sum + result.score, 0);
-    const averagePercentage = Math.round((totalCorrect / totalQuestions) * 100);
+    const averagePercentage =
+      totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
 
     return {
       totalQuizzes,
@@ -168,7 +166,7 @@ const QuizResultsPage: React.FC = () => {
             <List
               dataSource={Object.entries(quizResults)}
               renderItem={([quizId, result]) => {
-                const percentage = getPercentage(result.score, result.totalQuestions);
+                const percentage = getPercentage(result.score, result.totalQuestions || 0);
                 const grade = getGrade(percentage);
 
                 return (
@@ -204,12 +202,6 @@ const QuizResultsPage: React.FC = () => {
                           <br />
                           <Text type="secondary">{percentage}%</Text>
                         </div>
-                      </div>
-
-                      <div className="mt-4 flex justify-end">
-                        <Button type="primary" onClick={() => navigate(`/quiz/play/${quizId}`)}>
-                          ხელახლა დაწყება
-                        </Button>
                       </div>
                     </div>
                   </List.Item>

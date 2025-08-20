@@ -161,11 +161,11 @@ const QuizPage: React.FC = () => {
                   className="h-full"
                   cover={
                     quiz.hasPhoto && quizPhotos[quiz.quizId] ? (
-                      <div className="h-48 bg-gray-100 flex items-center justify-center">
+                      <div className="h-48 bg-gray-100 flex items-center justify-center rounded-lg">
                         <Image
                           src={quizPhotos[quiz.quizId]}
                           alt={quiz.quizName}
-                          className="h-full w-full object-cover"
+                          className="h-full w-full object-cover rounded-lg"
                           fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN"
                         />
                       </div>
@@ -181,6 +181,7 @@ const QuizPage: React.FC = () => {
                       icon={<PlayCircleOutlined />}
                       onClick={() => handlePlayQuiz(quiz.quizId)}
                       block
+                      className="rounded-lg !w-[90%]"
                     >
                       თამაში
                     </Button>,

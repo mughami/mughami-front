@@ -38,11 +38,20 @@ const { Option } = Select;
 interface FormValues {
   quizName: string;
   categoryId: number;
+  quizStatus: 'PENDING' | 'VERIFIED';
 }
 
 export const Quizzes: React.FC = () => {
-  const { quizzes, loading, fetchAdminQuizzes, createQuiz, addQuizPhoto, getQuizPhoto } =
-    useQuizStore();
+  const {
+    quizzes,
+    loading,
+    fetchAdminQuizzes,
+    createQuiz,
+    addQuizPhoto,
+    getQuizPhoto,
+    updateAdminQuiz,
+    deleteAdminQuiz,
+  } = useQuizStore();
 
   const { adminCategories, fetchAdminCategories } = useCategoryStore();
 
@@ -116,18 +125,43 @@ export const Quizzes: React.FC = () => {
     }
   };
 
+  const handleUpdateQuiz = async (values: FormValues) => {
+    if (!editingQuiz) return;
+    try {
+      await updateAdminQuiz(editingQuiz.quizId, {
+        name: values.quizName,
+        categoryId: values.categoryId,
+        quizStatus: values.quizStatus,
+      });
+      message.success('ვიქტორინა წარმატებით განახლდა!');
+      setIsModalVisible(false);
+      setEditingQuiz(null);
+      form.resetFields();
+    } catch {
+      message.error('ვიქტორინის განახლებისას მოხდა შეცდომა');
+    }
+  };
+
+  const handleSubmit = async (values: FormValues) => {
+    if (editingQuiz) {
+      return handleUpdateQuiz(values);
+    }
+    return handleCreateQuiz(values);
+  };
+
   const handleEditQuiz = (quiz: Quiz) => {
     setEditingQuiz(quiz);
     form.setFieldsValue({
       quizName: quiz.quizName,
       categoryId: quiz.categoryId,
+      quizStatus: quiz.quizStatus || 'PENDING',
     });
     setIsModalVisible(true);
   };
 
-  const handleDeleteQuiz = async () => {
+  const handleDeleteQuiz = async (quizId: number) => {
     try {
-      // Add delete functionality when available
+      await deleteAdminQuiz(quizId);
       message.success('ვიქტორინა წარმატებით წაიშალა!');
     } catch {
       message.error('ვიქტორინის წაშლისას მოხდა შეცდომა');
@@ -188,7 +222,11 @@ export const Quizzes: React.FC = () => {
     {
       title: 'სტატუსი',
       key: 'status',
-      render: () => <Tag color="green">აქტიური</Tag>,
+      render: (quiz: Quiz) => (
+        <Tag color={quiz.quizStatus === 'VERIFIED' ? 'green' : 'orange'}>
+          {quiz.quizStatus || 'PENDING'}
+        </Tag>
+      ),
     },
     {
       title: 'ქმედებები',
@@ -214,7 +252,7 @@ export const Quizzes: React.FC = () => {
           <Popconfirm
             title="დარწმუნებული ხართ?"
             description="გსურთ ამ ვიქტორინის წაშლა?"
-            onConfirm={handleDeleteQuiz}
+            onConfirm={() => handleDeleteQuiz(quiz.quizId)}
             okText="დიახ"
             cancelText="არა"
           >
@@ -308,9 +346,10 @@ export const Quizzes: React.FC = () => {
         <Form
           form={form}
           layout="vertical"
-          onFinish={handleCreateQuiz}
+          onFinish={handleSubmit}
           initialValues={{
             categoryId: undefined,
+            quizStatus: 'PENDING',
           }}
         >
           <Form.Item
@@ -351,6 +390,17 @@ export const Quizzes: React.FC = () => {
               <Button icon={<UploadOutlined />}>ფოტოს ატვირთვა</Button>
             </Upload>
             <Text type="secondary">რეკომენდებული ზომა: 800x600px, მაქსიმუმ 2MB</Text>
+          </Form.Item>
+
+          <Form.Item
+            name="quizStatus"
+            label="სტატუსი"
+            rules={[{ required: true, message: 'გთხოვთ აირჩიოთ სტატუსი' }]}
+          >
+            <Select>
+              <Option value="PENDING">PENDING</Option>
+              <Option value="VERIFIED">VERIFIED</Option>
+            </Select>
           </Form.Item>
 
           <Form.Item className="mb-0">

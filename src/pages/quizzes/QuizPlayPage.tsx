@@ -47,12 +47,11 @@ const QuizPlayPage: React.FC = () => {
     error,
     fetchUserQuiz,
     fetchQuizQuestions,
-    startQuiz,
     selectAnswer,
+    submitAnswer,
     nextQuestion,
-    previousQuestion,
+
     completeQuiz,
-    resetQuiz,
     getQuizPhoto,
     getQuestionPhoto,
   } = useQuizStore();
@@ -62,6 +61,8 @@ const QuizPlayPage: React.FC = () => {
   const blobUrlsRef = useRef<Set<string>>(new Set());
   const [showAnswer, setShowAnswer] = useState(false);
   const [answerAnimation, setAnswerAnimation] = useState(false);
+
+  const [submittedQuestions, setSubmittedQuestions] = useState<Record<number, boolean>>({});
   const [timeSpent, setTimeSpent] = useState(0);
 
   useEffect(() => {
@@ -71,6 +72,8 @@ const QuizPlayPage: React.FC = () => {
       fetchQuizQuestions(id, 0, 50);
     }
   }, [quizId, fetchUserQuiz, fetchQuizQuestions]);
+
+  // No persisted results (localStorage disabled)
 
   useEffect(() => {
     // Fetch quiz photo
@@ -152,20 +155,28 @@ const QuizPlayPage: React.FC = () => {
 
   const handleAnswerSelect = async (answerIndex: number) => {
     if (!quizStarted || quizCompleted) return;
-
     const currentQuestion = currentQuestions[currentQuestionIndex];
     try {
       await selectAnswer(currentQuestion.id, answerIndex);
       setAnswerAnimation(true);
+      setTimeout(() => setAnswerAnimation(false), 200);
+    } catch (error) {
+      console.error('Failed to select answer:', error);
+    }
+  };
 
-      // Show answer after a brief delay for animation
+  const handleSubmitAnswer = async () => {
+    const currentQuestion = currentQuestions[currentQuestionIndex];
+    try {
+      await submitAnswer(currentQuestion.id);
+      setAnswerAnimation(true);
       setTimeout(() => {
         setShowAnswer(true);
         setAnswerAnimation(false);
-      }, 300);
+      }, 200);
+      setSubmittedQuestions((prev) => ({ ...prev, [currentQuestion.id]: true }));
     } catch (error) {
-      console.error('Failed to select answer:', error);
-      // Show error or notification to user if needed
+      console.error('Failed to submit answer:', error);
     }
   };
 
@@ -178,31 +189,8 @@ const QuizPlayPage: React.FC = () => {
     }
   };
 
-  const handlePrevious = () => {
-    if (currentQuestionIndex > 0) {
-      previousQuestion();
-      setShowAnswer(false);
-    }
-  };
-
-  const handleRestart = () => {
-    // Clear all quiz-related localStorage data
-    localStorage.removeItem('quizResults');
-    localStorage.removeItem('quizzes');
-
-    resetQuiz();
-    setShowAnswer(false);
-    setTimeSpent(0);
-    if (quizId) {
-      startQuiz(parseInt(quizId));
-    }
-  };
-
   const handleGoHome = () => {
-    // Clear all quiz-related localStorage data
-    localStorage.removeItem('quizResults');
-    localStorage.removeItem('quizzes');
-
+    // Do not persist partial results; simply navigate away
     navigate('/');
   };
 
@@ -445,16 +433,6 @@ const QuizPlayPage: React.FC = () => {
               </div>
             }
             extra={[
-              <Button
-                key="restart"
-                type="primary"
-                size="large"
-                onClick={handleRestart}
-                className="mr-4"
-              >
-                <TrophyOutlined className="mr-2" />
-                ხელახლა დაწყება
-              </Button>,
               // <Button
               //   key="results"
               //   size="large"
@@ -608,8 +586,9 @@ const QuizPlayPage: React.FC = () => {
             {currentQuestion.answers.map((answer, index) => {
               const isSelected = getSelectedAnswer(currentQuestion.id) === index;
               const isCorrect = isAnswerCorrect(currentQuestion.id, index);
-              const showCorrect = showAnswer && isCorrect;
-              const showIncorrect = showAnswer && isSelected && !isCorrect;
+              const revealed = submittedQuestions[currentQuestion.id] || showAnswer;
+              const showCorrect = revealed && isCorrect;
+              const showIncorrect = revealed && isSelected && !isCorrect;
 
               return (
                 <Button
@@ -626,7 +605,7 @@ const QuizPlayPage: React.FC = () => {
                       : 'hover:bg-gray-50 hover:shadow-md'
                   } ${answerAnimation && isSelected ? 'animate-pulse' : ''}`}
                   onClick={() => handleAnswerSelect(index)}
-                  disabled={showAnswer}
+                  disabled={submittedQuestions[currentQuestion.id]}
                   icon={
                     showCorrect ? (
                       <CheckCircleOutlined className="text-xl" />
@@ -657,12 +636,31 @@ const QuizPlayPage: React.FC = () => {
               );
             })}
           </div>
+
+          {/* Submit answer action */}
+          <div className="mt-4 flex justify-end">
+            <Button
+              type="primary"
+              size="large"
+              onClick={handleSubmitAnswer}
+              disabled={
+                submittedQuestions[currentQuestion.id] ||
+                selectedAnswers[currentQuestion.id] === undefined
+              }
+              className="px-6"
+            >
+              პასუხის დადასტურება
+            </Button>
+          </div>
         </Card>
 
         {/* Answer Result Modal */}
         <Modal
           open={showAnswer}
-          onCancel={() => setShowAnswer(false)}
+          onCancel={() => {
+            setShowAnswer(false);
+            handleNext();
+          }}
           footer={null}
           width={800}
           centered
@@ -778,14 +776,7 @@ const QuizPlayPage: React.FC = () => {
                 </div>
 
                 {/* Action buttons */}
-                <div className="flex justify-center space-x-4">
-                  <Button
-                    size="large"
-                    onClick={() => setShowAnswer(false)}
-                    className="px-6 py-2 h-auto"
-                  >
-                    დახურვა
-                  </Button>
+                <div className="flex justify-center">
                   <Button
                     type="primary"
                     size="large"
@@ -804,37 +795,6 @@ const QuizPlayPage: React.FC = () => {
         </Modal>
 
         {/* Navigation */}
-        <Card className="shadow-lg border-0">
-          <div className="flex justify-between items-center">
-            <Button
-              icon={<ArrowLeftOutlined />}
-              onClick={handlePrevious}
-              disabled={currentQuestionIndex === 0}
-              size="large"
-              className="hover:scale-105 transition-transform"
-            >
-              წინა
-            </Button>
-
-            <div className="text-center">
-              <div className="text-sm text-gray-500 mb-1">პროგრესი</div>
-              <div className="text-lg font-bold text-blue-600">
-                {currentQuestionIndex + 1} / {currentQuestions.length}
-              </div>
-            </div>
-
-            <Button
-              type="primary"
-              icon={<ArrowRightOutlined />}
-              onClick={handleNext}
-              disabled={!showAnswer}
-              size="large"
-              className="hover:scale-105 transition-transform"
-            >
-              {currentQuestionIndex === currentQuestions.length - 1 ? 'დასრულება' : 'შემდეგი'}
-            </Button>
-          </div>
-        </Card>
       </div>
     </Layout>
   );

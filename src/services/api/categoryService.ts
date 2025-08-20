@@ -1,5 +1,6 @@
 import apiClient from './client';
 import type { CategoryResponse, CategoryRequest } from '../../types';
+import quizService, { type QuizResponse } from './quizService';
 
 // Legacy category interface for backward compatibility
 export interface Category {
@@ -26,10 +27,14 @@ const defaultCategoryImages = [
 ];
 
 // Convert backend CategoryResponse to frontend Category format
-const convertToLegacyCategory = (categoryResponse: CategoryResponse, index: number): Category => {
+const convertToLegacyCategory = (
+  categoryResponse: CategoryResponse,
+  index: number,
+  quizCountOverride?: number,
+): Category => {
   // Generate consistent random values based on category ID for demo purposes
   const seed = categoryResponse.categoryId;
-  const quizCount = Math.floor((seed * 17) % 50) + 10;
+  const quizCount = quizCountOverride ?? Math.floor((seed * 17) % 50) + 10;
   const questionCount = Math.floor((seed * 23) % 2000) + 500;
   const prize = Math.floor((seed * 31) % 500) + 100;
   const difficultyIndex = seed % 3;
@@ -52,7 +57,35 @@ const categoryService = {
     try {
       const endpoint = useAdmin ? '/admin/category' : '/app/category';
       const response = await apiClient.get<CategoryResponse[]>(endpoint);
-      return response.data.map((category, index) => convertToLegacyCategory(category, index));
+      // Fetch real quiz counts per category in parallel (filter VERIFIED for non-admin)
+      const counts: number[] = await Promise.all(
+        response.data.map(async (category) => {
+          try {
+            if (useAdmin) {
+              const res: QuizResponse = await quizService.getQuizzesByCategoryAdmin(
+                category.categoryId,
+                0,
+                1,
+              );
+              return res.totalElements;
+            }
+            const res: QuizResponse = await quizService.getQuizzesByCategoryUser(
+              category.categoryId,
+              0,
+              100,
+            );
+            // Only count VERIFIED for public website
+            const verified = res.content.filter((q) => q.quizStatus === 'VERIFIED');
+            return verified.length;
+          } catch {
+            return 0;
+          }
+        }),
+      );
+
+      return response.data.map((category, index) =>
+        convertToLegacyCategory(category, index, counts[index]),
+      );
     } catch (error) {
       console.error('Failed to fetch categories:', error);
       // Return empty array if API fails to avoid breaking the UI
