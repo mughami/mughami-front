@@ -129,8 +129,15 @@ function App() {
           }
         />
 
-        {/* Quiz routes - accessible to all users */}
-        <Route path="/categories" element={<CategoriesPage />} />
+        {/* Categories - require authentication */}
+        <Route
+          path="/categories"
+          element={
+            <ProtectedRoute>
+              <CategoriesPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/quizzes/:categoryId" element={<QuizPage />} />
         <Route path="/quiz/play/:quizId" element={<QuizPlayPage />} />
         <Route path="/quiz/results" element={<QuizResultsPage />} />
