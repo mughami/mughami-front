@@ -13,7 +13,6 @@ import {
   Result,
   Statistic,
   Badge,
-  Modal,
 } from 'antd';
 import {
   ArrowLeftOutlined,
@@ -59,7 +58,7 @@ const QuizPlayPage: React.FC = () => {
   const [quizPhotoUrl, setQuizPhotoUrl] = useState<string>('');
   const [questionPhotos, setQuestionPhotos] = useState<Record<number, string>>({});
   const blobUrlsRef = useRef<Set<string>>(new Set());
-  const [showAnswer, setShowAnswer] = useState(false);
+  // Removed popup; we now reveal inline after submit
   const [answerAnimation, setAnswerAnimation] = useState(false);
 
   const [submittedQuestions, setSubmittedQuestions] = useState<Record<number, boolean>>({});
@@ -170,10 +169,7 @@ const QuizPlayPage: React.FC = () => {
     try {
       await submitAnswer(currentQuestion.id);
       setAnswerAnimation(true);
-      setTimeout(() => {
-        setShowAnswer(true);
-        setAnswerAnimation(false);
-      }, 200);
+      setTimeout(() => setAnswerAnimation(false), 200);
       setSubmittedQuestions((prev) => ({ ...prev, [currentQuestion.id]: true }));
     } catch (error) {
       console.error('Failed to submit answer:', error);
@@ -183,7 +179,6 @@ const QuizPlayPage: React.FC = () => {
   const handleNext = () => {
     if (currentQuestionIndex < currentQuestions.length - 1) {
       nextQuestion();
-      setShowAnswer(false);
     } else {
       completeQuiz();
     }
@@ -586,7 +581,7 @@ const QuizPlayPage: React.FC = () => {
             {currentQuestion.answers.map((answer, index) => {
               const isSelected = getSelectedAnswer(currentQuestion.id) === index;
               const isCorrect = isAnswerCorrect(currentQuestion.id, index);
-              const revealed = submittedQuestions[currentQuestion.id] || showAnswer;
+              const revealed = submittedQuestions[currentQuestion.id];
               const showCorrect = revealed && isCorrect;
               const showIncorrect = revealed && isSelected && !isCorrect;
 
@@ -637,163 +632,35 @@ const QuizPlayPage: React.FC = () => {
             })}
           </div>
 
-          {/* Submit answer action */}
-          <div className="mt-4 flex justify-end">
-            <Button
-              type="primary"
-              size="large"
-              onClick={handleSubmitAnswer}
-              disabled={
-                submittedQuestions[currentQuestion.id] ||
-                selectedAnswers[currentQuestion.id] === undefined
-              }
-              className="px-6"
-            >
-              პასუხის დადასტურება
-            </Button>
+          {/* Submit and Next actions */}
+          <div className="mt-4 flex justify-end gap-2">
+            {!submittedQuestions[currentQuestion.id] && (
+              <Button
+                type="primary"
+                size="large"
+                onClick={handleSubmitAnswer}
+                disabled={
+                  submittedQuestions[currentQuestion.id] ||
+                  selectedAnswers[currentQuestion.id] === undefined
+                }
+                className="px-6"
+              >
+                პასუხის დადასტურება
+              </Button>
+            )}
+            {submittedQuestions[currentQuestion.id] && (
+              <Button
+                type="default"
+                size="large"
+                onClick={handleNext}
+                className="px-6"
+                icon={<ArrowRightOutlined />}
+              >
+                {currentQuestionIndex === currentQuestions.length - 1 ? 'დასრულება' : 'შემდეგი კითხვა'}
+              </Button>
+            )}
           </div>
         </Card>
-
-        {/* Answer Result Modal */}
-        <Modal
-          open={showAnswer}
-          onCancel={() => {
-            setShowAnswer(false);
-            handleNext();
-          }}
-          footer={null}
-          width={800}
-          centered
-          className="answer-result-modal"
-          maskStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
-          bodyStyle={{ padding: 0, background: 'transparent' }}
-        >
-          <div className="relative">
-            {/* Background decoration */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl blur-xl"></div>
-
-            {/* Main content */}
-            <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden">
-              {/* Header with animated background */}
-
-              {/* Content area */}
-              <div className="p-8">
-                {/* Question image moved to main card */}
-
-                {/* Question text */}
-                <div className="mb-6 p-4 bg-gray-50 rounded-xl">
-                  <div className="flex items-center mb-3">
-                    <QuestionCircleOutlined className="text-blue-500 text-xl mr-2" />
-                    <Text strong className="text-gray-700">
-                      კითხვა:
-                    </Text>
-                  </div>
-                  <Text className="text-lg text-gray-800 leading-relaxed">
-                    {currentQuestion.question}
-                  </Text>
-                </div>
-
-                {/* Answer analysis */}
-                <div className="mb-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Your answer */}
-                    <div
-                      className={`p-4 rounded-xl border-2 answer-analysis-card ${
-                        getSelectedAnswer(currentQuestion.id) !== undefined &&
-                        isAnswerCorrect(currentQuestion.id, getSelectedAnswer(currentQuestion.id))
-                          ? 'border-green-200 bg-green-50'
-                          : 'border-red-200 bg-red-50'
-                      }`}
-                    >
-                      <div className="flex items-center mb-2">
-                        <div
-                          className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-bold mr-2 ${
-                            getSelectedAnswer(currentQuestion.id) !== undefined &&
-                            isAnswerCorrect(currentQuestion.id, getSelectedAnswer(currentQuestion.id))
-                              ? 'bg-green-500'
-                              : 'bg-red-500'
-                          }`}
-                        >
-                          {getSelectedAnswer(currentQuestion.id) !== undefined &&
-                          isAnswerCorrect(currentQuestion.id, getSelectedAnswer(currentQuestion.id))
-                            ? '✓'
-                            : '✗'}
-                        </div>
-                        <Text strong className="text-gray-700">
-                          თქვენი პასუხი:
-                        </Text>
-                      </div>
-                      <Text className="text-gray-800">
-                        {getSelectedAnswer(currentQuestion.id) !== undefined
-                          ? currentQuestion.answers[getSelectedAnswer(currentQuestion.id)]?.answer
-                          : 'პასუხი არ იყო მოცემული'}
-                      </Text>
-                    </div>
-
-                    {/* Correct answer */}
-                    <div className="p-4 rounded-xl border-2 border-green-200 bg-green-50 answer-analysis-card">
-                      <div className="flex items-center mb-2">
-                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-2">
-                          ✓
-                        </div>
-                        <Text strong className="text-gray-700">
-                          სწორი პასუხი:
-                        </Text>
-                      </div>
-                      <Text className="text-gray-800">
-                        {
-                          currentQuestion.answers.find((_answer, index) =>
-                            isAnswerCorrect(currentQuestion.id, index),
-                          )?.answer
-                        }
-                      </Text>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Progress indicator */}
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <Text className="text-gray-600">პროგრესი</Text>
-                    <Text className="text-gray-600 font-semibold">
-                      {currentQuestionIndex + 1} / {currentQuestions.length}
-                    </Text>
-                  </div>
-                  <Progress
-                    percent={getProgressPercentage()}
-                    showInfo={false}
-                    strokeColor={{
-                      '0%': '#3b82f6',
-                      '100%': '#10b981',
-                    }}
-                    className="mb-2"
-                  />
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>დაწყება</span>
-                    <span>{Math.round(getProgressPercentage())}%</span>
-                    <span>დასრულება</span>
-                  </div>
-                </div>
-
-                {/* Action buttons */}
-                <div className="flex justify-center">
-                  <Button
-                    type="primary"
-                    size="large"
-                    onClick={handleNext}
-                    className="px-6 py-2 h-auto shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                    icon={<ArrowRightOutlined />}
-                  >
-                    {currentQuestionIndex === currentQuestions.length - 1
-                      ? 'დასრულება'
-                      : 'შემდეგი კითხვა'}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Modal>
-
         {/* Navigation */}
       </div>
     </Layout>
