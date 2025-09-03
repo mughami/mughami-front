@@ -303,7 +303,7 @@ const QuizPlayPage: React.FC = () => {
                 </div>
                 <div className="flex items-center">
                   <ClockCircleOutlined className="mr-2" />
-                  <span>~{Math.ceil(currentQuestions.length * 2)} წუთი</span>
+                  <span>~{Math.ceil(currentQuestions.length * 0.5)} წუთი</span>
                 </div>
                 {/* <div className="flex items-center">
                   <StarOutlined className="mr-2 text-yellow-500" />

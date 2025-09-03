@@ -314,7 +314,9 @@ const PublicQuizPlayPage: React.FC = () => {
                   </div>
                   <div className="flex items-center px-4 py-2 bg-purple-50 rounded-full shadow-sm">
                     <ClockCircleOutlined className="mr-2 text-purple-500" />
-                    <span className="font-medium">~{Math.ceil(currentQuestions.length * 2)} წუთი</span>
+                    <span className="font-medium">
+                      ~{Math.ceil(currentQuestions.length * 0.5)} წუთი
+                    </span>
                   </div>
                 </div>
               </div>
