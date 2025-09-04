@@ -120,8 +120,9 @@ const PublicQuizPlayPage: React.FC = () => {
     }
 
     return () => {
-      blobUrlsRef.current.forEach((url) => cleanupBlobUrl(url));
-      blobUrlsRef.current.clear();
+      const urls = blobUrlsRef.current;
+      urls.forEach((url) => cleanupBlobUrl(url));
+      urls.clear();
     };
   }, [currentQuestions, getQuestionPhoto]);
 
@@ -619,7 +620,7 @@ const PublicQuizPlayPage: React.FC = () => {
                       >
                         {String.fromCharCode(65 + index)}
                       </div>
-                      <span className="text-base sm:text-lg font-medium flex-1 leading-relaxed">
+                      <span className="text-base sm:text-lg font-medium flex-1 leading-relaxed break-words whitespace-normal">
                         {answer.answer}
                       </span>
                     </div>

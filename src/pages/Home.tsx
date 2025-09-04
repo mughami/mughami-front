@@ -450,12 +450,12 @@ const Home = () => {
                                   } border-2`}
                                 >
                                   <Radio value={option.id} className="w-full">
-                                    <div className="flex justify-between items-center w-full">
-                                      <span className="font-semibold text-gray-700">
+                                    <div className="flex justify-between items-start w-full gap-3">
+                                      <span className="font-semibold text-gray-700 flex-1 leading-relaxed break-words whitespace-normal">
                                         {option.name}
                                       </span>
                                       {selectedPolls[poll.id] === option.id && (
-                                        <span className="text-primary">✨</span>
+                                        <span className="text-primary flex-shrink-0">✨</span>
                                       )}
                                     </div>
                                   </Radio>
@@ -493,9 +493,13 @@ const Home = () => {
                                     : 'bg-gray-50 border-gray-200'
                                 } border-2`}
                               >
-                                <div className="flex justify-between items-center mb-3">
-                                  <span className="font-semibold text-gray-700">{option.name}</span>
-                                  <span className="text-gray-600 font-bold">{percentage}%</span>
+                                <div className="flex justify-between items-start mb-3 gap-3">
+                                  <span className="font-semibold text-gray-700 flex-1 leading-relaxed break-words whitespace-normal">
+                                    {option.name}
+                                  </span>
+                                  <span className="text-gray-600 font-bold flex-shrink-0">
+                                    {percentage}%
+                                  </span>
                                 </div>
                                 <Progress
                                   percent={percentage}

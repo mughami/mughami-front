@@ -116,8 +116,9 @@ const QuizPlayPage: React.FC = () => {
     }
 
     return () => {
-      blobUrlsRef.current.forEach((url) => cleanupBlobUrl(url));
-      blobUrlsRef.current.clear();
+      const urls = blobUrlsRef.current;
+      urls.forEach((url) => cleanupBlobUrl(url));
+      urls.clear();
     };
   }, [currentQuestions, getQuestionPhoto]);
 
@@ -363,7 +364,7 @@ const QuizPlayPage: React.FC = () => {
                 size="large"
                 onClick={handleStartQuiz}
                 loading={loading}
-                className="px-12 py-3 h-auto text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                className="px-12 w-full max-w-[300px] py-3 h-auto text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 icon={<PlayCircleOutlined />}
               >
                 ვიქტორინის დაწყება
@@ -496,7 +497,7 @@ const QuizPlayPage: React.FC = () => {
       <div className="max-w-4xl mx-auto py-8 px-4">
         {/* Header with Progress */}
         <Card className="mb-6 shadow-lg border-0">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
             <Button
               icon={<ArrowLeftOutlined />}
               onClick={() => navigate('/')}
@@ -505,10 +506,10 @@ const QuizPlayPage: React.FC = () => {
               დაბრუნება
             </Button>
             <div className="text-center">
-              <Title level={3} className="mb-1">
+              <Title level={3} className="mb-1 break-words">
                 {currentQuiz.quizName}
               </Title>
-              <div className="flex items-center justify-center space-x-4 text-sm text-gray-600">
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-sm text-gray-600">
                 <div className="flex items-center">
                   <QuestionCircleOutlined className="mr-1" />
                   <span>
@@ -525,7 +526,7 @@ const QuizPlayPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="w-20"></div> {/* Spacer for centering */}
+            <div className="hidden sm:block w-20"></div> {/* Spacer for centering */}
           </div>
 
           <Progress
@@ -611,7 +612,7 @@ const QuizPlayPage: React.FC = () => {
                     ) : null
                   }
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center w-full">
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 ${
                         showCorrect
@@ -625,7 +626,9 @@ const QuizPlayPage: React.FC = () => {
                     >
                       {String.fromCharCode(65 + index)}
                     </div>
-                    <span className="text-lg">{answer.answer}</span>
+                    <span className="text-lg flex-1 leading-relaxed break-words whitespace-normal">
+                      {answer.answer}
+                    </span>
                   </div>
                 </Button>
               );

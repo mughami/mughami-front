@@ -200,12 +200,14 @@ const PollsPage = () => {
                                     }`}
                                   >
                                     <Radio value={option.id} className="w-full">
-                                      <div className="flex justify-between items-center w-full">
-                                        <span className="font-medium text-slate-700 ml-2">
+                                      <div className="flex justify-between items-start w-full gap-3">
+                                        <span className="font-medium text-slate-700 ml-2 flex-1 leading-relaxed break-words whitespace-normal">
                                           {option.name}
                                         </span>
                                         {selectedPolls[poll.id] === option.id && (
-                                          <span className="text-blue-600 text-lg">✨</span>
+                                          <span className="text-blue-600 text-lg flex-shrink-0">
+                                            ✨
+                                          </span>
                                         )}
                                       </div>
                                     </Radio>
@@ -234,9 +236,11 @@ const PollsPage = () => {
                                         : 'border-gray-200 bg-gray-50/30'
                                     }`}
                                   >
-                                    <div className="flex justify-between items-center mb-3">
-                                      <span className="font-medium text-slate-700">{option.name}</span>
-                                      <span className="text-sm font-bold text-slate-600">
+                                    <div className="flex justify-between items-start mb-3 gap-3">
+                                      <span className="font-medium text-slate-700 flex-1 leading-relaxed break-words whitespace-normal">
+                                        {option.name}
+                                      </span>
+                                      <span className="text-sm font-bold text-slate-600 flex-shrink-0">
                                         {percentage}%
                                       </span>
                                     </div>
