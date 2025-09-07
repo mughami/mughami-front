@@ -291,16 +291,15 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
             }}
             showUploadList={false}
             accept="image/*"
-            disabled={question.hasPhoto || uploadingPhoto === question.id}
+            disabled={uploadingPhoto === question.id}
           >
             <Button
               type="link"
               icon={<UploadOutlined />}
               size="small"
               loading={uploadingPhoto === question.id}
-              disabled={question.hasPhoto}
             >
-              {question.hasPhoto ? 'ფოტო არის' : 'ფოტო'}
+              {question.hasPhoto ? 'ფოტოს შეცვლა' : 'ფოტოს დამატება'}
             </Button>
           </Upload>
           <Popconfirm
