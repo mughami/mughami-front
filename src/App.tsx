@@ -129,7 +129,6 @@ function App() {
           }
         />
 
-        {/* Categories - require authentication */}
         <Route
           path="/categories"
           element={
@@ -138,18 +137,36 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/quizzes/:categoryId" element={<QuizPage />} />
-        <Route path="/quiz/play/:quizId" element={<QuizPlayPage />} />
-        <Route path="/quiz/results" element={<QuizResultsPage />} />
+        <Route
+          path="/quizzes/:categoryId"
+          element={
+            <ProtectedRoute>
+              <QuizPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quiz/play/:quizId"
+          element={
+            <ProtectedRoute>
+              <QuizPlayPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quiz/results"
+          element={
+            <ProtectedRoute>
+              <QuizResultsPage />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* Polls route - accessible to all users */}
         <Route path="/polls" element={<PollsPage />} />
 
-        {/* Public quiz routes - no authentication required */}
         <Route path="/public-quizzes" element={<PublicQuizzesPage />} />
         <Route path="/public-quiz/play/:quizId" element={<PublicQuizPlayPage />} />
 
-        {/* Protected routes */}
         <Route
           path="/profile"
           element={
@@ -159,7 +176,6 @@ function App() {
           }
         />
 
-        {/* Admin routes */}
         <Route
           path="/admin"
           element={
