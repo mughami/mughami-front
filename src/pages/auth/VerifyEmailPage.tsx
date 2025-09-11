@@ -81,7 +81,9 @@ const VerifyEmailPage = () => {
       <div className="auth-container">
         <div className="auth-form-container">
           <div className="logo-container">
-            <img src="/favicon.jpeg" alt="ლოგო" className="auth-logo" />
+            <Link to="/">
+              <img src="/favicon.jpeg" alt="ლოგო" className="auth-logo" />
+            </Link>
           </div>
 
           <div className="text-center mb-6">

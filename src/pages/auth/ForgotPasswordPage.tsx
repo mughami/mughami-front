@@ -83,7 +83,9 @@ const ForgotPasswordPage = () => {
       <div className="auth-container">
         <div className="auth-form-container">
           <div className="logo-container">
-            <img src="/favicon.jpeg" alt="ლოგო" className="auth-logo" />
+            <Link to="/">
+              <img src="/favicon.jpeg" alt="ლოგო" className="auth-logo" />
+            </Link>
           </div>
           <h2 className="auth-heading">პაროლის აღდგენა</h2>
           <p className="auth-subheading">შეიყვანეთ თქვენი ელ-ფოსტა და OTP კოდი პაროლის აღსადგენად</p>
