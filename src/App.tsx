@@ -27,7 +27,7 @@ import './App.css';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
-  const { isAuthenticated, getCurrentUser } = useAuthStore();
+  const { isAuthenticated, getCurrentUser, logout } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -48,6 +48,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
   }
 
   if (!isAuthenticated) {
+    logout();
     return <Navigate to="/login" replace />;
   }
 
@@ -84,6 +85,10 @@ const AdminRoute = ({ children }: { children: React.ReactElement }) => {
 };
 
 const AuthRoute = ({ children }: { children: React.ReactElement }) => {
+  const { isAuthenticated } = useAuthStore();
+  if (isAuthenticated) {
+    return <Navigate to="/categories" replace />;
+  }
   return children;
 };
 
