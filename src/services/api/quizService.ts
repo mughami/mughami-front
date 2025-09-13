@@ -59,6 +59,15 @@ export interface CreateQuestionRequest {
   }[];
 }
 
+export interface UpdateQuestionRequest {
+  question: string;
+  answers: {
+    id?: number;
+    answer: string;
+    isCorrect: boolean;
+  }[];
+}
+
 export interface UpdateQuizRequest {
   name: string;
   categoryId: number;
@@ -103,6 +112,15 @@ const quizService = {
 
   createQuestion: async (quizId: number, data: CreateQuestionRequest): Promise<QuizQuestion> => {
     const response = await apiClient.post<QuizQuestion>(`/admin/quiz/${quizId}/questions`, data);
+    return response.data;
+  },
+
+  // Admin: update question
+  updateQuestion: async (questionId: number, data: UpdateQuestionRequest): Promise<QuizQuestion> => {
+    const response = await apiClient.put<QuizQuestion>(
+      `/admin/quiz/question-update/${questionId}`,
+      data,
+    );
     return response.data;
   },
 

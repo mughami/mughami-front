@@ -22,6 +22,7 @@ import {
   PlusOutlined,
   DeleteOutlined,
   UploadOutlined,
+  EditOutlined,
   QuestionCircleOutlined,
   ArrowLeftOutlined,
   TrophyOutlined,
@@ -51,11 +52,13 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
     addQuestionPhoto,
     getQuizPhoto,
     getQuestionPhoto,
+    updateQuestion,
   } = useQuizStore();
 
   const { adminCategories } = useCategoryStore();
 
   const [isQuestionModalVisible, setIsQuestionModalVisible] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<QuizQuestion | null>(null);
   const [isPhotoModalVisible, setIsPhotoModalVisible] = useState(false);
   const [questionForm] = Form.useForm();
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -64,7 +67,12 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
   const [questionPhotos, setQuestionPhotos] = useState<Record<number, string>>({});
   const blobUrlsRef = useRef<Set<string>>(new Set());
   const [answers, setAnswers] = useState<string[]>([]);
+  const [answerIds, setAnswerIds] = useState<(number | null)[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState<number | null>(null);
+  const [tablePagination, setTablePagination] = useState<{ current: number; pageSize: number }>({
+    current: 1,
+    pageSize: 10,
+  });
 
   useEffect(() => {
     fetchQuiz(quizId);
@@ -162,6 +170,34 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
     }
   };
 
+  const handleUpdateQuestion = async (values: {
+    question: string;
+    answers: string[];
+    correctAnswerIndex: number;
+  }) => {
+    if (!editingQuestion) return;
+    try {
+      const updateData = {
+        question: values.question,
+        answers: values.answers.map((answer: string, index: number) => ({
+          id: answerIds[index] ?? undefined,
+          answer,
+          isCorrect: index === values.correctAnswerIndex,
+        })),
+      };
+
+      await updateQuestion(editingQuestion.id, updateData, quizId);
+      message.success('კითხვა წარმატებით განახლდა!');
+      setIsQuestionModalVisible(false);
+      setEditingQuestion(null);
+      questionForm.resetFields();
+      setAnswers([]);
+      setQuestionPhotoFile(null);
+    } catch {
+      message.error('კითხვის განახლებისას მოხდა შეცდომა');
+    }
+  };
+
   const handleAddQuizPhoto = async () => {
     if (!photoFile) {
       message.error('გთხოვთ აირჩიოთ ფოტო');
@@ -196,15 +232,34 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
 
   const handleOpenQuestionModal = () => {
     setIsQuestionModalVisible(true);
+    setEditingQuestion(null);
     questionForm.resetFields();
     setAnswers([]);
+    setAnswerIds([]);
     setQuestionPhotoFile(null);
+  };
+
+  const handleOpenEditQuestionModal = (question: QuizQuestion) => {
+    setEditingQuestion(question);
+    setIsQuestionModalVisible(true);
+    const answerTexts = question.answers.map((a) => a.answer);
+    const ids = question.answers.map((a) => a.id ?? null);
+    const correctIndex = question.answers.findIndex((a) => a.isCorrect);
+    setAnswers(answerTexts);
+    setAnswerIds(ids);
+    questionForm.setFieldsValue({
+      question: question.question,
+      answers: answerTexts,
+      correctAnswerIndex: correctIndex >= 0 ? correctIndex : 0,
+    });
   };
 
   const handleCloseQuestionModal = () => {
     setIsQuestionModalVisible(false);
+    setEditingQuestion(null);
     questionForm.resetFields();
     setAnswers([]);
+    setAnswerIds([]);
     setQuestionPhotoFile(null);
   };
 
@@ -229,7 +284,9 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
       title: '#',
       key: 'index',
       width: 60,
-      render: (_: QuizQuestion, __: QuizQuestion, index: number) => <Text strong>{index + 1}</Text>,
+      render: (_: QuizQuestion, __: QuizQuestion, index: number) => (
+        <Text strong>{(tablePagination.current - 1) * tablePagination.pageSize + index + 1}</Text>
+      ),
     },
     {
       title: 'ფოტო',
@@ -284,6 +341,14 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
       width: 200,
       render: (question: QuizQuestion) => (
         <Space direction="vertical" size="small">
+          <Button
+            type="link"
+            icon={<EditOutlined />}
+            size="small"
+            onClick={() => handleOpenEditQuestionModal(question)}
+          >
+            რედაქტირება
+          </Button>
           <Upload
             beforeUpload={(file) => {
               handleAddQuestionPhoto(question.id, file);
@@ -413,23 +478,29 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
           rowKey="id"
           loading={loading}
           pagination={{
-            pageSize: 10,
+            current: tablePagination.current,
+            pageSize: tablePagination.pageSize,
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) => `${range[0]}-${range[1]} ${total} კითხვიდან`,
+            onChange: (page, pageSize) => setTablePagination({ current: page, pageSize }),
           }}
         />
       </Card>
 
       {/* Create Question Modal */}
       <Modal
-        title="ახალი კითხვა"
+        title={editingQuestion ? 'კითხვის რედაქტირება' : 'ახალი კითხვა'}
         open={isQuestionModalVisible}
         onCancel={handleCloseQuestionModal}
         footer={null}
         width={600}
       >
-        <Form form={questionForm} layout="vertical" onFinish={handleCreateQuestion}>
+        <Form
+          form={questionForm}
+          layout="vertical"
+          onFinish={editingQuestion ? handleUpdateQuestion : handleCreateQuestion}
+        >
           <Form.Item
             name="question"
             label="კითხვა"
@@ -500,6 +571,9 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
                             const newAnswers = [...answers];
                             newAnswers.splice(index, 1);
                             setAnswers(newAnswers);
+                            const newIds = [...answerIds];
+                            newIds.splice(index, 1);
+                            setAnswerIds(newIds);
                           }}
                           style={{ width: '10%' }}
                         >
@@ -514,6 +588,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
                       onClick={() => {
                         add();
                         setAnswers([...answers, '']);
+                        setAnswerIds([...answerIds, null]);
                       }}
                       block
                     >
@@ -539,25 +614,27 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
             </Select>
           </Form.Item>
 
-          <Form.Item label="კითხვის ფოტო (არასავალდებულო)">
-            <Upload
-              beforeUpload={(file) => {
-                setQuestionPhotoFile(file);
-                return false;
-              }}
-              onRemove={() => setQuestionPhotoFile(null)}
-              maxCount={1}
-              accept="image/*"
-            >
-              <Button icon={<UploadOutlined />}>ფოტოს ატვირთვა</Button>
-            </Upload>
-            <Text type="secondary">რეკომენდებული ზომა: 800x600px, მაქსიმუმ 2MB</Text>
-          </Form.Item>
+          {!editingQuestion && (
+            <Form.Item label="კითხვის ფოტო (არასავალდებულო)">
+              <Upload
+                beforeUpload={(file) => {
+                  setQuestionPhotoFile(file);
+                  return false;
+                }}
+                onRemove={() => setQuestionPhotoFile(null)}
+                maxCount={1}
+                accept="image/*"
+              >
+                <Button icon={<UploadOutlined />}>ფოტოს ატვირთვა</Button>
+              </Upload>
+              <Text type="secondary">რეკომენდებული ზომა: 800x600px, მაქსიმუმ 2MB</Text>
+            </Form.Item>
+          )}
 
           <Form.Item className="mb-0">
             <Space>
               <Button type="primary" htmlType="submit" loading={loading}>
-                დამატება
+                {editingQuestion ? 'განახლება' : 'დამატება'}
               </Button>
               <Button onClick={handleCloseQuestionModal}>გაუქმება</Button>
             </Space>

@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { Quiz, QuizResponse, QuestionsResponse, QuizQuestion } from './quizService';
 
 // Create a separate axios instance for public requests (without auth)
-const DEV_API_URL = 'http://localhost:54321';
+const DEV_API_URL = 'https://mughamiprod-production.up.railway.app';
 const API_URL = import.meta.env.VITE_API_URL || DEV_API_URL;
 
 const publicApiClient = axios.create({
