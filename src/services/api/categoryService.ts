@@ -26,6 +26,35 @@ const defaultCategoryImages = [
   'https://images.unsplash.com/photo-1531297484001-80022131f5a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
 ];
 
+// Map well-known categories to themed images (en + ka keywords)
+const getCategoryImage = (name: string, index: number): string => {
+  const n = (name || '').toLowerCase();
+  const contains = (keywords: string[]) => keywords.some((k) => n.includes(k));
+
+  // Movies / Cinema
+  if (contains(['movie', 'movies', 'film', 'cinema', 'hollywood', 'ფილმ', 'კინო'])) {
+    return 'https://images.unsplash.com/photo-1517602302552-471fe67acf66?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
+  }
+
+  // Sports
+  if (contains(['sport', 'sports', 'football', 'soccer', 'basketball', 'სპორტ'])) {
+    return 'https://images.unsplash.com/photo-1517649763962-0c623066013b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
+  }
+
+  // Literature / Books
+  if (contains(['literature', 'book', 'books', 'reading', 'ლიტერატურ', 'წიგნ'])) {
+    return 'https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
+  }
+
+  // History
+  if (contains(['history', 'historic', 'ancient', 'ისტორი'])) {
+    return 'https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
+  }
+
+  // Fallback to aesthetic defaults
+  return defaultCategoryImages[index % defaultCategoryImages.length];
+};
+
 // Convert backend CategoryResponse to frontend Category format
 const convertToLegacyCategory = (
   categoryResponse: CategoryResponse,
@@ -43,7 +72,7 @@ const convertToLegacyCategory = (
     id: categoryResponse.categoryId.toString(),
     title: categoryResponse.categoryName,
     description: `ქვიზები ${categoryResponse.categoryName} კატეგორიაში`,
-    image: defaultCategoryImages[index % defaultCategoryImages.length],
+    image: getCategoryImage(categoryResponse.categoryName, index),
     quizCount,
     questionCount,
     prize,

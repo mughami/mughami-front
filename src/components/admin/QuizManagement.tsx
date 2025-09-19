@@ -16,7 +16,8 @@ import {
   Tag,
   Popconfirm,
   List,
-  Select,
+  // Select,
+  Switch,
 } from 'antd';
 import {
   PlusOutlined,
@@ -29,7 +30,7 @@ import {
 } from '@ant-design/icons';
 import { useQuizStore, cleanupBlobUrl } from '../../store/quizStore';
 import { useCategoryStore } from '../../store/categoryStore';
-import type { QuizQuestion, CreateQuestionRequest } from '../../services/api/quizService';
+import type { QuizQuestion, QuizAnswer, CreateQuestionRequest } from '../../services/api/quizService';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -53,6 +54,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
     getQuizPhoto,
     getQuestionPhoto,
     updateQuestion,
+    updateAdminAnswer,
   } = useQuizStore();
 
   const { adminCategories } = useCategoryStore();
@@ -66,13 +68,21 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
   const [quizPhotoUrl, setQuizPhotoUrl] = useState<string>('');
   const [questionPhotos, setQuestionPhotos] = useState<Record<number, string>>({});
   const blobUrlsRef = useRef<Set<string>>(new Set());
-  const [answers, setAnswers] = useState<string[]>([]);
+  // const [answers, setAnswers] = useState<string[]>([]);
   const [answerIds, setAnswerIds] = useState<(number | null)[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState<number | null>(null);
   const [tablePagination, setTablePagination] = useState<{ current: number; pageSize: number }>({
     current: 1,
     pageSize: 10,
   });
+
+  // Answer edit modal state
+  const [isAnswerModalVisible, setIsAnswerModalVisible] = useState(false);
+  const [answerForm] = Form.useForm();
+  const [editingAnswerMeta, setEditingAnswerMeta] = useState<{
+    questionId: number;
+    answerId: number;
+  } | null>(null);
 
   useEffect(() => {
     fetchQuiz(quizId);
@@ -163,7 +173,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
 
       setIsQuestionModalVisible(false);
       questionForm.resetFields();
-      setAnswers([]);
+      // setAnswers([]);
       setQuestionPhotoFile(null);
     } catch {
       message.error('კითხვის დამატებისას მოხდა შეცდომა');
@@ -191,7 +201,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
       setIsQuestionModalVisible(false);
       setEditingQuestion(null);
       questionForm.resetFields();
-      setAnswers([]);
+      // setAnswers([]);
       setQuestionPhotoFile(null);
     } catch {
       message.error('კითხვის განახლებისას მოხდა შეცდომა');
@@ -234,7 +244,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
     setIsQuestionModalVisible(true);
     setEditingQuestion(null);
     questionForm.resetFields();
-    setAnswers([]);
+    // setAnswers([]);
     setAnswerIds([]);
     setQuestionPhotoFile(null);
   };
@@ -245,7 +255,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
     const answerTexts = question.answers.map((a) => a.answer);
     const ids = question.answers.map((a) => a.id ?? null);
     const correctIndex = question.answers.findIndex((a) => a.isCorrect);
-    setAnswers(answerTexts);
+    // setAnswers(answerTexts);
     setAnswerIds(ids);
     questionForm.setFieldsValue({
       question: question.question,
@@ -258,7 +268,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
     setIsQuestionModalVisible(false);
     setEditingQuestion(null);
     questionForm.resetFields();
-    setAnswers([]);
+    // setAnswers([]);
     setAnswerIds([]);
     setQuestionPhotoFile(null);
   };
@@ -271,6 +281,25 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
       await fetchAdminQuizQuestions(quizId, 0, 50);
     } catch {
       message.error('კითხვის წაშლისას მოხდა შეცდომა');
+    }
+  };
+
+  const handleOpenEditAnswerModal = (questionId: number, answer: QuizAnswer) => {
+    setEditingAnswerMeta({ questionId, answerId: answer.id });
+    setIsAnswerModalVisible(true);
+    answerForm.setFieldsValue({ answer: answer.answer, isCorrect: answer.isCorrect });
+  };
+
+  const handleUpdateAnswer = async (values: { answer: string; isCorrect: boolean }) => {
+    if (!editingAnswerMeta) return;
+    try {
+      await updateAdminAnswer(editingAnswerMeta.answerId, values, editingAnswerMeta.questionId);
+      message.success('პასუხი წარმატებით განახლდა!');
+      setIsAnswerModalVisible(false);
+      setEditingAnswerMeta(null);
+      answerForm.resetFields();
+    } catch {
+      message.error('პასუხის განახლებისას მოხდა შეცდომა');
     }
   };
 
@@ -320,16 +349,30 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
         <List
           size="small"
           dataSource={question.answers}
-          renderItem={(answer, index) => (
+          renderItem={(answer: QuizAnswer, index: number) => (
             <List.Item className="py-1">
-              <Text className={answer.isCorrect ? 'text-green-600 font-semibold' : 'text-gray-600'}>
-                {index + 1}. {answer.answer}
-                {answer.isCorrect && (
-                  <Tag color="green" className="ml-2">
-                    სწორი
-                  </Tag>
-                )}
-              </Text>
+              <div className="flex items-center justify-between w-full">
+                <div>
+                  <Text
+                    className={answer.isCorrect ? 'text-green-600 font-semibold' : 'text-gray-600'}
+                  >
+                    {index + 1}. {answer.answer}
+                  </Text>
+                  {answer.isCorrect && (
+                    <Tag color="green" className="ml-2">
+                      სწორი
+                    </Tag>
+                  )}
+                </div>
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<EditOutlined />}
+                  onClick={() => handleOpenEditAnswerModal(question.id, answer)}
+                >
+                  პასუხის რედაქტირება
+                </Button>
+              </div>
             </List.Item>
           )}
         />
@@ -347,7 +390,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
             size="small"
             onClick={() => handleOpenEditQuestionModal(question)}
           >
-            რედაქტირება
+            კითხვის რედაქტირება
           </Button>
           <Upload
             beforeUpload={(file) => {
@@ -512,7 +555,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
             <TextArea rows={3} placeholder="შეიყვანეთ კითხვა..." />
           </Form.Item>
 
-          <Form.Item
+          {/* <Form.Item
             name="answers"
             label="პასუხები"
             rules={[
@@ -598,9 +641,9 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
                 </>
               )}
             </Form.List>
-          </Form.Item>
+          </Form.Item> */}
 
-          <Form.Item
+          {/* <Form.Item
             name="correctAnswerIndex"
             label="სწორი პასუხი"
             rules={[{ required: true, message: 'გთხოვთ აირჩიოთ სწორი პასუხი' }]}
@@ -612,7 +655,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
                 </Select.Option>
               ))}
             </Select>
-          </Form.Item>
+          </Form.Item> */}
 
           {!editingQuestion && (
             <Form.Item label="კითხვის ფოტო (არასავალდებულო)">
@@ -677,6 +720,48 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
                 დამატება
               </Button>
               <Button onClick={() => setIsPhotoModalVisible(false)}>გაუქმება</Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Edit Answer Modal */}
+      <Modal
+        title="პასუხის რედაქტირება"
+        open={isAnswerModalVisible}
+        onCancel={() => {
+          setIsAnswerModalVisible(false);
+          setEditingAnswerMeta(null);
+          answerForm.resetFields();
+        }}
+        footer={null}
+        width={480}
+      >
+        <Form form={answerForm} layout="vertical" onFinish={handleUpdateAnswer}>
+          <Form.Item
+            name="answer"
+            label="პასუხი"
+            rules={[{ required: true, message: 'გთხოვთ შეიყვანოთ პასუხი' }]}
+          >
+            <Input placeholder="პასუხის ტექსტი" />
+          </Form.Item>
+          <Form.Item name="isCorrect" label="სწორია?" valuePropName="checked">
+            <Switch checkedChildren="დიახ" unCheckedChildren="არა" />
+          </Form.Item>
+          <Form.Item className="mb-0">
+            <Space>
+              <Button type="primary" htmlType="submit" loading={loading}>
+                შენახვა
+              </Button>
+              <Button
+                onClick={() => {
+                  setIsAnswerModalVisible(false);
+                  setEditingAnswerMeta(null);
+                  answerForm.resetFields();
+                }}
+              >
+                გაუქმება
+              </Button>
             </Space>
           </Form.Item>
         </Form>

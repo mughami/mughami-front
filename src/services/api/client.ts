@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Base API configuration
-const DEV_API_URL = 'https://mughamiprod-production.up.railway.app';
+const DEV_API_URL = 'http://localhost:54321';
 const API_URL = import.meta.env.VITE_API_URL || DEV_API_URL;
 
 // Create axios instance with base configuration
@@ -48,7 +48,7 @@ apiClient.interceptors.response.use(
 
         // Call refresh token endpoint
         const response = await axios.post(`${API_URL}/authentication/refresh-token`, {
-          refreshToken,
+          token: refreshToken,
         });
 
         const { token, refreshToken: newRefreshToken } = response.data;
@@ -64,9 +64,10 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest);
       } catch (refreshError) {
         // If refresh token fails, logout user
-        // localStorage.removeItem('token');
-        // localStorage.removeItem('refreshToken');
-        // window.location.href = '/login';
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('auth-storage');
+        window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }

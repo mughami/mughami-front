@@ -9,6 +9,8 @@ import quizService, {
   type CreateQuestionRequest,
   type UpdateQuizRequest,
   type UpdateQuestionRequest,
+  type QuizAnswer,
+  type UpdateAnswerRequest,
 } from '../services/api/quizService';
 
 interface QuizState {
@@ -68,6 +70,13 @@ interface QuizState {
     data: UpdateQuestionRequest,
     quizIdForRefresh?: number,
   ) => Promise<QuizQuestion>;
+
+  // Admin: update single answer
+  updateAdminAnswer: (
+    answerId: number,
+    data: UpdateAnswerRequest,
+    questionIdForLocalUpdate?: number,
+  ) => Promise<QuizAnswer>;
 
   // Photo operations
   getQuizPhoto: (quizId: number) => Promise<string>;
@@ -377,6 +386,40 @@ export const useQuizStore = create<QuizState>((set) => ({
       set({
         loading: false,
         error: error instanceof Error ? error.message : 'Failed to update question',
+      });
+      throw error;
+    }
+  },
+
+  updateAdminAnswer: async (
+    answerId: number,
+    data: UpdateAnswerRequest,
+    questionIdForLocalUpdate?: number,
+  ) => {
+    set({ loading: true, error: null });
+    try {
+      const updated = await quizService.updateAdminAnswer(answerId, data);
+      // Update in currentQuestions if we know the question
+      if (questionIdForLocalUpdate) {
+        set((state) => ({
+          currentQuestions: state.currentQuestions.map((q) =>
+            q.id === questionIdForLocalUpdate
+              ? {
+                  ...q,
+                  answers: q.answers.map((a) => (a.id === updated.id ? updated : a)),
+                }
+              : q,
+          ),
+          loading: false,
+        }));
+      } else {
+        set({ loading: false });
+      }
+      return updated;
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : 'Failed to update answer',
       });
       throw error;
     }

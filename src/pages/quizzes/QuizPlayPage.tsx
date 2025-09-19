@@ -51,13 +51,19 @@ const QuizPlayPage: React.FC = () => {
     nextQuestion,
 
     completeQuiz,
+    resetQuiz,
+    clearCurrentQuiz,
+    clearCurrentQuestions,
     getQuizPhoto,
     getQuestionPhoto,
   } = useQuizStore();
 
   const [quizPhotoUrl, setQuizPhotoUrl] = useState<string>('');
+  const prevQuizPhotoUrlRef = useRef<string>('');
   const [questionPhotos, setQuestionPhotos] = useState<Record<number, string>>({});
   const blobUrlsRef = useRef<Set<string>>(new Set());
+  const questionPhotoCacheRef = useRef<Record<number, string>>({});
+  const inFlightRef = useRef<Set<number>>(new Set());
   // Removed popup; we now reveal inline after submit
   const [answerAnimation, setAnswerAnimation] = useState(false);
 
@@ -65,62 +71,130 @@ const QuizPlayPage: React.FC = () => {
   const [timeSpent, setTimeSpent] = useState(0);
 
   useEffect(() => {
+    // Reset any previous quiz play state when switching quizzes
+    resetQuiz();
+    clearCurrentQuiz();
+    clearCurrentQuestions();
+
     if (quizId) {
       const id = parseInt(quizId);
       fetchUserQuiz(id);
       fetchQuizQuestions(id, 0, 50);
     }
-  }, [quizId, fetchUserQuiz, fetchQuizQuestions]);
+
+    return () => {
+      // Clean up when leaving the page
+      resetQuiz();
+      clearCurrentQuiz();
+      clearCurrentQuestions();
+    };
+  }, [quizId, fetchUserQuiz, fetchQuizQuestions, resetQuiz, clearCurrentQuiz, clearCurrentQuestions]);
 
   // No persisted results (localStorage disabled)
 
   useEffect(() => {
-    // Fetch quiz photo
+    let cancelled = false;
+    const prevUrl = prevQuizPhotoUrlRef.current;
     if (currentQuiz?.hasPhoto) {
-      getQuizPhoto(currentQuiz.quizId).then((photoUrl) => {
-        if (quizPhotoUrl) {
-          cleanupBlobUrl(quizPhotoUrl);
-          blobUrlsRef.current.delete(quizPhotoUrl);
-        }
-        setQuizPhotoUrl(photoUrl);
-        blobUrlsRef.current.add(photoUrl);
-      });
-    }
-  }, [currentQuiz, getQuizPhoto]);
-
-  useEffect(() => {
-    // Fetch question photos
-    const fetchQuestionPhotos = async () => {
-      Object.values(questionPhotos).forEach((url) => {
-        cleanupBlobUrl(url);
-        blobUrlsRef.current.delete(url);
-      });
-
-      const photos: Record<number, string> = {};
-      for (const question of currentQuestions) {
-        if (question.hasPhoto) {
-          try {
-            const photoUrl = await getQuestionPhoto(question.id);
-            photos[question.id] = photoUrl;
-            blobUrlsRef.current.add(photoUrl);
-          } catch {
-            console.error(`Failed to fetch photo for question ${question.id}`);
+      const id = currentQuiz.quizId;
+      getQuizPhoto(id)
+        .then((photoUrl) => {
+          if (cancelled) {
+            // If effect cleaned up, revoke fetched URL immediately
+            cleanupBlobUrl(photoUrl);
+            return;
           }
-        }
+          if (prevUrl) {
+            cleanupBlobUrl(prevUrl);
+            blobUrlsRef.current.delete(prevUrl);
+          }
+          setQuizPhotoUrl(photoUrl);
+          blobUrlsRef.current.add(photoUrl);
+          prevQuizPhotoUrlRef.current = photoUrl;
+        })
+        .catch(() => {
+          if (prevUrl) {
+            cleanupBlobUrl(prevUrl);
+            blobUrlsRef.current.delete(prevUrl);
+          }
+          setQuizPhotoUrl('');
+          prevQuizPhotoUrlRef.current = '';
+        });
+    } else {
+      if (prevUrl) {
+        cleanupBlobUrl(prevUrl);
+        blobUrlsRef.current.delete(prevUrl);
+        setQuizPhotoUrl('');
+        prevQuizPhotoUrlRef.current = '';
       }
-      setQuestionPhotos(photos);
-    };
-
-    if (currentQuestions.length > 0) {
-      fetchQuestionPhotos();
     }
 
     return () => {
-      const urls = blobUrlsRef.current;
-      urls.forEach((url) => cleanupBlobUrl(url));
-      urls.clear();
+      cancelled = true;
     };
-  }, [currentQuestions, getQuestionPhoto]);
+  }, [currentQuiz?.quizId, currentQuiz?.hasPhoto, getQuizPhoto]);
+
+  // Cleanup quiz photo URL on unmount
+  useEffect(() => {
+    return () => {
+      if (quizPhotoUrl) {
+        cleanupBlobUrl(quizPhotoUrl);
+        blobUrlsRef.current.delete(quizPhotoUrl);
+      }
+    };
+  }, [quizPhotoUrl]);
+
+  useEffect(() => {
+    // Remove cache entries for questions no longer present
+    Object.entries(questionPhotoCacheRef.current).forEach(([idStr, url]) => {
+      const id = Number(idStr);
+      if (!currentQuestions.find((q) => q.id === id)) {
+        cleanupBlobUrl(url);
+        blobUrlsRef.current.delete(url);
+        delete questionPhotoCacheRef.current[id];
+      }
+    });
+
+    if (currentQuestions.length === 0) {
+      setQuestionPhotos({});
+      return;
+    }
+
+    const indicesToPrefetch: number[] = [
+      currentQuestionIndex,
+      currentQuestionIndex + 1,
+      currentQuestionIndex - 1,
+    ].filter((i) => i >= 0 && i < currentQuestions.length);
+
+    indicesToPrefetch.forEach(async (idx) => {
+      const q = currentQuestions[idx];
+      if (!q.hasPhoto) return;
+      if (questionPhotoCacheRef.current[q.id]) return;
+      if (inFlightRef.current.has(q.id)) return;
+      inFlightRef.current.add(q.id);
+      try {
+        const url = await getQuestionPhoto(q.id);
+        questionPhotoCacheRef.current[q.id] = url;
+        blobUrlsRef.current.add(url);
+        setQuestionPhotos((prev) => ({ ...prev, [q.id]: url }));
+      } catch {
+        // ignore fetch failure for now
+      } finally {
+        inFlightRef.current.delete(q.id);
+      }
+    });
+  }, [currentQuestions, currentQuestionIndex, getQuestionPhoto]);
+
+  // Cleanup all blob urls on unmount
+  useEffect(() => {
+    return () => {
+      const urlsAtCleanup = blobUrlsRef.current;
+      urlsAtCleanup.forEach((url) => cleanupBlobUrl(url));
+      urlsAtCleanup.clear();
+      questionPhotoCacheRef.current = {};
+      inFlightRef.current.clear();
+    };
+  }, []);
 
   // Timer for tracking time spent
   useEffect(() => {
@@ -187,6 +261,9 @@ const QuizPlayPage: React.FC = () => {
 
   const handleGoHome = () => {
     // Do not persist partial results; simply navigate away
+    resetQuiz();
+    clearCurrentQuiz();
+    clearCurrentQuestions();
     navigate('/');
   };
 
@@ -500,7 +577,7 @@ const QuizPlayPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
             <Button
               icon={<ArrowLeftOutlined />}
-              onClick={() => navigate('/')}
+              onClick={() => navigate(-1)}
               className="hover:scale-105 transition-transform"
             >
               დაბრუნება

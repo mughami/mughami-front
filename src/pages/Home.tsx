@@ -33,6 +33,7 @@ const Home = () => {
   });
   const [currentSlide, setCurrentSlide] = useState(0);
   const videoIframeRefs = useRef<(HTMLIFrameElement | null)[]>([]);
+  const pollsContainerRef = useRef<HTMLDivElement | null>(null);
 
   // Safety check to ensure currentSlide is always valid for 2 slides
   useEffect(() => {
@@ -148,6 +149,13 @@ const Home = () => {
 
   const calculatePercentage = (votes: number, total: number) => {
     return total === 0 ? 0 : Math.round((votes / total) * 100);
+  };
+
+  const scrollPolls = (direction: 'left' | 'right') => {
+    const el = pollsContainerRef.current;
+    if (!el) return;
+    const amount = el.clientWidth * 0.85;
+    el.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' });
   };
 
   return (
@@ -377,161 +385,332 @@ const Home = () => {
           </div>
         </section> */}
 
-        {/* Polls Section - Prominent */}
+        {/* Enhanced Polls Section */}
         <section
           id="polls-section"
-          className="py-24 bg-gradient-to-br from-primary/5 to-primary/10 relative overflow-hidden"
+          className="py-16 bg-gradient-to-br from-slate-50 via-blue-50/50 to-purple-100/30 relative overflow-hidden"
         >
-          <div className="absolute inset-0 bg-[url('/poll-pattern.png')] opacity-5" />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-            <div className="text-center mb-16">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/20 rounded-full mb-6">
-                <FireOutlined className="text-3xl text-primary" />
+          {/* Premium Background Effects */}
+          <div className="absolute inset-0">
+            <div className="absolute top-20 left-1/4 w-96 h-96 bg-gradient-to-br from-blue-400/10 to-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-32 right-1/4 w-80 h-80 bg-gradient-to-br from-purple-400/10 to-pink-500/10 rounded-full blur-3xl animate-pulse delay-700"></div>
+            <div className="absolute top-1/2 left-10 w-64 h-64 bg-gradient-to-br from-cyan-400/8 to-blue-500/8 rounded-full blur-2xl animate-pulse delay-1000"></div>
+          </div>
+
+          {/* Floating Poll Icons */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-16 right-20 text-4xl animate-bounce delay-300">📊</div>
+            <div className="absolute top-40 left-16 text-3xl animate-pulse delay-500">🗳️</div>
+            <div className="absolute bottom-20 right-16 text-4xl animate-bounce delay-700">📈</div>
+            <div className="absolute bottom-40 left-20 text-3xl animate-pulse delay-1000">✨</div>
+          </div>
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            {/* Enhanced Header */}
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-sm rounded-2xl mb-6 group animate-pulse">
+                <div className="text-3xl">🗳️</div>
               </div>
-              <Title level={2} className="mb-4">
-                🗳️ მონაწილეობა მიიღეთ გამოკითხვებში!
+
+              <Title
+                level={2}
+                className="mb-4 text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-purple-600 bg-clip-text text-transparent"
+              >
+                ✨ მონაწილეობა მიიღეთ გამოკითხვებში
               </Title>
-              <Paragraph className="text-xl text-gray-600 max-w-2xl mx-auto">
-                გაიარეთ ჩვენი ინტერაქტიული გამოკითხვები და გაუზიარეთ თქვენი მოსაზრება საზოგადოებას
+
+              <Paragraph className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed mb-6">
+                გაიარეთ ჩვენი ინტერაქტიული გამოკითხვები და
+                <span className="font-semibold text-blue-600"> გაუზიარეთ თქვენი მოსაზრება</span> ✨
+                საზოგადოებას
               </Paragraph>
+
+              {/* Decorative Line */}
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-6 h-1 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full"></div>
+                <div className="w-12 h-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"></div>
+                <div className="w-6 h-1 bg-gradient-to-r from-pink-500 to-red-400 rounded-full"></div>
+              </div>
             </div>
+
             {loading ? (
-              <div className="flex justify-center items-center min-h-[400px]">
-                <Spin size="large" />
+              <div className="flex justify-center items-center min-h-[300px]">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-500/20 rounded-full blur-xl animate-pulse"></div>
+                  <div className="relative bg-white/90 backdrop-blur-xl rounded-2xl p-8 shadow-2xl">
+                    <Spin size="large" />
+                    <p className="mt-4 text-slate-600 font-medium">იტვირთება გამოკითხვები...</p>
+                  </div>
+                </div>
               </div>
             ) : (
-              <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
-                {polls.map((poll) => {
-                  const totalVotes = getTotalVotes(poll.options);
-                  const hasVoted = votedPolls.includes(poll.id);
-                  const showPollResults = showResults[poll.id];
+              <div className="relative">
+                {/* Premium Background Glow */}
+                <div className="absolute -inset-8 bg-gradient-to-r from-blue-400/20 via-purple-500/20 to-pink-500/20 rounded-[3rem] blur-3xl opacity-60"></div>
 
-                  return (
-                    <Card
-                      key={poll.id}
-                      className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-0 shadow-lg bg-white/80 backdrop-blur-sm"
-                      title={
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <div className="w-8 h-8 bg-gradient-to-r from-red-400 to-red-600 rounded-full flex items-center justify-center mr-3">
-                              <FireOutlined className="text-white text-sm" />
-                            </div>
-                            <span className="text-lg font-bold text-gray-800">{poll.title}</span>
-                          </div>
-                          {hasVoted && (
-                            <span className="text-sm text-white bg-green-500 px-3 py-1 rounded-full font-medium">
-                              ✅ ხმა ჩაწერილია
-                            </span>
-                          )}
-                        </div>
-                      }
-                    >
-                      {!showPollResults ? (
-                        <div className="space-y-4">
-                          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mb-6">
-                            <p className="text-blue-800 font-medium">
-                              👆 აირჩიეთ თქვენი ვარიანტი და მიიღეთ მონაწილეობა!
-                            </p>
-                          </div>
-                          <Radio.Group
-                            onChange={(e) => handleVote(poll.id, e.target.value as number)}
-                            value={selectedPolls[poll.id]}
-                            className="w-full"
-                            disabled={hasVoted}
-                          >
-                            <Space direction="vertical" className="w-full">
-                              {poll.options.map((option) => (
-                                <div
-                                  key={option.id}
-                                  className={`w-full p-4 rounded-xl transition-all duration-300 cursor-pointer ${
-                                    selectedPolls[poll.id] === option.id
-                                      ? 'bg-primary/20 border-primary shadow-md transform scale-105'
-                                      : 'hover:bg-gray-50 border-gray-200 hover:shadow-sm'
-                                  } border-2`}
-                                >
-                                  <Radio value={option.id} className="w-full">
-                                    <div className="flex justify-between items-start w-full gap-3">
-                                      <span className="font-semibold text-gray-700 flex-1 leading-relaxed break-words whitespace-normal">
-                                        {option.name}
-                                      </span>
-                                      {selectedPolls[poll.id] === option.id && (
-                                        <span className="text-primary flex-shrink-0">✨</span>
-                                      )}
+                <div className="relative bg-gradient-to-br from-white/90 via-white/80 to-white/70 backdrop-blur-2xl rounded-[2rem] overflow-hidden shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] border-2 border-white/70 ring-1 ring-white/50">
+                  {/* Premium Navigation Arrows - Visible and positioned properly */}
+                  <Button
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-white via-blue-50/80 to-white backdrop-blur-xl border-2 border-white/90 shadow-[0_15px_20px_-5px_rgba(0,0,0,0.15)] hover:shadow-[0_20px_40px_-12px_rgba(59,130,246,0.3)] flex items-center justify-center hover:scale-110 hover:rotate-3 transition-all duration-500 group ring-1 ring-blue-100/60"
+                    onClick={() => scrollPolls('left')}
+                    icon={
+                      <LeftOutlined className="text-blue-600 text-lg group-hover:text-blue-700 group-hover:scale-110 transition-all duration-300" />
+                    }
+                  />
+
+                  <Button
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-white via-purple-50/80 to-white backdrop-blur-xl border-2 border-white/90 shadow-[0_15px_20px_-5px_rgba(0,0,0,0.15)] hover:shadow-[0_20px_40px_-12px_rgba(147,51,234,0.3)] flex items-center justify-center hover:scale-110 hover:-rotate-3 transition-all duration-500 group ring-1 ring-purple-100/60"
+                    onClick={() => scrollPolls('right')}
+                    icon={
+                      <RightOutlined className="text-purple-600 text-lg group-hover:text-purple-700 group-hover:scale-110 transition-all duration-300" />
+                    }
+                  />
+
+                  {/* Enhanced Scroll Container */}
+                  <div
+                    ref={pollsContainerRef}
+                    className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory px-20 py-6 sm:py-8"
+                    style={{
+                      scrollbarWidth: 'none',
+                    }}
+                  >
+                    {polls.map((poll) => {
+                      const totalVotes = getTotalVotes(poll.options);
+                      const hasVoted = votedPolls.includes(poll.id);
+                      const showPollResults = showResults[poll.id];
+
+                      return (
+                        <div
+                          key={poll.id}
+                          className="snap-start flex-shrink-0 min-w-[85vw] sm:min-w-[400px] max-w-[500px] group"
+                        >
+                          {/* Premium Poll Card with Glow Effect */}
+                          <div className="relative h-full">
+                            {/* Background Glow */}
+                            <div className="absolute -inset-6 bg-gradient-to-br from-blue-400/20 via-purple-400/20 to-pink-400/20 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
+
+                            <Card
+                              className="relative max-h-[600px] hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-0 shadow-xl bg-gradient-to-br from-white via-white/95 to-blue-50/30 backdrop-blur-xl ring-2 ring-white/50 hover:ring-blue-200/50 rounded-2xl overflow-hidden"
+                              title={
+                                <div className="flex flex-col w-full p-2">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <div className="flex items-start min-w-0 flex-1 mr-2">
+                                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3 shadow-lg animate-pulse flex-shrink-0">
+                                        <FireOutlined className="text-white text-base" />
+                                      </div>
+                                      <div className="flex items-center mt-1">
+                                        <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mr-2 flex-shrink-0"></div>
+                                        <span className="text-xs text-slate-500">
+                                          აქტიური გამოკითხვა
+                                        </span>
+                                      </div>
                                     </div>
-                                  </Radio>
+                                    {hasVoted && (
+                                      <div className="flex items-center bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-full font-medium shadow-lg text-sm flex-shrink-0">
+                                        <span className="text-base mr-1">✅</span>
+                                        <span className="hidden sm:inline">ხმა ჩაწერილია</span>
+                                        <span className="sm:hidden">ხმა</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  {/* Poll Title - Full Width */}
+                                  <div className="w-full">
+                                    <h3 className="text-lg sm:text-xl font-bold text-slate-800 bg-gradient-to-r from-slate-800 to-blue-600 bg-clip-text text-transparent leading-relaxed break-words whitespace-normal overflow-wrap-break-word hyphens-auto w-full">
+                                      {poll.title}
+                                    </h3>
+                                  </div>
                                 </div>
-                              ))}
-                            </Space>
-                          </Radio.Group>
-                          <Button
-                            type="primary"
-                            size="large"
-                            className="w-full mt-6 h-14 rounded-xl text-lg font-semibold bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary"
-                            onClick={() => submitVote(poll.id)}
-                            disabled={!selectedPolls[poll.id] || hasVoted}
-                          >
-                            {hasVoted ? '✅ ხმა ჩაწერილია' : '🗳️ ხმის მიცემა'}
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg mb-6">
-                            <p className="text-green-800 font-medium">
-                              🎉 მადლობა მონაწილეობისთვის! ნახეთ შედეგები:
-                            </p>
-                          </div>
-                          {poll.options.map((option) => {
-                            const percentage = calculatePercentage(option.result, totalVotes);
-                            const isSelected = selectedPolls[poll.id] === option.id;
+                              }
+                            >
+                              {!showPollResults ? (
+                                <div className="space-y-4 p-1 max-h-[400px] overflow-y-auto">
+                                  <div className="bg-gradient-to-r from-blue-50 via-blue-50/70 to-purple-50/50 border-l-4 border-blue-400 p-4 rounded-xl mb-4 shadow-sm">
+                                    <div className="flex items-center">
+                                      <div className="text-xl mr-2">👆</div>
+                                      <p className="text-blue-800 font-semibold text-base">
+                                        აირჩიეთ თქვენი ვარიანტი და მიიღეთ მონაწილეობა!
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Radio.Group
+                                    onChange={(e) => handleVote(poll.id, e.target.value as number)}
+                                    value={selectedPolls[poll.id]}
+                                    className="w-full"
+                                    disabled={hasVoted}
+                                  >
+                                    <Space direction="vertical" className="w-full">
+                                      {poll.options.map((option) => (
+                                        <div
+                                          key={option.id}
+                                          className={`w-full p-3 rounded-xl transition-all duration-300 cursor-pointer group/option ${
+                                            selectedPolls[poll.id] === option.id
+                                              ? 'bg-gradient-to-r from-blue-50 via-purple-50/50 to-pink-50/30 border-blue-400 shadow-md transform scale-102 ring-1 ring-blue-200/50'
+                                              : 'hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50/30 border-gray-300 hover:border-blue-300 hover:shadow-sm'
+                                          } border-2`}
+                                        >
+                                          <Radio value={option.id} className="w-full">
+                                            <div className="flex justify-between items-start w-full gap-3">
+                                              <span className="font-semibold text-slate-700 flex-1 leading-relaxed break-words whitespace-normal text-base group-hover/option:text-slate-800">
+                                                {option.name}
+                                              </span>
+                                              {selectedPolls[poll.id] === option.id && (
+                                                <div className="flex items-center bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-1 rounded-full text-xs font-medium shadow-md">
+                                                  <span className="mr-1">✨</span>
+                                                  <span className="hidden sm:inline">არჩეული</span>
+                                                </div>
+                                              )}
+                                            </div>
+                                          </Radio>
+                                        </div>
+                                      ))}
+                                    </Space>
+                                  </Radio.Group>
+                                  <Button
+                                    type="primary"
+                                    size="large"
+                                    className="w-full mt-4 h-12 rounded-xl text-base font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 shadow-md hover:shadow-lg transform hover:scale-102 transition-all duration-300 border-0"
+                                    onClick={() => submitVote(poll.id)}
+                                    disabled={!selectedPolls[poll.id] || hasVoted}
+                                  >
+                                    <div className="flex items-center justify-center">
+                                      <span className="text-lg mr-2">{hasVoted ? '✅' : '🗳️'}</span>
+                                      <span>{hasVoted ? 'ხმა ჩაწერილია' : 'ხმის მიცემა'}</span>
+                                    </div>
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="space-y-4 p-1 max-h-[400px] overflow-y-auto">
+                                  <div className="bg-gradient-to-r from-green-50 via-emerald-50/70 to-teal-50/50 border-l-4 border-green-400 p-4 rounded-xl mb-4 shadow-sm">
+                                    <div className="flex items-center">
+                                      <div className="text-xl mr-2">🎉</div>
+                                      <div>
+                                        <p className="text-green-800 font-bold text-base">
+                                          მადლობა მონაწილეობისთვის!
+                                        </p>
+                                        <p className="text-green-700 text-xs mt-1">
+                                          ნახეთ შედეგები და სხვების მოსაზრება
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  {poll.options.map((option) => {
+                                    const percentage = calculatePercentage(option.result, totalVotes);
+                                    const isSelected = selectedPolls[poll.id] === option.id;
 
-                            return (
-                              <div
-                                key={option.id}
-                                className={`p-4 rounded-xl transition-all duration-300 ${
-                                  isSelected
-                                    ? 'bg-primary/20 border-primary shadow-md'
-                                    : 'bg-gray-50 border-gray-200'
-                                } border-2`}
-                              >
-                                <div className="flex justify-between items-start mb-3 gap-3">
-                                  <span className="font-semibold text-gray-700 flex-1 leading-relaxed break-words whitespace-normal">
-                                    {option.name}
-                                  </span>
-                                  <span className="text-gray-600 font-bold flex-shrink-0">
-                                    {percentage}%
-                                  </span>
+                                    return (
+                                      <div
+                                        key={option.id}
+                                        className={`p-3 rounded-xl transition-all duration-300 ${
+                                          isSelected
+                                            ? 'bg-gradient-to-r from-blue-50 via-purple-50/50 to-pink-50/30 border-blue-400 shadow-md ring-1 ring-blue-200/50'
+                                            : 'bg-gradient-to-r from-gray-50 to-slate-50/50 border-gray-300 hover:border-gray-400 hover:shadow-sm'
+                                        } border-2`}
+                                      >
+                                        <div className="flex justify-between items-start mb-3 gap-3">
+                                          <span className="font-semibold text-gray-700 flex-1 leading-relaxed break-words whitespace-normal">
+                                            {option.name}
+                                          </span>
+                                          <span className="text-gray-600 font-bold flex-shrink-0">
+                                            {percentage}%
+                                          </span>
+                                        </div>
+                                        <Progress
+                                          percent={percentage}
+                                          showInfo={false}
+                                          strokeColor={{
+                                            '0%': '#3b82f6',
+                                            '50%': '#8b5cf6',
+                                            '100%': '#ec4899',
+                                          }}
+                                          className="mb-2"
+                                          strokeWidth={8}
+                                          style={{
+                                            background:
+                                              'linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 100%)',
+                                          }}
+                                        />
+                                        <div className="flex justify-between text-sm text-gray-500">
+                                          <span>📊 {option.result} ხმა</span>
+                                          {isSelected && (
+                                            <span className="text-primary font-bold">
+                                              👤 თქვენი არჩევანი
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                  <div className="text-center mt-4 p-3 bg-gradient-to-r from-slate-100 via-blue-50/50 to-purple-50/30 rounded-xl border border-slate-200 shadow-sm">
+                                    <div className="flex items-center justify-center">
+                                      <span className="text-lg mr-2">📊</span>
+                                      <div>
+                                        <div className="text-slate-800 font-bold text-base">
+                                          სულ ხმები: {totalVotes}
+                                        </div>
+                                        <div className="text-slate-500 text-xs">
+                                          გამოკითხვაში მონაწილე
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
-                                <Progress
-                                  percent={percentage}
-                                  showInfo={false}
-                                  strokeColor="#1890ff"
-                                  className="mb-2"
-                                  strokeWidth={10}
-                                />
-                                <div className="flex justify-between text-sm text-gray-500">
-                                  <span>📊 {option.result} ხმა</span>
-                                  {isSelected && (
-                                    <span className="text-primary font-bold">👤 თქვენი არჩევანი</span>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                          <div className="text-center text-gray-600 mt-6 p-3 bg-gray-100 rounded-lg">
-                            <strong>სულ ხმები: {totalVotes}</strong>
+                              )}
+                            </Card>
                           </div>
                         </div>
-                      )}
-                    </Card>
-                  );
-                })}
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Mobile Scroll Hint */}
+                <div className="flex justify-center mt-4 sm:hidden">
+                  <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-md border border-gray-200">
+                    <span className="text-xs text-gray-600 mr-2">გადაფურცavanje</span>
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+                      <div className="w-2 h-2 bg-gray-300 rounded-full animate-pulse delay-100"></div>
+                      <div className="w-2 h-2 bg-gray-300 rounded-full animate-pulse delay-200"></div>
+                    </div>
+                    <span className="text-xs text-gray-600 ml-2">👈👉</span>
+                  </div>
+                </div>
               </div>
             )}
+            {/* Premium Call to Action */}
             <div className="text-center mt-12">
-              <p className="text-gray-600 text-lg">
-                💡 <strong>რჩევა:</strong> მონაწილეობა მიიღეთ ყველა გამოკითხვაში და გაიგეთ სხვების
-                მოსაზრება!
-              </p>
+              <div className="relative max-w-3xl mx-auto">
+                <div className="absolute -inset-3 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-pink-400/20 rounded-2xl blur-lg"></div>
+                <div className="relative bg-gradient-to-r from-white via-blue-50/30 to-purple-50/20 backdrop-blur-xl rounded-2xl p-6 shadow-lg border-2 border-white/60">
+                  <div className="flex items-center justify-center mb-4">
+                    <div className="text-2xl mr-3">💡</div>
+                    <div className="text-2xl">🗳️</div>
+                    <div className="text-2xl ml-3">✨</div>
+                  </div>
+                  <Title
+                    level={4}
+                    className="mb-3 bg-gradient-to-r from-slate-700 to-blue-600 bg-clip-text text-transparent"
+                  >
+                    რჩევა ჩვენი გუნდისგან
+                  </Title>
+                  <Paragraph className="text-base text-slate-600 leading-relaxed">
+                    მონაწილეობა მიიღეთ ყველა გამოკითხვაში და
+                    <span className="font-bold text-blue-600"> გაიგეთ სხვების მოსაზრება</span>{' '}
+                    საინტერესო თემებზე!
+                  </Paragraph>
+                  <div className="flex items-center justify-center mt-4">
+                    <div className="flex -space-x-2">
+                      <div className="w-6 h-6 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full border-2 border-white"></div>
+                      <div className="w-6 h-6 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full border-2 border-white"></div>
+                      <div className="w-6 h-6 bg-gradient-to-r from-green-400 to-cyan-500 rounded-full border-2 border-white"></div>
+                      <div className="w-6 h-6 bg-gradient-to-r from-red-400 to-orange-500 rounded-full border-2 border-white"></div>
+                    </div>
+                    <span className="ml-3 text-slate-500 font-medium text-sm">
+                      +1000 მონაწილე ყოველდღე
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>

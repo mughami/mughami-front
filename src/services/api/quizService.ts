@@ -68,6 +68,11 @@ export interface UpdateQuestionRequest {
   }[];
 }
 
+export interface UpdateAnswerRequest {
+  answer: string;
+  isCorrect: boolean;
+}
+
 export interface UpdateQuizRequest {
   name: string;
   categoryId: number;
@@ -246,6 +251,12 @@ const quizService = {
   // Admin: delete question by quiz and question id
   deleteAdminQuizQuestion: async (quizId: number, questionId: number): Promise<void> => {
     await apiClient.delete(`/admin/quiz/${quizId}/delete-question/${questionId}`);
+  },
+
+  // Admin: update single answer
+  updateAdminAnswer: async (answerId: number, data: UpdateAnswerRequest): Promise<QuizAnswer> => {
+    const response = await apiClient.put<QuizAnswer>(`/admin/quiz/answer-update/${answerId}`, data);
+    return response.data;
   },
 };
 

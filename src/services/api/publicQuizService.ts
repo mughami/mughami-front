@@ -1,23 +1,12 @@
-import axios from 'axios';
 import type { Quiz, QuizResponse, QuestionsResponse, QuizQuestion } from './quizService';
-
-// Create a separate axios instance for public requests (without auth)
-const DEV_API_URL = 'https://mughamiprod-production.up.railway.app';
-const API_URL = import.meta.env.VITE_API_URL || DEV_API_URL;
-
-const publicApiClient = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+import apiClient from './client';
 
 const publicQuizService = {
   // Public quiz endpoints - using same route as home page but without authentication
   getPublicQuizzes: async (page: number = 0, size: number = 10): Promise<QuizResponse> => {
     try {
       // Use the same route as home page (/app/quiz) but without auth headers
-      const response = await publicApiClient.get<QuizResponse>(`/app/quiz?page=${page}&size=${size}`);
+      const response = await apiClient.get<QuizResponse>(`/app/quiz?page=${page}&size=${size}`);
       return response.data;
     } catch {
       // Fallback: return empty response if not accessible
@@ -38,7 +27,7 @@ const publicQuizService = {
   getPublicQuiz: async (quizId: number): Promise<Quiz | null> => {
     try {
       // Try to get from the list of quizzes since there's no direct quiz endpoint
-      const response = await publicApiClient.get<QuizResponse>(`/app/quiz?page=0&size=100`);
+      const response = await apiClient.get<QuizResponse>(`/app/quiz?page=0&size=100`);
       const quiz = response.data.content.find((q) => q.quizId === quizId);
       return quiz || null;
     } catch {
@@ -52,7 +41,7 @@ const publicQuizService = {
     size: number = 10,
   ): Promise<QuestionsResponse> => {
     try {
-      const response = await publicApiClient.get<QuestionsResponse>(
+      const response = await apiClient.get<QuestionsResponse>(
         `/app/quiz/${quizId}/questions-by-quiz?page=${page}&size=${size}`,
       );
       return response.data;
@@ -73,7 +62,7 @@ const publicQuizService = {
 
   getPublicQuizPhoto: async (quizId: number): Promise<string> => {
     try {
-      const response = await publicApiClient.get(`/app/quiz/${quizId}/photo`, {
+      const response = await apiClient.get(`/app/quiz/${quizId}/photo`, {
         responseType: 'blob',
       });
       const blob = new Blob([response.data], { type: 'image/jpeg' });
@@ -85,7 +74,7 @@ const publicQuizService = {
 
   getPublicQuestionPhoto: async (questionId: number): Promise<string> => {
     try {
-      const response = await publicApiClient.get(`/app/quiz/${questionId}/question-photo`, {
+      const response = await apiClient.get(`/app/quiz/${questionId}/question-photo`, {
         responseType: 'blob',
       });
       const blob = new Blob([response.data], { type: 'image/jpeg' });
@@ -135,14 +124,14 @@ export type GuestQuizSubmitResponse = GuestQuizResultsResponse;
 
 export const guestQuizService = {
   getAvailableQuizzes: async (page: number = 0, size: number = 10): Promise<QuizResponse> => {
-    const response = await publicApiClient.get<QuizResponse>(
+    const response = await apiClient.get<QuizResponse>(
       `/app/guest/quiz/available?page=${page}&size=${size}`,
     );
     return response.data;
   },
 
   getGuestQuiz: async (quizId: number): Promise<Quiz | null> => {
-    const response = await publicApiClient.get<Quiz>(`/app/guest/quiz/${quizId}`);
+    const response = await apiClient.get<Quiz>(`/app/guest/quiz/${quizId}`);
     return response.data ?? null;
   },
 
@@ -151,16 +140,14 @@ export const guestQuizService = {
     page: number = 0,
     size: number = 10,
   ): Promise<QuestionsResponse> => {
-    const response = await publicApiClient.get<QuestionsResponse>(
+    const response = await apiClient.get<QuestionsResponse>(
       `/app/guest/quiz/quiz-questions/${quizId}?page=${page}&size=${size}`,
     );
     return response.data;
   },
 
   startGuestQuiz: async (quizId: number): Promise<GuestQuizStartResponse> => {
-    const response = await publicApiClient.post<GuestQuizStartResponse>(
-      `/app/guest/quiz/${quizId}/start`,
-    );
+    const response = await apiClient.post<GuestQuizStartResponse>(`/app/guest/quiz/${quizId}/start`);
     return response.data;
   },
 
@@ -170,14 +157,14 @@ export const guestQuizService = {
     questionId: number,
     answerId: number,
   ): Promise<boolean> => {
-    const response = await publicApiClient.post<boolean>(
+    const response = await apiClient.post<boolean>(
       `/app/guest/quiz/session/${sessionId}/quiz/${quizId}/answer?questionId=${questionId}&answerId=${answerId}`,
     );
     return response.data === true;
   },
 
   submitGuestQuiz: async (sessionId: string, email?: string): Promise<GuestQuizSubmitResponse> => {
-    const response = await publicApiClient.post<GuestQuizSubmitResponse>(
+    const response = await apiClient.post<GuestQuizSubmitResponse>(
       `/app/guest/quiz/session/${sessionId}/submit${
         email ? `?email=${encodeURIComponent(email)}` : ''
       }`,
@@ -186,7 +173,7 @@ export const guestQuizService = {
   },
 
   getGuestQuizResults: async (sessionId: string): Promise<GuestQuizResultsResponse> => {
-    const response = await publicApiClient.get<GuestQuizResultsResponse>(
+    const response = await apiClient.get<GuestQuizResultsResponse>(
       `/app/guest/quiz/session/${sessionId}/results`,
     );
     return response.data;

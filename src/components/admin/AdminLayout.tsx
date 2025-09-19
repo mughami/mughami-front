@@ -9,7 +9,7 @@ import {
   BookOutlined,
   TrophyOutlined,
   BarChartOutlined,
-  SettingOutlined,
+  // SettingOutlined,
   FormOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -59,11 +59,11 @@ export const AdminLayout = ({ children, selectedKey, onMenuSelect }: AdminLayout
       icon: <BarChartOutlined />,
       label: 'ანალიტიკა',
     },
-    {
-      key: 'settings',
-      icon: <SettingOutlined />,
-      label: 'პარამეტრები',
-    },
+    // {
+    //   key: 'settings',
+    //   icon: <SettingOutlined />,
+    //   label: 'პარამეტრები',
+    // },
   ];
 
   const handleLogout = () => {

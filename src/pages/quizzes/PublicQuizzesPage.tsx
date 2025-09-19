@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Spin, Typography, Image, Skeleton } from 'antd';
+import { Card, Button, Spin, Typography, Skeleton } from 'antd';
 import {
   PlayCircleOutlined,
   FireOutlined,
@@ -51,9 +51,10 @@ const PublicQuizzesPage: React.FC = () => {
     }
 
     // Cleanup function to revoke blob URLs when component unmounts
+    const urlsAtCleanup = blobUrlsRef.current;
     return () => {
-      blobUrlsRef.current.forEach((url) => cleanupBlobUrl(url));
-      blobUrlsRef.current.clear();
+      urlsAtCleanup.forEach((url) => cleanupBlobUrl(url));
+      urlsAtCleanup.clear();
     };
   }, [quizzes, getQuizPhoto]);
 
@@ -213,14 +214,19 @@ const PublicQuizzesPage: React.FC = () => {
                     className="h-full border-0 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden bg-white/80 backdrop-blur-sm"
                     style={{ borderRadius: '20px' }}
                     cover={
-                      <div className="relative overflow-hidden h-48 bg-gradient-to-br from-blue-400 via-purple-500 to-green-400">
+                      <div className="relative overflow-hidden h-56 bg-gradient-to-br from-blue-400 via-purple-500 to-green-400">
                         {quiz.hasPhoto && quizPhotos[quiz.quizId] ? (
-                          <Image
+                          <img
                             src={quizPhotos[quiz.quizId]}
                             alt={quiz.quizName}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            preview={false}
-                            fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN"
+                            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                            loading="lazy"
+                            onError={(e) => {
+                              const t = e.currentTarget as HTMLImageElement;
+                              t.onerror = null;
+                              t.src =
+                                'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN';
+                            }}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center relative">
