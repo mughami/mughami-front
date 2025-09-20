@@ -16,7 +16,7 @@ import {
   Tag,
   Popconfirm,
   List,
-  // Select,
+  Select,
   Switch,
 } from 'antd';
 import {
@@ -68,7 +68,8 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
   const [quizPhotoUrl, setQuizPhotoUrl] = useState<string>('');
   const [questionPhotos, setQuestionPhotos] = useState<Record<number, string>>({});
   const blobUrlsRef = useRef<Set<string>>(new Set());
-  // const [answers, setAnswers] = useState<string[]>([]);
+  const [answers, setAnswers] = useState<string[]>([]);
+  const watchedAnswers: string[] = Form.useWatch('answers', questionForm) || [];
   const [answerIds, setAnswerIds] = useState<(number | null)[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState<number | null>(null);
   const [tablePagination, setTablePagination] = useState<{ current: number; pageSize: number }>({
@@ -182,18 +183,31 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
 
   const handleUpdateQuestion = async (values: {
     question: string;
-    answers: string[];
-    correctAnswerIndex: number;
+    answers?: string[];
+    correctAnswerIndex?: number;
   }) => {
     if (!editingQuestion) return;
     try {
+      // If answers are not present (because we are in edit mode and fields are hidden),
+      // reuse current answers from store to send a complete payload.
+      const currentQuestionInStore =
+        currentQuestions.find((q) => q.id === editingQuestion.id) || editingQuestion;
+
+      const mergedAnswers = Array.isArray(values.answers)
+        ? values.answers.map((answerText: string, index: number) => ({
+            id: answerIds[index] ?? currentQuestionInStore.answers[index]?.id,
+            answer: answerText,
+            isCorrect: index === (values.correctAnswerIndex ?? -1),
+          }))
+        : currentQuestionInStore.answers.map((a) => ({
+            id: a.id,
+            answer: a.answer,
+            isCorrect: a.isCorrect,
+          }));
+
       const updateData = {
         question: values.question,
-        answers: values.answers.map((answer: string, index: number) => ({
-          id: answerIds[index] ?? undefined,
-          answer,
-          isCorrect: index === values.correctAnswerIndex,
-        })),
+        answers: mergedAnswers,
       };
 
       await updateQuestion(editingQuestion.id, updateData, quizId);
@@ -244,7 +258,8 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
     setIsQuestionModalVisible(true);
     setEditingQuestion(null);
     questionForm.resetFields();
-    // setAnswers([]);
+    setAnswers(['', '']);
+    questionForm.setFieldsValue({ answers: ['', ''], correctAnswerIndex: 0 });
     setAnswerIds([]);
     setQuestionPhotoFile(null);
   };
@@ -255,7 +270,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
     const answerTexts = question.answers.map((a) => a.answer);
     const ids = question.answers.map((a) => a.id ?? null);
     const correctIndex = question.answers.findIndex((a) => a.isCorrect);
-    // setAnswers(answerTexts);
+    setAnswers(answerTexts);
     setAnswerIds(ids);
     questionForm.setFieldsValue({
       question: question.question,
@@ -268,7 +283,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
     setIsQuestionModalVisible(false);
     setEditingQuestion(null);
     questionForm.resetFields();
-    // setAnswers([]);
+    setAnswers([]);
     setAnswerIds([]);
     setQuestionPhotoFile(null);
   };
@@ -555,107 +570,123 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
             <TextArea rows={3} placeholder="შეიყვანეთ კითხვა..." />
           </Form.Item>
 
-          {/* <Form.Item
-            name="answers"
-            label="პასუხები"
-            rules={[
-              {
-                validator: async (_, answers) => {
-                  if (!answers || answers.length < 2) {
-                    return Promise.reject(new Error('მინიმუმ 2 პასუხი უნდა იყოს'));
-                  }
-                },
-              },
-            ]}
-          >
-            <Form.List
-              name="answers"
-              rules={[
-                {
-                  validator: async (_, answers) => {
-                    if (!answers || answers.length < 2) {
-                      return Promise.reject(new Error('მინიმუმ 2 პასუხი უნდა იყოს'));
-                    }
+          {!editingQuestion && (
+            <>
+              <Form.Item
+                name="answers"
+                // label="პასუხები"
+                rules={[
+                  {
+                    validator: async (_, answers) => {
+                      if (!answers || answers.length < 2) {
+                        return Promise.reject(new Error('მინიმუმ 2 პასუხი უნდა იყოს'));
+                      }
+                    },
                   },
-                },
-              ]}
-            >
-              {(fields, { add, remove }) => (
-                <>
-                  {fields.map((field, index) => (
-                    <Form.Item required={false} key={field.key} label={index === 0 ? 'პასუხები' : ''}>
-                      <Form.Item
-                        {...field}
-                        validateTrigger={['onChange', 'onBlur']}
-                        rules={[
-                          {
-                            required: true,
-                            whitespace: true,
-                            message: 'გთხოვთ შეიყვანოთ პასუხი',
-                          },
-                        ]}
-                        noStyle
-                      >
-                        <Input
-                          placeholder={`პასუხი ${index + 1}`}
-                          style={{ width: '90%' }}
-                          onChange={(e) => {
-                            const newAnswers = [...answers];
-                            newAnswers[index] = e.target.value;
-                            setAnswers(newAnswers);
-                          }}
-                        />
-                      </Form.Item>
-                      {fields.length > 2 && (
-                        <Button
-                          type="link"
-                          onClick={() => {
-                            remove(field.name);
-                            const newAnswers = [...answers];
-                            newAnswers.splice(index, 1);
-                            setAnswers(newAnswers);
-                            const newIds = [...answerIds];
-                            newIds.splice(index, 1);
-                            setAnswerIds(newIds);
-                          }}
-                          style={{ width: '10%' }}
+                ]}
+              >
+                <Form.List
+                  name="answers"
+                  rules={[
+                    {
+                      validator: async (_, answers) => {
+                        if (!answers || answers.length < 2) {
+                          return Promise.reject(new Error('მინიმუმ 2 პასუხი უნდა იყოს'));
+                        }
+                      },
+                    },
+                  ]}
+                >
+                  {(fields, { add, remove }) => (
+                    <>
+                      {fields.map((field, index) => (
+                        <Form.Item
+                          required={false}
+                          key={field.key}
+                          label={index === 0 ? 'პასუხები' : ''}
                         >
-                          წაშლა
+                          <Form.Item
+                            {...field}
+                            validateTrigger={['onChange', 'onBlur']}
+                            rules={[
+                              {
+                                required: true,
+                                whitespace: true,
+                                message: 'გთხოვთ შეიყვანოთ პასუხი',
+                              },
+                            ]}
+                            noStyle
+                          >
+                            <Input
+                              placeholder={`პასუხი ${index + 1}`}
+                              style={{ width: '90%' }}
+                              onChange={(e) => {
+                                const newAnswers = [...answers];
+                                newAnswers[index] = e.target.value;
+                                setAnswers(newAnswers);
+                              }}
+                            />
+                          </Form.Item>
+                          {fields.length > 2 && (
+                            <Button
+                              type="link"
+                              onClick={() => {
+                                remove(field.name);
+                                const newAnswers = [...answers];
+                                newAnswers.splice(index, 1);
+                                setAnswers(newAnswers);
+                                const newIds = [...answerIds];
+                                newIds.splice(index, 1);
+                                setAnswerIds(newIds);
+                                const curr = questionForm.getFieldValue('correctAnswerIndex');
+                                if (typeof curr === 'number') {
+                                  if (curr === index) {
+                                    questionForm.setFieldsValue({ correctAnswerIndex: 0 });
+                                  } else if (curr > index) {
+                                    questionForm.setFieldsValue({ correctAnswerIndex: curr - 1 });
+                                  }
+                                }
+                              }}
+                              style={{ width: '10%' }}
+                            >
+                              წაშლა
+                            </Button>
+                          )}
+                        </Form.Item>
+                      ))}
+                      <Form.Item>
+                        <Button
+                          type="dashed"
+                          onClick={() => {
+                            add();
+                            setAnswers([...answers, '']);
+                            setAnswerIds([...answerIds, null]);
+                          }}
+                          block
+                        >
+                          პასუხის დამატება
                         </Button>
-                      )}
-                    </Form.Item>
-                  ))}
-                  <Form.Item>
-                    <Button
-                      type="dashed"
-                      onClick={() => {
-                        add();
-                        setAnswers([...answers, '']);
-                        setAnswerIds([...answerIds, null]);
-                      }}
-                      block
-                    >
-                      პასუხის დამატება
-                    </Button>
-                  </Form.Item>
-                </>
-              )}
-            </Form.List>
-          </Form.Item> */}
+                      </Form.Item>
+                    </>
+                  )}
+                </Form.List>
+              </Form.Item>
 
-          {/* <Form.Item
-            name="correctAnswerIndex"
-            label="სწორი პასუხი"
-            rules={[{ required: true, message: 'გთხოვთ აირჩიოთ სწორი პასუხი' }]}
-          >
-            <Select placeholder="აირჩიეთ სწორი პასუხი" disabled={!answers.length}>
-              {answers.map((answer: string, index: number) => (
-                <Select.Option key={index} value={index}>
-                  {index + 1}. {answer || `პასუხი ${index + 1}`}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item> */}
+              <Form.Item
+                name="correctAnswerIndex"
+                label="სწორი პასუხი"
+                rules={[{ required: true, message: 'გთხოვთ აირჩიოთ სწორი პასუხი' }]}
+              >
+                <Select placeholder="აირჩიეთ სწორი პასუხი" disabled={!watchedAnswers.length}>
+                  {watchedAnswers.map((answer: string, index: number) => (
+                    <Select.Option key={index} value={index}>
+                      {index + 1}. {answer || `პასუხი ${index + 1}`}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </>
+          )}
 
           {!editingQuestion && (
             <Form.Item label="კითხვის ფოტო (არასავალდებულო)">
