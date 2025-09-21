@@ -281,7 +281,7 @@ const QuizPage: React.FC = () => {
                         <QuestionCircleOutlined className="text-4xl text-gray-400" />
                         {quiz.quizStatus === 'VERIFIED' && (
                           <div className="absolute top-2 right-2">
-                            <Tag color="green">დამოწმებული</Tag>
+                            <Tag color="green">ვერიფიცირებული</Tag>
                           </div>
                         )}
                         <div className="absolute bottom-0 left-0 right-0 p-3">
