@@ -7,8 +7,7 @@ import {
   FireOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Layout from '../components/Layout';
 import { usePollStore } from '../store/pollStore';
 import { useAuthStore } from '../store';
 
@@ -58,20 +57,17 @@ const PollsPage = () => {
 
   if (loading) {
     return (
-      <>
-        <Header />
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 flex items-center justify-center">
+      <Layout>
+        <div className="min-h-[60vh] bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 flex items-center justify-center rounded-2xl">
           <Spin size="large" />
         </div>
-        <Footer />
-      </>
+      </Layout>
     );
   }
 
   return (
-    <>
-      <Header />
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 relative overflow-hidden">
+    <Layout>
+      <div className="min-h-[80vh] bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 relative overflow-hidden rounded-2xl">
         {/* Background Decorations */}
         <div className="absolute inset-0">
           <div className="absolute top-20 left-10 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl animate-pulse"></div>
@@ -79,7 +75,7 @@ const PollsPage = () => {
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-400/5 rounded-full blur-3xl animate-pulse delay-500"></div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="relative z-10 px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           {/* Page Header */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-3xl mb-8">
@@ -139,7 +135,7 @@ const PollsPage = () => {
           {/* Polls Grid */}
           {polls.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
                 {polls.map((poll) => {
                   const totalVotes = getTotalVotes(poll.options);
                   const hasVoted = votedPolls.includes(poll.id);
@@ -147,12 +143,12 @@ const PollsPage = () => {
                   const showResult = hasVoted;
 
                   return (
-                    <div key={poll.id} className="group relative">
+                    <div key={poll.id} className="group relative h-full">
                       {/* Background Glow */}
                       <div className="absolute -inset-4 bg-gradient-to-br from-blue-400/20 via-purple-400/20 to-pink-400/20 rounded-3xl blur-2xl opacity-60 group-hover:opacity-80 transition-all duration-700"></div>
 
                       {/* Poll Card */}
-                      <Card className="relative bg-gradient-to-br from-white via-white/95 to-blue-50/30 backdrop-blur-xl rounded-3xl border-2 border-white/60 hover:border-blue-200/60 transition-all duration-500 group-hover:transform group-hover:scale-105 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)]">
+                      <Card className="relative h-full min-h-[420px] flex flex-col bg-gradient-to-br from-white via-white/95 to-blue-50/30 backdrop-blur-xl rounded-3xl border-2 border-white/60 hover:border-blue-200/60 transition-all duration-500 group-hover:transform group-hover:scale-105 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)]">
                         {/* Poll Header */}
                         <div className="flex items-start justify-between mb-6">
                           <div className="flex-1">
@@ -175,7 +171,7 @@ const PollsPage = () => {
                         </div>
 
                         {/* Poll Options */}
-                        <div className="space-y-4 mb-6">
+                        <div className="space-y-4 mb-6 flex-1 overflow-y-auto pr-2 max-h-72 sm:max-h-80">
                           {!showResult ? (
                             <>
                               <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-400 p-4 rounded-r-2xl mb-6">
@@ -277,7 +273,7 @@ const PollsPage = () => {
                         </div>
 
                         {/* Poll Actions */}
-                        <div className="flex flex-wrap gap-3">
+                        <div className="mt-auto flex flex-wrap gap-3">
                           {!hasVoted && (
                             <Button
                               type="primary"
@@ -319,10 +315,7 @@ const PollsPage = () => {
                 <Title level={3} className="mb-4 text-slate-700">
                   გაიარეთ რეგისტრაცია მეტი ფუნქციისთვის!
                 </Title>
-                <Paragraph className="text-slate-600 mb-6">
-                  რეგისტრირებული მომხმარებლები მონაწილეობენ ქვიზებში, იღებენ პრიზებს და აღირიცხებათ
-                  ხმები.
-                </Paragraph>
+
                 <Button
                   type="primary"
                   size="large"
@@ -336,8 +329,7 @@ const PollsPage = () => {
           )}
         </div>
       </div>
-      <Footer />
-    </>
+    </Layout>
   );
 };
 

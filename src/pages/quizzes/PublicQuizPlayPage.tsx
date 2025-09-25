@@ -13,6 +13,7 @@ import {
   Result,
   Statistic,
   Badge,
+  Modal,
 } from 'antd';
 import {
   ArrowLeftOutlined,
@@ -24,9 +25,16 @@ import {
   ClockCircleOutlined,
   PlayCircleOutlined,
   HomeOutlined,
+  UserAddOutlined,
+  LoginOutlined,
+  CrownOutlined,
+  TeamOutlined,
+  LineChartOutlined,
+  SafetyCertificateOutlined,
 } from '@ant-design/icons';
 import { usePublicQuizStore, cleanupBlobUrl } from '../../store/publicQuizStore';
 import Layout from '../../components/Layout';
+import { useAuthStore } from '../../store';
 
 const { Title, Text } = Typography;
 
@@ -56,6 +64,8 @@ const PublicQuizPlayPage: React.FC = () => {
     getQuestionPhoto,
   } = usePublicQuizStore();
 
+  const { isAuthenticated } = useAuthStore();
+
   const [quizPhotoUrl, setQuizPhotoUrl] = useState<string>('');
   const prevQuizPhotoUrlRef = useRef<string>('');
   const [questionPhotos, setQuestionPhotos] = useState<Record<number, string>>({});
@@ -67,6 +77,13 @@ const PublicQuizPlayPage: React.FC = () => {
 
   const [submittedQuestions, setSubmittedQuestions] = useState<Record<number, boolean>>({});
   const [timeSpent, setTimeSpent] = useState(0);
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+
+  useEffect(() => {
+    if (quizCompleted && !isAuthenticated) {
+      setShowRegistrationModal(true);
+    }
+  }, [quizCompleted, isAuthenticated]);
 
   useEffect(() => {
     // Scroll to top when component mounts
@@ -423,6 +440,64 @@ const PublicQuizPlayPage: React.FC = () => {
 
     return (
       <Layout>
+        <Modal
+          open={showRegistrationModal}
+          onCancel={() => setShowRegistrationModal(false)}
+          footer={null}
+          centered
+        >
+          <div className="text-center space-y-5">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-amber-100 to-pink-100 text-amber-700 text-xs font-semibold">
+              <CrownOutlined /> შედეგები შენახულია, დროა შემდეგ ნაბიჯზე გადახვიდე
+            </div>
+            <div>
+              <Title level={3} className="!mb-1">
+                შენ წარმატებით გაიარე ვიქტორინა!
+              </Title>
+              <Text type="secondary">შექმენი ანგარიში და მიიღე სრული გამოცდილება</Text>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
+                <LineChartOutlined className="text-blue-500 text-lg" />
+                <div>
+                  <div className="font-medium">პროგრესის ისტორია</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
+                <TrophyOutlined className="text-amber-500 text-lg" />
+                <div>
+                  <div className="font-medium">პრიზები</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
+                <TeamOutlined className="text-purple-500 text-lg" />
+                <div>
+                  <div className="font-medium">ლიდერბორდები</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
+                <SafetyCertificateOutlined className="text-green-600 text-lg" />
+                <div>
+                  <div className="font-medium">დაცულობა</div>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col gap-3 justify-center mt-2">
+              <Button
+                type="primary"
+                size="large"
+                className="px-8 h-auto py-3 font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 border-0"
+                icon={<UserAddOutlined />}
+                onClick={() => navigate('/register')}
+              >
+                შექმენი ანგარიში
+              </Button>
+              <Button size="large" icon={<LoginOutlined />} onClick={() => navigate('/login')}>
+                უკვე ხარ წევრი? შესვლა
+              </Button>
+            </div>
+          </div>
+        </Modal>
         <div className="max-w-4xl mx-auto py-8 px-4">
           <Result
             icon={

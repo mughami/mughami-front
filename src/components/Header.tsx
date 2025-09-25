@@ -12,6 +12,8 @@ import {
   HomeOutlined,
   BarChartOutlined,
   MoreOutlined,
+  LoginOutlined,
+  UserAddOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../store';
 import { UserRole } from '../types';
@@ -22,7 +24,7 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const { logout, user } = useAuthStore();
+  const { logout, user, isAuthenticated } = useAuthStore();
 
   const handleLogout = () => {
     logout();
@@ -132,39 +134,135 @@ const Header = () => {
               </button>
             </div>
 
-            {/* Desktop menu - simplified for public pages */}
-            {/* <div className="hidden sm:flex items-center">
+            {/* Desktop menu for public pages */}
+            <div className="hidden sm:flex items-center space-x-4">
               <Link
                 to="/"
-                className="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors"
+                className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                  location.pathname === '/' ? 'bg-primary-dark' : ''
+                }`}
               >
-                <HomeOutlined className="mr-1" />
-                მთავარი
+                <HomeOutlined className="mr-1" /> მთავარი
               </Link>
 
               <Link
                 to="/public-quizzes"
-                className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
                   location.pathname === '/public-quizzes' ? 'bg-primary-dark' : ''
                 }`}
               >
-                <QuestionCircleOutlined className="mr-1" />
-                ღია ვიქტორინები
+                <QuestionCircleOutlined className="mr-1" /> ღია ვიქტორინები
               </Link>
-            </div> */}
+
+              {!isAuthenticated ? (
+                <>
+                  <Link
+                    to="/polls"
+                    className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                      location.pathname === '/polls' ? 'bg-primary-dark' : ''
+                    }`}
+                  >
+                    <BarChartOutlined className="mr-1" /> პოლები
+                  </Link>
+                  <div className="ml-6 flex items-center gap-2">
+                    <Link
+                      to="/login"
+                      className="px-3 py-1.5 rounded-md text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 transition-colors inline-flex items-center"
+                    >
+                      <LoginOutlined className="mr-1" /> შესვლა
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="px-3 py-1.5 rounded-md text-sm font-semibold text-white bg-white/20 hover:bg-white/30 transition-colors inline-flex items-center"
+                    >
+                      <UserAddOutlined className="mr-1" /> რეგისტრაცია
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/categories"
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                      location.pathname === '/categories' ? 'bg-primary-dark' : ''
+                    }`}
+                  >
+                    კატეგორიები
+                  </Link>
+                  <Link
+                    to="/polls"
+                    className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                      location.pathname === '/polls' ? 'bg-primary-dark' : ''
+                    }`}
+                  >
+                    <BarChartOutlined className="mr-1" /> პოლები
+                  </Link>
+
+                  {/* More dropdown for logged-in users on public pages */}
+                  <div className="relative">
+                    <button
+                      className="px-3 py-1.5 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors inline-flex items-center"
+                      onClick={() => setMoreOpen((prev) => !prev)}
+                    >
+                      <MoreOutlined className="mr-1" /> მეტი
+                    </button>
+
+                    {moreOpen && (
+                      <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                        <div className="py-1">
+                          <Link
+                            to="/quiz/results"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => setMoreOpen(false)}
+                          >
+                            <HistoryOutlined className="mr-2 text-blue-500" /> ჩემი შედეგები
+                          </Link>
+                          {isAdmin && (
+                            <Link
+                              to="/admin"
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              onClick={() => setMoreOpen(false)}
+                            >
+                              <DashboardOutlined className="mr-2 text-purple-500" /> ადმინ პანელი
+                            </Link>
+                          )}
+                          <Link
+                            to="/profile"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => setMoreOpen(false)}
+                          >
+                            <UserOutlined className="mr-2 text-gray-700" /> პროფილი
+                          </Link>
+                          <button
+                            className="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                            onClick={() => {
+                              setShowLogoutConfirm(true);
+                              setMoreOpen(false);
+                            }}
+                          >
+                            <LogoutOutlined className="mr-2" /> გასვლა
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Mobile menu - simplified for public pages */}
           {mobileMenuOpen && (
             <div className="sm:hidden py-2 pb-4 space-y-1">
-              {/* <Link
+              <Link
                 to="/"
-                className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors"
+                className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                  location.pathname === '/' ? 'bg-primary-dark' : ''
+                }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <HomeOutlined className="mr-1" />
-                მთავარი
-              </Link> */}
+                <HomeOutlined className="mr-1" /> მთავარი
+              </Link>
 
               <Link
                 to="/public-quizzes"
@@ -176,6 +274,169 @@ const Header = () => {
                 <QuestionCircleOutlined className="mr-1" />
                 ღია ვიქტორინები
               </Link>
+
+              <Link
+                to="/polls"
+                className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                  location.pathname === '/polls' ? 'bg-primary-dark' : ''
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <BarChartOutlined className="mr-1" /> პოლები
+              </Link>
+
+              {!isAuthenticated ? (
+                <div className="pt-2 flex items-center gap-2 px-3">
+                  <Link
+                    to="/login"
+                    className="flex-1 text-center px-3 py-2 rounded-md text-base font-medium text-white/90 hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    შესვლა
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="flex-1 text-center px-3 py-2 rounded-md text-base font-semibold text-white bg-white/20 hover:bg-white/30 transition-colors"
+                  >
+                    რეგისტრაცია
+                  </Link>
+                </div>
+              ) : (
+                <Link
+                  to="/categories"
+                  className={`block mt-2 px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                    location.pathname === '/categories' ? 'bg-primary-dark' : ''
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  კატეგორიები
+                </Link>
+              )}
+            </div>
+          )}
+        </div>
+      </header>
+    );
+  }
+
+  // Unauthenticated header (general pages like homepage)
+  if (!isAuthenticated) {
+    return (
+      <header className="bg-auth-gradient shadow-md relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex">
+              <div className="flex-shrink-0 flex items-center">
+                <Link to="/" className="flex items-center">
+                  <img
+                    className="h-8 w-8 sm:h-10 sm:w-10 rounded-full"
+                    src="/favicon.jpeg"
+                    alt="მუღამი"
+                  />
+                  <span className="ml-3 text-lg sm:text-xl font-bold text-white">მუღამი</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Mobile menu button */}
+            <div className="flex items-center sm:hidden">
+              <button
+                onClick={toggleMobileMenu}
+                className="text-white hover:bg-primary-dark p-2 rounded-md"
+              >
+                {mobileMenuOpen ? <CloseOutlined /> : <MenuOutlined />}
+              </button>
+            </div>
+
+            {/* Desktop menu for unauthenticated users */}
+            <div className="hidden sm:flex items-center">
+              <Link
+                to="/"
+                className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                  location.pathname === '/' ? 'bg-primary-dark' : ''
+                }`}
+              >
+                <HomeOutlined className="mr-1" /> მთავარი
+              </Link>
+
+              <Link
+                to="/public-quizzes"
+                className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                  location.pathname === '/public-quizzes' ? 'bg-primary-dark' : ''
+                }`}
+              >
+                <QuestionCircleOutlined className="mr-1" /> ღია ვიქტორინები
+              </Link>
+
+              <Link
+                to="/polls"
+                className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                  location.pathname === '/polls' ? 'bg-primary-dark' : ''
+                }`}
+              >
+                <BarChartOutlined className="mr-1" /> პოლები
+              </Link>
+
+              <div className="ml-6 flex items-center gap-2">
+                <Link
+                  to="/login"
+                  className="px-3 py-1.5 rounded-md text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 transition-colors inline-flex items-center"
+                >
+                  <LoginOutlined className="mr-1" /> შესვლა
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-3 py-1.5 rounded-md text-sm font-semibold text-white bg-white/20 hover:bg-white/30 transition-colors inline-flex items-center"
+                >
+                  <UserAddOutlined className="mr-1" /> რეგისტრაცია
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile menu for unauthenticated users */}
+          {mobileMenuOpen && (
+            <div className="sm:hidden py-2 pb-4 space-y-1">
+              <Link
+                to="/"
+                className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                  location.pathname === '/' ? 'bg-primary-dark' : ''
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <HomeOutlined className="mr-1" /> მთავარი
+              </Link>
+              <Link
+                to="/public-quizzes"
+                className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                  location.pathname === '/public-quizzes' ? 'bg-primary-dark' : ''
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <QuestionCircleOutlined className="mr-1" /> ღია ვიქტორინები
+              </Link>
+              <Link
+                to="/polls"
+                className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                  location.pathname === '/polls' ? 'bg-primary-dark' : ''
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <BarChartOutlined className="mr-1" /> პოლები
+              </Link>
+              <div className="pt-2 flex items-center gap-2 px-3">
+                <Link
+                  to="/login"
+                  className="flex-1 text-center px-3 py-2 rounded-md text-base font-medium text-white/90 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  შესვლა
+                </Link>
+                <Link
+                  to="/register"
+                  className="flex-1 text-center px-3 py-2 rounded-md text-base font-semibold text-white bg-white/20 hover:bg-white/30 transition-colors"
+                >
+                  რეგისტრაცია
+                </Link>
+              </div>
             </div>
           )}
         </div>
@@ -212,7 +473,16 @@ const Header = () => {
           </div>
 
           {/* Desktop menu */}
-          <div className="hidden sm:flex items-center">
+          <div className="hidden sm:flex items-center space-x-4">
+            <Link
+              to="/"
+              className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                location.pathname === '/' ? 'bg-primary-dark' : ''
+              }`}
+            >
+              <HomeOutlined className="mr-1" /> მთავარი
+            </Link>
+
             <Link
               to="/public-quizzes"
               className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
@@ -303,6 +573,16 @@ const Header = () => {
         {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="sm:hidden py-2 pb-4 space-y-1">
+            <Link
+              to="/"
+              className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                location.pathname === '/' ? 'bg-primary-dark' : ''
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <HomeOutlined className="mr-1" /> მთავარი
+            </Link>
+
             <Link
               to="/public-quizzes"
               className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${

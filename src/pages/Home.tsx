@@ -14,6 +14,7 @@ import {
   PlayCircleOutlined,
 } from '@ant-design/icons';
 import Footer from '../components/Footer';
+import Header from '../components/Header';
 import { usePollStore } from '../store/pollStore';
 import { useAuthStore } from '../store';
 
@@ -160,6 +161,7 @@ const Home = () => {
 
   return (
     <>
+      <Header />
       <div className="min-h-screen">
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary via-primary-dark to-purple-800 text-white py-32 relative overflow-hidden">
