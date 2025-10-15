@@ -147,6 +147,52 @@ const categoryService = {
       const response = await apiClient.post<CategoryResponse>('/admin/category', categoryData);
       return response.data;
     },
+
+    // GET /admin/category/{categoryId}
+    getCategory: async (categoryId: number): Promise<CategoryResponse> => {
+      const response = await apiClient.get<CategoryResponse>(`/admin/category/${categoryId}`);
+      return response.data;
+    },
+
+    // PUT /admin/category/{categoryId}
+    updateCategory: async (
+      categoryId: number,
+      categoryData: CategoryRequest,
+    ): Promise<CategoryResponse> => {
+      const response = await apiClient.put<CategoryResponse>(
+        `/admin/category/${categoryId}`,
+        categoryData,
+      );
+      return response.data;
+    },
+
+    // DELETE /admin/category/{categoryId}
+    deleteCategory: async (categoryId: number): Promise<void> => {
+      await apiClient.delete(`/admin/category/${categoryId}`);
+    },
+
+    // GET /admin/category/{categoryId}/subcategory
+    getSubcategories: async (categoryId: number) => {
+      const response = await apiClient.get(`/admin/category/${categoryId}/subcategory`);
+      return response.data;
+    },
+
+    // POST /admin/category/{categoryId}/subcategory
+    createSubcategory: async (categoryId: number, data: { subCategoryName: string }) => {
+      const response = await apiClient.post(`/admin/category/${categoryId}/subcategory`, data);
+      return response.data;
+    },
+
+    // PUT /admin/category/subcategory/{subCategoryId}
+    updateSubcategory: async (subCategoryId: number, data: { subCategoryName: string }) => {
+      const response = await apiClient.put(`/admin/category/subcategory/${subCategoryId}`, data);
+      return response.data;
+    },
+
+    // DELETE /admin/category/subcategory/{subCategoryId}
+    deleteSubcategory: async (subCategoryId: number): Promise<void> => {
+      await apiClient.delete(`/admin/category/subcategory/${subCategoryId}`);
+    },
   },
 };
 

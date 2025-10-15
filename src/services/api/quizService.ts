@@ -18,6 +18,7 @@ export interface Quiz {
   quizId: number;
   quizName: string;
   categoryId: number;
+  subCategoryId?: number;
   hasPhoto: boolean;
   quizStatus?: 'PENDING' | 'VERIFIED';
 }
@@ -49,6 +50,8 @@ export interface QuestionsResponse {
 export interface CreateQuizRequest {
   name: string;
   categoryId: number;
+  subCategoryId?: number;
+  quizStatus?: 'PENDING' | 'VERIFIED';
 }
 
 export interface CreateQuestionRequest {
@@ -76,6 +79,7 @@ export interface UpdateAnswerRequest {
 export interface UpdateQuizRequest {
   name: string;
   categoryId: number;
+  subCategoryId?: number;
   quizStatus: 'PENDING' | 'VERIFIED';
 }
 
@@ -87,7 +91,13 @@ const quizService = {
   },
 
   createQuiz: async (data: CreateQuizRequest): Promise<Quiz> => {
-    const response = await apiClient.post<Quiz>('/admin/quiz', data);
+    const payload: Record<string, unknown> = {
+      name: data.name,
+      categoryId: data.categoryId,
+    };
+    if (data.subCategoryId !== undefined) payload['subcategoryId'] = data.subCategoryId;
+    if (data.quizStatus !== undefined) payload['quizStatus'] = data.quizStatus;
+    const response = await apiClient.post<Quiz>('/admin/quiz', payload);
     return response.data;
   },
 
@@ -165,6 +175,17 @@ const quizService = {
     return response.data;
   },
 
+  getQuizzesBySubcategoryAdmin: async (
+    subCategoryId: number,
+    page: number = 0,
+    size: number = 10,
+  ): Promise<QuizResponse> => {
+    const response = await apiClient.get<QuizResponse>(
+      `/admin/quiz/quiz-by-subcategory/${subCategoryId}?page=${page}&size=${size}`,
+    );
+    return response.data;
+  },
+
   getQuizzesByCategoryUser: async (
     categoryId: number,
     page: number = 0,
@@ -235,11 +256,13 @@ const quizService = {
 
   // Admin: update quiz
   updateAdminQuiz: async (quizId: number, data: UpdateQuizRequest): Promise<Quiz> => {
-    const response = await apiClient.put<Quiz>(`/admin/quiz/${quizId}`, {
+    const body: Record<string, unknown> = {
       name: data.name,
       categoryId: data.categoryId,
       quizStatus: data.quizStatus,
-    });
+    };
+    if (data.subCategoryId !== undefined) body['subcategoryId'] = data.subCategoryId;
+    const response = await apiClient.put<Quiz>(`/admin/quiz/${quizId}`, body);
     return response.data;
   },
 

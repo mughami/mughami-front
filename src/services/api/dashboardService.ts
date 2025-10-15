@@ -12,6 +12,27 @@ export interface DashboardStats {
   totalVotes: number;
 }
 
+export interface QuizStatsItem {
+  quizName: string;
+  quizId: number;
+  totalGuestUsers: number;
+  completedGuestUsers: number;
+  totalRegisteredUsers: number;
+  completedRegisteredUsers: number;
+}
+
+export interface QuizStatsResponse {
+  totalPages: number;
+  totalElements: number;
+  first: boolean;
+  size: number;
+  content: QuizStatsItem[];
+  number: number; // current page (1-based)
+  numberOfElements: number;
+  last: boolean;
+  empty: boolean;
+}
+
 const dashboardService = {
   getStats: async (): Promise<DashboardStats> => {
     const polls = await apiClient.get('/admin/polls?page=0&size=1000');
@@ -31,6 +52,12 @@ const dashboardService = {
         0,
       ),
     };
+  },
+  getQuizStats: async (page: number = 1, size: number = 10): Promise<QuizStatsResponse> => {
+    const response = await apiClient.get<QuizStatsResponse>(
+      `/admin/stats/quiz-stats?page=${page}&size=${size}`,
+    );
+    return response.data;
   },
 };
 

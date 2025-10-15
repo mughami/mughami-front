@@ -38,6 +38,7 @@ const { Option } = Select;
 interface FormValues {
   quizName: string;
   categoryId: number;
+  subCategoryId?: number;
   quizStatus: 'PENDING' | 'VERIFIED';
 }
 
@@ -45,6 +46,7 @@ export const Quizzes: React.FC = () => {
   const {
     quizzes,
     loading,
+    totalQuizzes,
     fetchAdminQuizzes,
     createQuiz,
     addQuizPhoto,
@@ -54,6 +56,7 @@ export const Quizzes: React.FC = () => {
   } = useQuizStore();
 
   const { adminCategories, fetchAdminCategories } = useCategoryStore();
+  const [subOptions, setSubOptions] = useState<Record<number, { label: string; value: number }[]>>({});
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
@@ -62,11 +65,13 @@ export const Quizzes: React.FC = () => {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [quizPhotos, setQuizPhotos] = useState<Record<number, string>>({});
   const blobUrlsRef = useRef<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   useEffect(() => {
-    fetchAdminQuizzes();
+    fetchAdminQuizzes(currentPage - 1, pageSize);
     fetchAdminCategories();
-  }, [fetchAdminQuizzes, fetchAdminCategories]);
+  }, [fetchAdminQuizzes, fetchAdminCategories, currentPage, pageSize]);
 
   useEffect(() => {
     // Fetch photos for quizzes that have photos
@@ -107,6 +112,8 @@ export const Quizzes: React.FC = () => {
       const quizData: CreateQuizRequest = {
         name: values.quizName,
         categoryId: values.categoryId,
+        subCategoryId: values.subCategoryId,
+        quizStatus: values.quizStatus,
       };
 
       const newQuiz = await createQuiz(quizData);
@@ -131,6 +138,7 @@ export const Quizzes: React.FC = () => {
       await updateAdminQuiz(editingQuiz.quizId, {
         name: values.quizName,
         categoryId: values.categoryId,
+        subCategoryId: values.subCategoryId,
         quizStatus: values.quizStatus,
       });
       message.success('ვიქტორინა წარმატებით განახლდა!');
@@ -154,6 +162,10 @@ export const Quizzes: React.FC = () => {
     form.setFieldsValue({
       quizName: quiz.quizName,
       categoryId: quiz.categoryId,
+      // backend returns 'subcategoryId'; prefer that if present
+      subCategoryId:
+        (quiz as unknown as { subcategoryId?: number; subCategoryId?: number }).subcategoryId ??
+        (quiz as unknown as { subcategoryId?: number; subCategoryId?: number }).subCategoryId,
       quizStatus: quiz.quizStatus || 'PENDING',
     });
     setIsModalVisible(true);
@@ -327,10 +339,19 @@ export const Quizzes: React.FC = () => {
           rowKey="quizId"
           loading={loading}
           pagination={{
-            pageSize: 10,
+            current: currentPage,
+            pageSize,
+            total: totalQuizzes,
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) => `${range[0]}-${range[1]} ${total} ვიქტორინიდან`,
+          }}
+          onChange={(pagination) => {
+            const nextPage = pagination.current || 1;
+            const nextSize = pagination.pageSize || pageSize;
+            setCurrentPage(nextPage);
+            setPageSize(nextSize);
+            // fetch will be triggered by the effect watching currentPage/pageSize
           }}
         />
       </Card>
@@ -349,6 +370,7 @@ export const Quizzes: React.FC = () => {
           onFinish={handleSubmit}
           initialValues={{
             categoryId: undefined,
+            subCategoryId: undefined,
             quizStatus: 'PENDING',
           }}
         >
@@ -368,13 +390,33 @@ export const Quizzes: React.FC = () => {
             label="კატეგორია"
             rules={[{ required: true, message: 'გთხოვთ აირჩიოთ კატეგორია' }]}
           >
-            <Select placeholder="აირჩიეთ კატეგორია">
+            <Select
+              placeholder="აირჩიეთ კატეგორია"
+              onChange={(categoryId: number) => {
+                const cat = adminCategories.find((c) => c.categoryId === categoryId);
+                const subs = (cat?.subCategoryResponseList || []).map((s) => ({
+                  label: s.subCategoryName,
+                  value: s.subCategoryId,
+                }));
+                setSubOptions((prev) => ({ ...prev, [categoryId]: subs }));
+                // reset sub-category on category change
+                form.setFieldsValue({ subCategoryId: undefined });
+              }}
+            >
               {adminCategories.map((category) => (
                 <Option key={category.categoryId} value={category.categoryId}>
                   {category.categoryName}
                 </Option>
               ))}
             </Select>
+          </Form.Item>
+
+          <Form.Item name="subCategoryId" label="ქვეკატეგორია">
+            <Select
+              placeholder="აირჩიეთ ქვეკატეგორია (არასავალდებულო)"
+              allowClear
+              options={subOptions[form.getFieldValue('categoryId')] || []}
+            />
           </Form.Item>
 
           <Form.Item label="ვიქტორინის ფოტო">

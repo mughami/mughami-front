@@ -55,9 +55,9 @@ export const AdminLayout = ({ children, selectedKey, onMenuSelect }: AdminLayout
       label: 'გამოკითხვები',
     },
     {
-      key: 'analytics',
+      key: 'quiz-stats',
       icon: <BarChartOutlined />,
-      label: 'ანალიტიკა',
+      label: 'ვიქტორინის სტატისტიკა',
     },
     // {
     //   key: 'settings',

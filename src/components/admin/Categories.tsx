@@ -14,7 +14,7 @@ import {
 } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, FolderOpenOutlined } from '@ant-design/icons';
 import { useCategoryStore } from '../../store/categoryStore';
-import type { CategoryResponse } from '../../types';
+import type { CategoryResponse, SubCategoryResponse } from '../../types';
 
 const { Title } = Typography;
 
@@ -24,13 +24,29 @@ interface CategoryFormData {
 }
 
 export const Categories = () => {
-  const { adminCategories, isLoading, error, fetchAdminCategories, createAdminCategory, clearError } =
-    useCategoryStore();
+  const {
+    adminCategories,
+    isLoading,
+    error,
+    fetchAdminCategories,
+    createAdminCategory,
+    updateAdminCategory,
+    deleteAdminCategory,
+    fetchAdminSubcategories,
+    createAdminSubcategory,
+    updateAdminSubcategory,
+    deleteAdminSubcategory,
+    clearError,
+  } = useCategoryStore();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [isSubCategoryModalVisible, setIsSubCategoryModalVisible] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<CategoryResponse | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [form] = Form.useForm();
+  const [subForm] = Form.useForm();
+  const [editingSubId, setEditingSubId] = useState<number | null>(null);
+  const [editingSubName, setEditingSubName] = useState<string>('');
 
   useEffect(() => {
     fetchAdminCategories();
@@ -43,7 +59,7 @@ export const Categories = () => {
     }
   }, [error, clearError]);
 
-  const handleCreateCategory = async (values: CategoryFormData) => {
+  const handleCreateOrUpdateCategory = async (values: CategoryFormData) => {
     try {
       const categoryData = {
         categoryName: values.categoryName,
@@ -52,18 +68,105 @@ export const Categories = () => {
           .map((subCategoryName) => ({ subCategoryName: subCategoryName.trim() })),
       };
 
-      await createAdminCategory(categoryData);
-      message.success('კატეგორია წარმატებით შეიქმნა');
+      if (isEditing && selectedCategoryId != null) {
+        await updateAdminCategory(selectedCategoryId, categoryData);
+        message.success('კატეგორია განახლებულია');
+      } else {
+        await createAdminCategory(categoryData);
+        message.success('კატეგორია წარმატებით შეიქმნა');
+      }
       setIsModalVisible(false);
+      setIsEditing(false);
+      setSelectedCategoryId(null);
       form.resetFields();
     } catch {
-      message.error('კატეგორიის შექმნისას მოხდა შეცდომა');
+      message.error('ქმედების შესრულებისას მოხდა შეცდომა');
     }
   };
 
-  const handleShowSubCategories = (category: CategoryResponse) => {
-    setSelectedCategory(category);
+  const handleShowSubCategories = async (category: CategoryResponse) => {
+    setSelectedCategoryId(category.categoryId);
     setIsSubCategoryModalVisible(true);
+    try {
+      await fetchAdminSubcategories(category.categoryId);
+    } catch {
+      message.error('ქვეკატეგორიების ჩატვირთვისას მოხდა შეცდომა');
+    }
+  };
+
+  const handleOpenCreateModal = () => {
+    setIsEditing(false);
+    setSelectedCategoryId(null);
+    form.resetFields();
+    setIsModalVisible(true);
+  };
+
+  const handleOpenEditModal = (category: CategoryResponse) => {
+    setIsEditing(true);
+    setSelectedCategoryId(category.categoryId);
+    form.setFieldsValue({
+      categoryName: category.categoryName,
+      subCategories: category.subCategoryResponseList.map((s) => s.subCategoryName),
+    });
+    setIsModalVisible(true);
+  };
+
+  const handleDeleteCategory = async (categoryId: number) => {
+    try {
+      await deleteAdminCategory(categoryId);
+      message.success('კატეგორია წაშლილია');
+    } catch {
+      message.error('კატეგორიის წაშლისას მოხდა შეცდომა');
+    }
+  };
+
+  const currentCategory: CategoryResponse | null =
+    selectedCategoryId != null
+      ? adminCategories.find((c) => c.categoryId === selectedCategoryId) || null
+      : null;
+
+  const handleAddSubcategory = async () => {
+    try {
+      const values = await subForm.validateFields();
+      if (selectedCategoryId == null) return;
+      await createAdminSubcategory(selectedCategoryId, {
+        subCategoryName: (values.subCategoryName as string).trim(),
+      });
+      message.success('ქვეკატეგორია დამატებულია');
+      subForm.resetFields();
+    } catch {
+      message.error('ქვეკატეგორიის დამატებისას მოხდა შეცდომა');
+    }
+  };
+
+  const startEditSub = (row: { subCategoryId: number; subCategoryName: string }) => {
+    setEditingSubId(row.subCategoryId);
+    setEditingSubName(row.subCategoryName);
+  };
+
+  const cancelEditSub = () => {
+    setEditingSubId(null);
+    setEditingSubName('');
+  };
+
+  const saveEditSub = async () => {
+    if (editingSubId == null) return;
+    try {
+      await updateAdminSubcategory(editingSubId, { subCategoryName: editingSubName.trim() });
+      message.success('ქვეკატეგორია განახლებულია');
+      cancelEditSub();
+    } catch {
+      message.error('ქვეკატეგორიის განახლებისას მოხდა შეცდომა');
+    }
+  };
+
+  const handleDeleteSub = async (subCategoryId: number) => {
+    try {
+      await deleteAdminSubcategory(subCategoryId);
+      message.success('ქვეკატეგორია წაშლილია');
+    } catch {
+      message.error('ქვეკატეგორიის წაშლისას მოხდა შეცდომა');
+    }
   };
 
   const columns = [
@@ -97,7 +200,7 @@ export const Categories = () => {
           >
             ქვეკატეგორიები
           </Button>
-          <Button type="link" icon={<EditOutlined />} disabled>
+          <Button type="link" icon={<EditOutlined />} onClick={() => handleOpenEditModal(record)}>
             რედაქტირება
           </Button>
           <Popconfirm
@@ -105,9 +208,9 @@ export const Categories = () => {
             description="გსურთ ამ კატეგორიის წაშლა?"
             okText="დიახ"
             cancelText="არა"
-            disabled
+            onConfirm={() => handleDeleteCategory(record.categoryId)}
           >
-            <Button type="link" danger icon={<DeleteOutlined />} disabled>
+            <Button type="link" danger icon={<DeleteOutlined />}>
               წაშლა
             </Button>
           </Popconfirm>
@@ -125,8 +228,17 @@ export const Categories = () => {
     },
     {
       title: 'ქვეკატეგორიის სახელი',
-      dataIndex: 'subCategoryName',
       key: 'subCategoryName',
+      render: (record: SubCategoryResponse) =>
+        editingSubId === record.subCategoryId ? (
+          <Input
+            value={editingSubName}
+            onChange={(e) => setEditingSubName(e.target.value)}
+            disabled={isLoading}
+          />
+        ) : (
+          record.subCategoryName
+        ),
     },
     {
       title: 'შექმნის თარიღი',
@@ -134,13 +246,48 @@ export const Categories = () => {
       key: 'createdAt',
       render: (date: string) => new Date(date).toLocaleDateString('ka-GE'),
     },
+    {
+      title: 'ქმედებები',
+      key: 'actions',
+      render: (record: SubCategoryResponse) => (
+        <Space>
+          {editingSubId === record.subCategoryId ? (
+            <>
+              <Button type="link" onClick={saveEditSub} loading={isLoading}>
+                შენახვა
+              </Button>
+              <Button type="link" onClick={cancelEditSub} disabled={isLoading}>
+                გაუქმება
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button type="link" icon={<EditOutlined />} onClick={() => startEditSub(record)}>
+                რედაქტირება
+              </Button>
+              <Popconfirm
+                title="დარწმუნებული ხართ?"
+                description="გსურთ ამ ქვეკატეგორიის წაშლა?"
+                okText="დიახ"
+                cancelText="არა"
+                onConfirm={() => handleDeleteSub(record.subCategoryId)}
+              >
+                <Button type="link" danger icon={<DeleteOutlined />}>
+                  წაშლა
+                </Button>
+              </Popconfirm>
+            </>
+          )}
+        </Space>
+      ),
+    },
   ];
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <Title level={2}>კატეგორიების მართვა</Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenCreateModal}>
           ახალი კატეგორია
         </Button>
       </div>
@@ -160,12 +307,14 @@ export const Categories = () => {
         />
       </Card>
 
-      {/* Create Category Modal */}
+      {/* Create/Edit Category Modal */}
       <Modal
-        title="ახალი კატეგორიის დამატება"
+        title={isEditing ? 'კატეგორიის რედაქტირება' : 'ახალი კატეგორიის დამატება'}
         open={isModalVisible}
         onCancel={() => {
           setIsModalVisible(false);
+          setIsEditing(false);
+          setSelectedCategoryId(null);
           form.resetFields();
         }}
         footer={null}
@@ -174,7 +323,7 @@ export const Categories = () => {
         <Form
           form={form}
           layout="vertical"
-          onFinish={handleCreateCategory}
+          onFinish={handleCreateOrUpdateCategory}
           initialValues={{ subCategories: [''] }}
         >
           <Form.Item
@@ -188,29 +337,33 @@ export const Categories = () => {
           <Form.List name="subCategories">
             {(fields, { add, remove }) => (
               <>
-                <label className="block text-sm font-medium mb-2">ქვეკატეგორიები</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium">ქვეკატეგორიები</label>
+                </div>
                 {fields.map(({ key, name, ...restField }) => (
                   <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
-                    <Form.Item
-                      {...restField}
-                      name={[name]}
-                      style={{ flex: 1 }}
-                      //   rules={[{ required: true, message: 'შეიყვანეთ ქვეკატეგორიის სახელი' }]}
-                    >
-                      <Input placeholder="ქვეკატეგორიის სახელი" />
+                    <Form.Item {...restField} name={[name]} style={{ flex: 1 }}>
+                      <Input placeholder="ქვეკატეგორიის სახელი" disabled={isEditing} />
                     </Form.Item>
-                    {fields.length > 1 && (
+                    {!isEditing && fields.length > 1 && (
                       <Button type="link" danger onClick={() => remove(name)}>
                         წაშლა
                       </Button>
                     )}
                   </Space>
                 ))}
-                <Form.Item>
-                  <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                    ქვეკატეგორიის დამატება
-                  </Button>
-                </Form.Item>
+                {!isEditing && (
+                  <Form.Item>
+                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                      ქვეკატეგორიის დამატება
+                    </Button>
+                  </Form.Item>
+                )}
+                {isEditing && (
+                  <div className="text-xs text-gray-500 mt-1">
+                    ქვეკატეგორიების რედაქტირება/დამატება/წაშლა შესაძლებელია „ქვეკატეგორიები“ ღილაკიდან.
+                  </div>
+                )}
               </>
             )}
           </Form.List>
@@ -219,7 +372,7 @@ export const Categories = () => {
             <Space className="w-full justify-end">
               <Button onClick={() => setIsModalVisible(false)}>გაუქმება</Button>
               <Button type="primary" htmlType="submit" loading={isLoading}>
-                შექმნა
+                {isEditing ? 'განახლება' : 'შექმნა'}
               </Button>
             </Space>
           </Form.Item>
@@ -228,7 +381,7 @@ export const Categories = () => {
 
       {/* SubCategories Modal */}
       <Modal
-        title={`${selectedCategory?.categoryName} - ქვეკატეგორიები`}
+        title={`${currentCategory?.categoryName || ''} - ქვეკატეგორიები`}
         open={isSubCategoryModalVisible}
         onCancel={() => setIsSubCategoryModalVisible(false)}
         footer={[
@@ -238,9 +391,22 @@ export const Categories = () => {
         ]}
         width={700}
       >
+        <Form form={subForm} layout="inline" onFinish={handleAddSubcategory} className="mb-4">
+          <Form.Item
+            name="subCategoryName"
+            rules={[{ required: true, message: 'შეიყვანეთ ქვეკატეგორიის სახელი' }]}
+          >
+            <Input placeholder="ახალი ქვეკატეგორიის სახელი" allowClear />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" loading={isLoading} icon={<PlusOutlined />}>
+              დამატება
+            </Button>
+          </Form.Item>
+        </Form>
         <Table
           columns={subCategoryColumns}
-          dataSource={selectedCategory?.subCategoryResponseList || []}
+          dataSource={currentCategory?.subCategoryResponseList || []}
           rowKey="subCategoryId"
           pagination={false}
           size="small"

@@ -6,6 +6,7 @@ import { Categories } from '../components/admin/Categories';
 import { Polls } from '../components/admin/Polls';
 import { Quizzes } from '../components/admin/Quizzes';
 import { Settings } from '../components/admin/Settings';
+import QuizStats from '../components/admin/QuizStats';
 import useDashboardStore from '../store/dashboardStore';
 import { usePollStore } from '../store/pollStore';
 import { useQuizStore } from '../store/quizStore';
@@ -14,7 +15,7 @@ import useSettingsStore from '../store/settingsStore';
 import { useCategoryStore } from '../store/categoryStore';
 
 const Admin = () => {
-  const { fetchStats } = useDashboardStore();
+  const { fetchStats, fetchQuizStats } = useDashboardStore();
   const { fetchPolls } = usePollStore();
   const { fetchAdminQuizzes } = useQuizStore();
   const { fetchUsers } = useUserStore();
@@ -44,10 +45,13 @@ const Admin = () => {
       fetchAdminCategories();
     } else if (selectedKey === 'settings') {
       fetchSettings();
+    } else if (selectedKey === 'quiz-stats') {
+      fetchQuizStats(1, 10);
     }
   }, [
     selectedKey,
     fetchStats,
+    fetchQuizStats,
     fetchPolls,
     fetchAdminQuizzes,
     fetchUsers,
@@ -67,6 +71,8 @@ const Admin = () => {
         return <Polls />;
       case 'contests':
         return <Quizzes />;
+      case 'quiz-stats':
+        return <QuizStats />;
       case 'settings':
         return <Settings />;
       default:
