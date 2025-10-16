@@ -95,7 +95,7 @@ const quizService = {
       name: data.name,
       categoryId: data.categoryId,
     };
-    if (data.subCategoryId !== undefined) payload['subcategoryId'] = data.subCategoryId;
+    if (data.subCategoryId != null) payload['subcategoryId'] = data.subCategoryId;
     if (data.quizStatus !== undefined) payload['quizStatus'] = data.quizStatus;
     const response = await apiClient.post<Quiz>('/admin/quiz', payload);
     return response.data;
@@ -256,12 +256,15 @@ const quizService = {
 
   // Admin: update quiz
   updateAdminQuiz: async (quizId: number, data: UpdateQuizRequest): Promise<Quiz> => {
+    console.log(data.subCategoryId);
     const body: Record<string, unknown> = {
       name: data.name,
       categoryId: data.categoryId,
       quizStatus: data.quizStatus,
+      subcategoryId: data.subCategoryId || null,
     };
-    if (data.subCategoryId !== undefined) body['subcategoryId'] = data.subCategoryId;
+
+    console.log(body);
     const response = await apiClient.put<Quiz>(`/admin/quiz/${quizId}`, body);
     return response.data;
   },

@@ -133,6 +133,7 @@ export const Quizzes: React.FC = () => {
   };
 
   const handleUpdateQuiz = async (values: FormValues) => {
+    console.log(values);
     if (!editingQuiz) return;
     try {
       await updateAdminQuiz(editingQuiz.quizId, {
@@ -159,6 +160,13 @@ export const Quizzes: React.FC = () => {
 
   const handleEditQuiz = (quiz: Quiz) => {
     setEditingQuiz(quiz);
+    // Ensure subcategory options are populated for this quiz's category
+    const cat = adminCategories.find((c) => c.categoryId === quiz.categoryId);
+    const subs = (cat?.subCategoryResponseList || []).map((s) => ({
+      label: s.subCategoryName,
+      value: s.subCategoryId,
+    }));
+    setSubOptions((prev) => ({ ...prev, [quiz.categoryId]: subs }));
     form.setFieldsValue({
       quizName: quiz.quizName,
       categoryId: quiz.categoryId,
@@ -228,6 +236,23 @@ export const Quizzes: React.FC = () => {
           <Tag color="blue">{category.categoryName}</Tag>
         ) : (
           <Tag color="default">უცნობი</Tag>
+        );
+      },
+    },
+    {
+      title: 'ქვეკატეგორია',
+      key: 'subCategory',
+      render: (quiz: Quiz) => {
+        const subId =
+          (quiz as unknown as { subcategoryId?: number; subCategoryId?: number }).subcategoryId ??
+          (quiz as unknown as { subcategoryId?: number; subCategoryId?: number }).subCategoryId;
+        if (!subId) return <Tag color="default">-</Tag>;
+        const category = adminCategories.find((cat) => cat.categoryId === quiz.categoryId);
+        const sub = category?.subCategoryResponseList.find((s) => s.subCategoryId === subId);
+        return sub ? (
+          <Tag color="purple">{sub.subCategoryName}</Tag>
+        ) : (
+          <Tag color="default">{subId}</Tag>
         );
       },
     },
@@ -399,8 +424,10 @@ export const Quizzes: React.FC = () => {
                   value: s.subCategoryId,
                 }));
                 setSubOptions((prev) => ({ ...prev, [categoryId]: subs }));
-                // reset sub-category on category change
-                form.setFieldsValue({ subCategoryId: undefined });
+                // preserve current subcategory if it belongs to the new category
+                const currentSubId = form.getFieldValue('subCategoryId');
+                const stillValid = subs.some((s) => s.value === currentSubId);
+                form.setFieldsValue({ subCategoryId: stillValid ? currentSubId : undefined });
               }}
             >
               {adminCategories.map((category) => (
