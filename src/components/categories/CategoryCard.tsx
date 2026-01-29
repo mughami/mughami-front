@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { TrophyOutlined, QuestionCircleOutlined, LockOutlined } from '@ant-design/icons';
+import { LockOutlined } from '@ant-design/icons';
 
 interface CategoryCardProps {
   id: string;
@@ -12,7 +12,7 @@ interface CategoryCardProps {
   difficulty: 'easy' | 'medium' | 'hard';
 }
 
-const CategoryCard = ({ id, title, image, quizCount, prize }: CategoryCardProps) => {
+const CategoryCard = ({ id, title, image }: CategoryCardProps) => {
   return (
     <div className="category-card h-full flex flex-col">
       <div className="relative">
@@ -21,17 +21,6 @@ const CategoryCard = ({ id, title, image, quizCount, prize }: CategoryCardProps)
       <div className="category-content flex-grow flex flex-col">
         <h3 className="category-title">{title}</h3>
         {/* <p className="category-description flex-grow">{description}</p> */}
-        <div className="category-stats mt-auto">
-          <div className="flex items-center">
-            <QuestionCircleOutlined className="mr-1" />
-            <span className="text-[0.7rem]">{quizCount} ქვიზები</span>
-          </div>
-
-          <div className="flex items-center font-medium text-primary">
-            <TrophyOutlined className="mr-1" />
-            <span className="text-[0.7rem]">{prize} ₾</span>
-          </div>
-        </div>
 
         {/* Quiz access button */}
         <div className="mt-4">
