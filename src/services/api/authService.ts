@@ -6,12 +6,17 @@ export interface LoginCredentials {
   password: string;
 }
 
+export type Gender = 'MALE' | 'FEMALE';
+//  | 'OTHER';
+
 export interface RegisterData {
   email: string;
   password: string;
   name: string;
   lastname: string;
   username: string;
+  age: number;
+  gender: Gender;
 }
 
 export interface User {

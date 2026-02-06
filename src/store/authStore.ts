@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { authService, type User } from '../services';
+import type { Gender } from '../services/api/authService';
 
 interface AuthState {
   user: User | null;
@@ -16,6 +17,8 @@ interface AuthState {
     username: string,
     email: string,
     password: string,
+    age: number,
+    gender: Gender,
   ) => Promise<void>;
   logout: () => void;
   clearError: () => void;
@@ -88,10 +91,12 @@ export const useAuthStore = create<AuthState>()(
         username: string,
         email: string,
         password: string,
+        age: number,
+        gender: Gender,
       ) => {
         try {
           set({ isLoading: true, error: null });
-          await authService.register({ name, lastname, username, email, password });
+          await authService.register({ name, lastname, username, email, password, age, gender });
         } catch (error) {
           set({
             isLoading: false,

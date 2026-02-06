@@ -14,6 +14,7 @@ import {
 } from '@ant-design/icons';
 import { useAuthStore } from '../../store/authStore';
 import { notification } from 'antd';
+import type { Gender } from '../../services/api/authService';
 
 type RegisterFormInputs = {
   username: string;
@@ -23,6 +24,8 @@ type RegisterFormInputs = {
   phoneNumber: string;
   password: string;
   confirmPassword: string;
+  age: string;
+  gender: Gender;
 };
 
 const RegisterPage = () => {
@@ -48,7 +51,15 @@ const RegisterPage = () => {
 
   const onSubmit: SubmitHandler<RegisterFormInputs> = async (data) => {
     try {
-      await registerUser(data.firstName, data.lastName, data.username, data.email, data.password);
+      await registerUser(
+        data.firstName,
+        data.lastName,
+        data.username,
+        data.email,
+        data.password,
+        Number(data.age),
+        data.gender,
+      );
 
       // Navigate to email verification page with email
       navigate('/verify-email', {
@@ -78,7 +89,7 @@ const RegisterPage = () => {
         fieldsToValidate = ['password', 'confirmPassword'];
         break;
       case 3:
-        fieldsToValidate = ['firstName', 'lastName', 'phoneNumber'];
+        fieldsToValidate = ['firstName', 'lastName', 'phoneNumber', 'age', 'gender'];
         break;
     }
 
@@ -361,6 +372,62 @@ const RegisterPage = () => {
         {errors.phoneNumber && <p className="input-error">{errors.phoneNumber.message}</p>}
       </div>
 
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="input-group">
+          <label htmlFor="age" className="input-label">
+            ასაკი
+          </label>
+          <div className="relative">
+            <input
+              id="age"
+              type="number"
+              placeholder="ასაკი"
+              min="1"
+              max="150"
+              className={`form-input ${
+                errors.age ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''
+              }`}
+              {...register('age', {
+                required: 'ასაკი აუცილებელია',
+                min: {
+                  value: 1,
+                  message: 'ასაკი უნდა იყოს მინიმუმ 1',
+                },
+                max: {
+                  value: 150,
+                  message: 'ასაკი უნდა იყოს მაქსიმუმ 150',
+                },
+              })}
+            />
+          </div>
+          {errors.age && <p className="input-error">{errors.age.message}</p>}
+        </div>
+
+        <div className="input-group">
+          <label htmlFor="gender" className="input-label">
+            სქესი
+          </label>
+          <select
+            id="gender"
+            className={`form-input ${
+              errors.gender ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''
+            }`}
+            defaultValue=""
+            {...register('gender', {
+              required: 'სქესი აუცილებელია',
+            })}
+          >
+            <option value="" disabled>
+              აირჩიეთ სქესი
+            </option>
+            <option value="MALE">მამრობითი</option>
+            <option value="FEMALE">მდედრობითი</option>
+            {/* <option value="OTHER">სხვა</option> */}
+          </select>
+          {errors.gender && <p className="input-error">{errors.gender.message}</p>}
+        </div>
+      </div>
+
       <div className="text-sm text-center mt-6 p-4 bg-gray-50 rounded-lg">
         ანგარიშის შექმნით თქვენ ეთანხმებით ჩვენს{' '}
         <Link to="/terms" className="form-link">
@@ -408,8 +475,8 @@ const RegisterPage = () => {
                       step < currentStep
                         ? 'bg-green-500 border-green-500 text-white'
                         : step === currentStep
-                        ? 'bg-primary border-primary text-white'
-                        : 'bg-gray-200 border-gray-300 text-gray-500'
+                          ? 'bg-primary border-primary text-white'
+                          : 'bg-gray-200 border-gray-300 text-gray-500'
                     }`}
                   >
                     {step < currentStep ? (
