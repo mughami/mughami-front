@@ -22,6 +22,7 @@ interface RowType {
   completedGuestUsers: number;
   totalRegisteredUsers: number;
   completedRegisteredUsers: number;
+  createdAt: string;
 }
 
 interface ChartDatum {
@@ -65,6 +66,13 @@ const QuizStats = () => {
       key: 'quizName',
     },
     {
+      title: 'შექმნის თარიღი',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      width: 160,
+      render: (value: string) => (value ? new Date(value).toLocaleDateString('ka-GE') : '—'),
+    },
+    {
       title: 'სტუმრები - სულ',
       dataIndex: 'totalGuestUsers',
       key: 'totalGuestUsers',
@@ -98,6 +106,7 @@ const QuizStats = () => {
     completedGuestUsers: q.completedGuestUsers,
     totalRegisteredUsers: q.totalRegisteredUsers,
     completedRegisteredUsers: q.completedRegisteredUsers,
+    createdAt: q.createdAt,
   }));
 
   const chartData = useMemo(
@@ -322,8 +331,9 @@ const QuizStats = () => {
         columns={[
           columns[0],
           columns[1],
+          columns[2],
           {
-            ...columns[2],
+            ...columns[3],
             render: (value: number, record: RowType) => {
               const total = Math.max(record.totalGuestUsers, 0);
               const completed = Math.max(value || 0, 0);
@@ -338,9 +348,9 @@ const QuizStats = () => {
               );
             },
           },
-          columns[3],
+          columns[4],
           {
-            ...columns[4],
+            ...columns[5],
             render: (value: number, record: RowType) => {
               const total = Math.max(record.totalRegisteredUsers, 0);
               const completed = Math.max(value || 0, 0);

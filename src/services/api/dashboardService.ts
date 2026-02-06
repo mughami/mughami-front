@@ -19,6 +19,7 @@ export interface QuizStatsItem {
   completedGuestUsers: number;
   totalRegisteredUsers: number;
   completedRegisteredUsers: number;
+  createdAt: string;
 }
 
 export interface QuizStatsResponse {
