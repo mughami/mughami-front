@@ -14,12 +14,7 @@ import {
   Select,
   Tag,
 } from 'antd';
-import {
-  ArrowLeftOutlined,
-  PlayCircleOutlined,
-  QuestionCircleOutlined,
-  TrophyOutlined,
-} from '@ant-design/icons';
+import { ArrowLeftOutlined, PlayCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { useQuizStore } from '../../store/quizStore';
 import { useCategoryStore } from '../../store/categoryStore';
 import { type Category, quizService } from '../../services';
@@ -178,7 +173,7 @@ const QuizPage: React.FC = () => {
                 </div>
               </div>
               {currentCategory && (
-                <div className="grid grid-cols-2 md:grid-cols-2 gap-3 w-full md:w-auto">
+                <div className="grid grid-cols-1  gap-3 w-full md:w-auto">
                   <div className="rounded-lg bg-white/10 px-4 py-3 text-white">
                     <div className="flex items-center gap-2 text-sm opacity-80">
                       <QuestionCircleOutlined />
@@ -186,15 +181,6 @@ const QuizPage: React.FC = () => {
                     </div>
                     <div className="text-2xl font-semibold leading-tight">
                       {displayedQuizzes.length}
-                    </div>
-                  </div>
-                  <div className="rounded-lg bg-white/10 px-4 py-3 text-white col-span-2 md:col-span-1">
-                    <div className="flex items-center gap-2 text-sm opacity-80">
-                      <TrophyOutlined />
-                      <span>საპრიზო თანხა</span>
-                    </div>
-                    <div className="text-2xl font-semibold leading-tight">
-                      {currentCategory.prize} ₾
                     </div>
                   </div>
                 </div>
