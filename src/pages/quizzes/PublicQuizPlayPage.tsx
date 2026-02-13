@@ -52,6 +52,8 @@ const PublicQuizPlayPage: React.FC = () => {
     quizScore,
     loading,
     error,
+    suggestions,
+    suggestionsLoading,
     fetchPublicQuiz,
     fetchPublicQuizQuestions,
     startQuiz,
@@ -60,6 +62,7 @@ const PublicQuizPlayPage: React.FC = () => {
     nextQuestion,
     completeQuiz,
     resetQuiz,
+    fetchSuggestions,
     getQuizPhoto,
     getQuestionPhoto,
   } = usePublicQuizStore();
@@ -78,12 +81,42 @@ const PublicQuizPlayPage: React.FC = () => {
   const [submittedQuestions, setSubmittedQuestions] = useState<Record<number, boolean>>({});
   const [timeSpent, setTimeSpent] = useState(0);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const [suggestionPhotos, setSuggestionPhotos] = useState<Record<number, string>>({});
+  const suggestionPhotosRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
     if (quizCompleted && !isAuthenticated) {
       setShowRegistrationModal(true);
     }
-  }, [quizCompleted, isAuthenticated]);
+    if (quizCompleted) {
+      // Try subCategoryId first, fall back to categoryId for suggestions
+      const suggestionId = currentQuiz?.subCategoryId || currentQuiz?.categoryId;
+      if (suggestionId) {
+        fetchSuggestions(suggestionId);
+      }
+    }
+  }, [quizCompleted, isAuthenticated, currentQuiz?.subCategoryId, currentQuiz?.categoryId, fetchSuggestions]);
+
+  // Fetch photos for suggested quizzes
+  useEffect(() => {
+    if (suggestions.length === 0) return;
+
+    suggestions.forEach(async (quiz) => {
+      if (!quiz.hasPhoto) return;
+      if (suggestionPhotosRef.current.has(quiz.quizId)) return;
+      suggestionPhotosRef.current.add(quiz.quizId);
+
+      try {
+        const photoUrl = await getQuizPhoto(quiz.quizId);
+        if (photoUrl) {
+          setSuggestionPhotos((prev) => ({ ...prev, [quiz.quizId]: photoUrl }));
+          blobUrlsRef.current.add(photoUrl);
+        }
+      } catch {
+        // Ignore photo fetch errors
+      }
+    });
+  }, [suggestions, getQuizPhoto]);
 
   useEffect(() => {
     // Scroll to top when component mounts
@@ -572,6 +605,105 @@ const PublicQuizPlayPage: React.FC = () => {
               </Col>
             </Row>
           </Result>
+
+          {/* Recommended quizzes */}
+          {suggestionsLoading ? (
+            <div className="mt-10 text-center py-12 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl">
+              <Spin size="large" />
+              <div className="mt-4 text-gray-500 font-medium">რეკომენდაციების ჩატვირთვა...</div>
+            </div>
+          ) : suggestions.length > 0 ? (
+            <div className="mt-10">
+              {/* Section Header */}
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-100 to-orange-100 rounded-full mb-4">
+                  <span className="text-2xl">🎯</span>
+                  <span className="text-amber-700 font-semibold text-sm">გააგრძელე სწავლა</span>
+                </div>
+                <Title level={3} className="!mb-2 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                  რეკომენდებული ვიქტორინები
+                </Title>
+                <Text className="text-gray-500">აირჩიე შემდეგი გამოწვევა და გააუმჯობესე შენი ცოდნა</Text>
+              </div>
+
+              {/* Quiz Cards */}
+              <Row gutter={[20, 20]}>
+                {suggestions.map((quiz, index) => {
+                  const gradients = [
+                    'from-blue-500 via-blue-600 to-indigo-600',
+                    'from-emerald-500 via-green-500 to-teal-600',
+                    'from-purple-500 via-violet-500 to-indigo-600',
+                    'from-orange-500 via-amber-500 to-yellow-500',
+                    'from-pink-500 via-rose-500 to-red-500',
+                  ];
+                  const gradient = gradients[index % gradients.length];
+                  const icons = ['🧠', '📚', '💡', '🎓', '⭐'];
+                  const icon = icons[index % icons.length];
+                  const photoUrl = suggestionPhotos[quiz.quizId];
+
+                  return (
+                    <Col xs={24} sm={12} md={8} key={quiz.quizId}>
+                      <Card
+                        hoverable
+                        className="h-full border-0 overflow-hidden group cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300"
+                        style={{ borderRadius: '20px' }}
+                        bodyStyle={{ padding: 0 }}
+                        onClick={() => {
+                          resetQuiz();
+                          navigate(`/public-quiz/${quiz.quizId}`);
+                        }}
+                      >
+                        {/* Image or Gradient Header */}
+                        <div className="relative h-40 overflow-hidden">
+                          {photoUrl ? (
+                            <>
+                              <img
+                                src={photoUrl}
+                                alt={quiz.quizName}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                              <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center shadow-lg">
+                                  <span className="text-xl">{icon}</span>
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <div className={`w-full h-full bg-gradient-to-br ${gradient} relative`}>
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+                              <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                  <span className="text-3xl">{icon}</span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-5 bg-white">
+                          <Title level={5} className="!mb-3 text-gray-800 group-hover:text-blue-600 transition-colors" ellipsis={{ rows: 2 }}>
+                            {quiz.quizName}
+                          </Title>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-gray-400 text-sm">
+                              <PlayCircleOutlined />
+                              <span>დაწყება</span>
+                            </div>
+                            <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
+                              <ArrowRightOutlined className="text-sm" />
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    </Col>
+                  );
+                })}
+              </Row>
+            </div>
+          ) : null}
         </div>
       </Layout>
     );

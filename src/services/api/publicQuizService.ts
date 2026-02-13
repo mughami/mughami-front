@@ -93,6 +93,7 @@ export type GuestQuizStartResponse = {
     quizId: number;
     quizName: string;
     categoryId: number;
+    subCategoryId?: number;
     hasPhoto: boolean;
   };
   sessionId: string;
@@ -115,6 +116,7 @@ export type GuestQuizResultsResponse = {
     quizId: number;
     quizName: string;
     categoryId: number;
+    subCategoryId?: number;
     hasPhoto: boolean;
   };
   quizStatsResponse: QuestionStatsResponse[];
@@ -175,6 +177,13 @@ export const guestQuizService = {
   getGuestQuizResults: async (sessionId: string): Promise<GuestQuizResultsResponse> => {
     const response = await apiClient.get<GuestQuizResultsResponse>(
       `/app/guest/quiz/session/${sessionId}/results`,
+    );
+    return response.data;
+  },
+
+  getGuestQuizSuggestions: async (subcategoryId: number): Promise<Quiz[]> => {
+    const response = await apiClient.get<Quiz[]>(
+      `/app/guest/quiz/suggestions/${subcategoryId}`,
     );
     return response.data;
   },

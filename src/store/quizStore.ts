@@ -82,6 +82,11 @@ interface QuizState {
   getQuizPhoto: (quizId: number) => Promise<string>;
   getQuestionPhoto: (questionId: number) => Promise<string>;
 
+  // Suggestions
+  suggestions: Quiz[];
+  suggestionsLoading: boolean;
+  fetchSuggestions: (subcategoryId: number) => Promise<void>;
+
   // Utility
   clearError: () => void;
   clearCurrentQuiz: () => void;
@@ -489,6 +494,18 @@ export const useQuizStore = create<QuizState>((set) => ({
     }
   },
 
+  suggestions: [],
+  suggestionsLoading: false,
+  fetchSuggestions: async (subcategoryId: number) => {
+    set({ suggestionsLoading: true });
+    try {
+      const data = await quizService.getQuizSuggestions(subcategoryId);
+      set({ suggestions: data, suggestionsLoading: false });
+    } catch {
+      set({ suggestions: [], suggestionsLoading: false });
+    }
+  },
+
   clearError: () => set({ error: null }),
   clearCurrentQuiz: () => set({ currentQuiz: null }),
   clearCurrentQuestions: () => set({ currentQuestions: [] }),
@@ -584,6 +601,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       quizStarted: false,
       quizCompleted: false,
       quizScore: 0,
+      suggestions: [],
     });
   },
 }));

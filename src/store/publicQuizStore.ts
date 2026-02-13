@@ -5,6 +5,7 @@ import publicQuizService, {
   type GuestQuizResultsResponse,
 } from '../services/api/publicQuizService';
 import { useAuthStore } from './authStore';
+import quizService from '../services/api/quizService';
 import type { Quiz, QuizQuestion, QuizResponse, QuestionsResponse } from '../services/api/quizService';
 
 // Helper function to calculate quiz score
@@ -75,6 +76,11 @@ interface PublicQuizState {
   // Photo operations
   getQuizPhoto: (quizId: number) => Promise<string>;
   getQuestionPhoto: (questionId: number) => Promise<string>;
+
+  // Suggestions
+  suggestions: Quiz[];
+  suggestionsLoading: boolean;
+  fetchSuggestions: (subcategoryId: number) => Promise<void>;
 
   // Utility functions
   clearError: () => void;
@@ -192,6 +198,7 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
           loading: false,
         });
       } else {
+        const existingQuiz = get().currentQuiz;
         const start: GuestQuizStartResponse = await guestQuizService.startGuestQuiz(quizId);
         try {
           localStorage.setItem('guestQuizSessionId', start.sessionId);
@@ -204,6 +211,7 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
             quizId: start.quizResponse.quizId,
             quizName: start.quizResponse.quizName,
             categoryId: start.quizResponse.categoryId,
+            subCategoryId: start.quizResponse.subCategoryId ?? existingQuiz?.subCategoryId,
             hasPhoto: start.quizResponse.hasPhoto,
           },
           quizStarted: true,
@@ -321,6 +329,7 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
       quizScore: 0,
       sessionId: null,
       guestResults: null,
+      suggestions: [],
     });
   },
 
@@ -345,6 +354,21 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
         error: 'Failed to get question photo',
       });
       return '';
+    }
+  },
+
+  suggestions: [],
+  suggestionsLoading: false,
+  fetchSuggestions: async (subcategoryId: number) => {
+    set({ suggestionsLoading: true });
+    try {
+      const isAuthenticated = useAuthStore.getState().isAuthenticated;
+      const data = isAuthenticated
+        ? await quizService.getQuizSuggestions(subcategoryId)
+        : await guestQuizService.getGuestQuizSuggestions(subcategoryId);
+      set({ suggestions: data, suggestionsLoading: false });
+    } catch {
+      set({ suggestions: [], suggestionsLoading: false });
     }
   },
 

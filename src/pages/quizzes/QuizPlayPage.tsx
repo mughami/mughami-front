@@ -25,6 +25,7 @@ import {
   PlayCircleOutlined,
   HomeOutlined,
 } from '@ant-design/icons';
+import type { Quiz } from '../../services/api/quizService';
 import { useQuizStore, cleanupBlobUrl } from '../../store/quizStore';
 import Layout from '../../components/Layout';
 
@@ -44,14 +45,16 @@ const QuizPlayPage: React.FC = () => {
     quizScore,
     loading,
     error,
+    suggestions,
+    suggestionsLoading,
     fetchUserQuiz,
     fetchQuizQuestions,
     selectAnswer,
     submitAnswer,
     nextQuestion,
-
     completeQuiz,
     resetQuiz,
+    fetchSuggestions,
     clearCurrentQuiz,
     clearCurrentQuestions,
     getQuizPhoto,
@@ -69,6 +72,8 @@ const QuizPlayPage: React.FC = () => {
 
   const [submittedQuestions, setSubmittedQuestions] = useState<Record<number, boolean>>({});
   const [timeSpent, setTimeSpent] = useState(0);
+  const [suggestionPhotos, setSuggestionPhotos] = useState<Record<number, string>>({});
+  const suggestionPhotosRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
     // Reset any previous quiz play state when switching quizzes
@@ -89,6 +94,37 @@ const QuizPlayPage: React.FC = () => {
       clearCurrentQuestions();
     };
   }, [quizId, fetchUserQuiz, fetchQuizQuestions, resetQuiz, clearCurrentQuiz, clearCurrentQuestions]);
+
+  useEffect(() => {
+    if (quizCompleted) {
+      // Try subCategoryId first, fall back to categoryId for suggestions
+      const suggestionId = currentQuiz?.subCategoryId || currentQuiz?.categoryId;
+      if (suggestionId) {
+        fetchSuggestions(suggestionId);
+      }
+    }
+  }, [quizCompleted, currentQuiz?.subCategoryId, currentQuiz?.categoryId, fetchSuggestions]);
+
+  // Fetch photos for suggested quizzes
+  useEffect(() => {
+    if (suggestions.length === 0) return;
+
+    suggestions.forEach(async (quiz: Quiz) => {
+      if (!quiz.hasPhoto) return;
+      if (suggestionPhotosRef.current.has(quiz.quizId)) return;
+      suggestionPhotosRef.current.add(quiz.quizId);
+
+      try {
+        const photoUrl = await getQuizPhoto(quiz.quizId);
+        if (photoUrl) {
+          setSuggestionPhotos((prev) => ({ ...prev, [quiz.quizId]: photoUrl }));
+          blobUrlsRef.current.add(photoUrl);
+        }
+      } catch {
+        // Ignore photo fetch errors
+      }
+    });
+  }, [suggestions, getQuizPhoto]);
 
   // No persisted results (localStorage disabled)
 
@@ -459,22 +495,22 @@ const QuizPlayPage: React.FC = () => {
       percentage >= 90
         ? 'A'
         : percentage >= 80
-        ? 'B'
-        : percentage >= 70
-        ? 'C'
-        : percentage >= 60
-        ? 'D'
-        : 'F';
+          ? 'B'
+          : percentage >= 70
+            ? 'C'
+            : percentage >= 60
+              ? 'D'
+              : 'F';
     const gradeColor =
       percentage >= 90
         ? 'green'
         : percentage >= 80
-        ? 'blue'
-        : percentage >= 70
-        ? 'orange'
-        : percentage >= 60
-        ? 'yellow'
-        : 'red';
+          ? 'blue'
+          : percentage >= 70
+            ? 'orange'
+            : percentage >= 60
+              ? 'yellow'
+              : 'red';
 
     return (
       <Layout>
@@ -553,6 +589,105 @@ const QuizPlayPage: React.FC = () => {
               </Col>
             </Row>
           </Result>
+
+          {/* Recommended quizzes */}
+          {suggestionsLoading ? (
+            <div className="mt-10 text-center py-12 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl">
+              <Spin size="large" />
+              <div className="mt-4 text-gray-500 font-medium">რეკომენდაციების ჩატვირთვა...</div>
+            </div>
+          ) : suggestions.length > 0 ? (
+            <div className="mt-10">
+              {/* Section Header */}
+              <div className="text-center mb-8">
+                <Title
+                  level={3}
+                  className="!mb-2 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent "
+                >
+                  რეკომენდებული ვიქტორინები
+                </Title>
+              </div>
+
+              {/* Quiz Cards */}
+              <Row gutter={[20, 20]}>
+                {suggestions.map((quiz: Quiz, index: number) => {
+                  const gradients = [
+                    'from-blue-500 via-blue-600 to-indigo-600',
+                    'from-emerald-500 via-green-500 to-teal-600',
+                    'from-purple-500 via-violet-500 to-indigo-600',
+                    'from-orange-500 via-amber-500 to-yellow-500',
+                    'from-pink-500 via-rose-500 to-red-500',
+                  ];
+                  const gradient = gradients[index % gradients.length];
+                  const icons = ['🧠', '📚', '💡', '🎓', '⭐'];
+                  const icon = icons[index % icons.length];
+                  const photoUrl = suggestionPhotos[quiz.quizId];
+
+                  return (
+                    <Col xs={24} sm={12} md={8} key={quiz.quizId}>
+                      <Card
+                        hoverable
+                        className="h-full border-0 overflow-hidden group cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300"
+                        style={{ borderRadius: '20px' }}
+                        bodyStyle={{ padding: 0 }}
+                        onClick={() => {
+                          resetQuiz();
+                          clearCurrentQuiz();
+                          clearCurrentQuestions();
+                          navigate(`/quiz/play/${quiz.quizId}`);
+                        }}
+                      >
+                        {/* Image or Gradient Header */}
+                        <div className="relative h-40 overflow-hidden">
+                          {photoUrl ? (
+                            <>
+                              <img
+                                src={photoUrl}
+                                alt={quiz.quizName}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                              <div className="absolute bottom-3 left-3 flex items-center gap-2"></div>
+                            </>
+                          ) : (
+                            <div className={`w-full h-full bg-gradient-to-br ${gradient} relative`}>
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+                              <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                  <span className="text-3xl">{icon}</span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-5 bg-white">
+                          <Title
+                            level={5}
+                            className="!mb-3 text-gray-800 group-hover:text-blue-600 transition-colors"
+                            ellipsis={{ rows: 2 }}
+                          >
+                            {quiz.quizName}
+                          </Title>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-gray-400 text-sm">
+                              <PlayCircleOutlined />
+                              <span>დაწყება</span>
+                            </div>
+                            <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
+                              <ArrowRightOutlined className="text-sm" />
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    </Col>
+                  );
+                })}
+              </Row>
+            </div>
+          ) : null}
         </div>
       </Layout>
     );
@@ -672,10 +807,10 @@ const QuizPlayPage: React.FC = () => {
                     showCorrect
                       ? 'bg-green-100 border-green-500 text-green-700 shadow-lg'
                       : showIncorrect
-                      ? 'bg-red-100 border-red-500 text-red-700 shadow-lg'
-                      : isSelected
-                      ? 'bg-blue-100 border-blue-500 shadow-md'
-                      : 'hover:bg-gray-50 hover:shadow-md'
+                        ? 'bg-red-100 border-red-500 text-red-700 shadow-lg'
+                        : isSelected
+                          ? 'bg-blue-100 border-blue-500 shadow-md'
+                          : 'hover:bg-gray-50 hover:shadow-md'
                   } ${answerAnimation && isSelected ? 'animate-pulse' : ''}`}
                   onClick={() => handleAnswerSelect(index)}
                   disabled={submittedQuestions[currentQuestion.id]}
@@ -695,10 +830,10 @@ const QuizPlayPage: React.FC = () => {
                         showCorrect
                           ? 'bg-green-500 text-white'
                           : showIncorrect
-                          ? 'bg-red-500 text-white'
-                          : isSelected
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-200 text-gray-700'
+                            ? 'bg-red-500 text-white'
+                            : isSelected
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-200 text-gray-700'
                       }`}
                     >
                       {String.fromCharCode(65 + index)}

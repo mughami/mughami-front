@@ -284,6 +284,12 @@ const quizService = {
     const response = await apiClient.put<QuizAnswer>(`/admin/quiz/answer-update/${answerId}`, data);
     return response.data;
   },
+
+  // Quiz suggestions for authenticated users
+  getQuizSuggestions: async (subcategoryId: number): Promise<Quiz[]> => {
+    const response = await apiClient.get<Quiz[]>(`/app/quiz/suggestions/${subcategoryId}`);
+    return response.data;
+  },
 };
 
 export default quizService;
