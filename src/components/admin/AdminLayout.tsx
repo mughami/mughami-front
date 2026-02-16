@@ -11,6 +11,7 @@ import {
   BarChartOutlined,
   // SettingOutlined,
   FormOutlined,
+  CrownOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
@@ -48,6 +49,11 @@ export const AdminLayout = ({ children, selectedKey, onMenuSelect }: AdminLayout
       key: 'contests',
       icon: <TrophyOutlined />,
       label: 'კონკურსები',
+    },
+    {
+      key: 'tournaments',
+      icon: <CrownOutlined />,
+      label: 'ტურნირები',
     },
     {
       key: 'polls',

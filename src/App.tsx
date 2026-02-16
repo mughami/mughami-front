@@ -21,6 +21,7 @@ const ProfilePage = lazy(() => import('./pages/profile/ProfilePage'));
 const Home = lazy(() => import('./pages/Home'));
 const Admin = lazy(() => import('./pages/Admin'));
 const PollsPage = lazy(() => import('./pages/PollsPage'));
+const TournamentPage = lazy(() => import('./pages/TournamentPage'));
 import { useAuthStore } from './store';
 import { UserRole } from './types';
 import './App.css';
@@ -168,6 +169,15 @@ function App() {
         />
 
         <Route path="/polls" element={<PollsPage />} />
+
+        <Route
+          path="/tournaments"
+          element={
+            <ProtectedRoute>
+              <TournamentPage />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="/public-quizzes" element={<PublicQuizzesPage />} />
         <Route path="/public-quiz/play/:quizId" element={<PublicQuizPlayPage />} />

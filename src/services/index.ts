@@ -3,6 +3,7 @@ export { default as authService } from './api/authService';
 export { default as categoryService } from './api/categoryService';
 export { default as quizService } from './api/quizService';
 export { default as paymentService } from './api/paymentService';
+export { default as tournamentService } from './api/tournamentService';
 
 // Re-export types
 export type { User, LoginCredentials, RegisterData, AuthResponse } from './api/authService';

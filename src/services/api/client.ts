@@ -87,10 +87,10 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest);
       } catch (refreshError) {
         // If refresh token fails, logout user
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('auth-storage');
-        window.location.href = '/login';
+        // localStorage.removeItem('token');
+        // localStorage.removeItem('refreshToken');
+        // localStorage.removeItem('auth-storage');
+        // window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }

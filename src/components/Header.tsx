@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   UserOutlined,
   LogoutOutlined,
-  // TrophyOutlined,
+  TrophyOutlined,
   MenuOutlined,
   CloseOutlined,
   QuestionCircleOutlined,
@@ -503,6 +503,16 @@ const Header = () => {
             </Link>
 
             <Link
+              to="/tournaments"
+              className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                location.pathname === '/tournaments' ? 'bg-primary-dark' : ''
+              }`}
+            >
+              <TrophyOutlined className="mr-1" />
+              ტურნირები
+            </Link>
+
+            <Link
               to="/polls"
               className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
                 location.pathname === '/polls' ? 'bg-primary-dark' : ''
@@ -605,6 +615,17 @@ const Header = () => {
             </Link>
 
             <Link
+              to="/tournaments"
+              className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                location.pathname === '/tournaments' ? 'bg-primary-dark' : ''
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <TrophyOutlined className="mr-1" />
+              ტურნირები
+            </Link>
+
+            <Link
               to="/polls"
               className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
                 location.pathname === '/polls' ? 'bg-primary-dark' : ''
@@ -614,15 +635,6 @@ const Header = () => {
               <BarChartOutlined className="mr-1" />
               პოლები
             </Link>
-
-            {/* <Link
-              to="/leaderboard"
-              className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <TrophyOutlined className="mr-1" />
-              ლიდერბორდი
-            </Link> */}
 
             <Link
               to="/quiz/results"
