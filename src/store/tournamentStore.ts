@@ -29,6 +29,10 @@ interface TournamentState {
   createTournament: (data: CreateTournamentRequest) => Promise<Tournament>;
   updateTournament: (tournamentId: number, data: UpdateTournamentRequest) => Promise<Tournament>;
   deleteTournament: (tournamentId: number) => Promise<void>;
+  // Admin fetch by status (for user-facing page when admin is logged in)
+  fetchAdminUpcomingTournaments: (page?: number, size?: number) => Promise<void>;
+  fetchAdminStartedTournaments: (page?: number, size?: number) => Promise<void>;
+  fetchAdminFinishedTournaments: (page?: number, size?: number) => Promise<void>;
 
   // ─── User Actions ──────────────────────────────────────────────
   fetchUserTournaments: (page?: number, size?: number) => Promise<void>;
@@ -144,6 +148,46 @@ export const useTournamentStore = create<TournamentState>((set) => ({
         loading: false,
       });
       throw error;
+    }
+  },
+
+  // Admin fetch by status (for user-facing page when admin is logged in)
+  fetchAdminUpcomingTournaments: async (page = 0, size = 10) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await tournamentService.getAdminTournaments(page, size, 'TO_START' as TournamentStatus);
+      set({ upcomingTournaments: response.content, loading: false });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'მომავალი ტურნირების ჩატვირთვა ვერ მოხერხდა',
+        loading: false,
+      });
+    }
+  },
+
+  fetchAdminStartedTournaments: async (page = 0, size = 10) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await tournamentService.getAdminTournaments(page, size, 'STARTED' as TournamentStatus);
+      set({ startedTournaments: response.content, loading: false });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'მიმდინარე ტურნირების ჩატვირთვა ვერ მოხერხდა',
+        loading: false,
+      });
+    }
+  },
+
+  fetchAdminFinishedTournaments: async (page = 0, size = 10) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await tournamentService.getAdminTournaments(page, size, 'FINISHED' as TournamentStatus);
+      set({ finishedTournaments: response.content, loading: false });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'დასრულებული ტურნირების ჩატვირთვა ვერ მოხერხდა',
+        loading: false,
+      });
     }
   },
 

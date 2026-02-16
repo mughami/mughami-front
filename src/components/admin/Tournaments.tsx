@@ -43,6 +43,67 @@ interface FormValues {
   status: TournamentStatus;
 }
 
+// Mobile Tournament Card Component
+const TournamentMobileCard: React.FC<{
+  tournament: Tournament;
+  onEdit: (tournament: Tournament) => void;
+  onDelete: (id: number) => void;
+  getStatusTag: (status: TournamentStatus) => React.ReactNode;
+}> = ({ tournament, onEdit, onDelete, getStatusTag }) => {
+  return (
+    <Card className="mb-3 shadow-sm" size="small">
+      <div className="space-y-3">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <Text strong className="block text-sm line-clamp-2 mb-1">
+              {tournament.description}
+            </Text>
+            <div className="flex items-center gap-1.5 text-xs text-gray-500">
+              <TrophyOutlined className="text-yellow-500" />
+              <span className="truncate">{tournament.quiz.quizName}</span>
+            </div>
+          </div>
+          {getStatusTag(tournament.status)}
+        </div>
+
+        {/* Info Row */}
+        <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+          <Tag className="text-xs">{tournament.authorUsername}</Tag>
+          <span className="flex items-center gap-1">
+            <ClockCircleOutlined />
+            {dayjs(tournament.startDate).format('DD/MM/YY HH:mm')}
+          </span>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+          <Button
+            type="link"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(tournament)}
+            size="small"
+            className="!px-0"
+          >
+            რედაქტირება
+          </Button>
+          <Popconfirm
+            title="დარწმუნებული ხართ?"
+            description="გსურთ ამ ტურნირის წაშლა?"
+            onConfirm={() => onDelete(tournament.id)}
+            okText="დიახ"
+            cancelText="არა"
+          >
+            <Button type="link" danger icon={<DeleteOutlined />} size="small" className="!px-0">
+              წაშლა
+            </Button>
+          </Popconfirm>
+        </div>
+      </div>
+    </Card>
+  );
+};
+
 export const Tournaments: React.FC = () => {
   const {
     tournaments,
@@ -62,6 +123,15 @@ export const Tournaments: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
   const [statusFilter, setStatusFilter] = useState<TournamentStatus | undefined>(undefined);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check for mobile viewport
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     fetchAdminTournaments(currentPage - 1, pageSize, statusFilter);
@@ -141,19 +211,27 @@ export const Tournaments: React.FC = () => {
       [TournamentStatus.TO_START]: {
         color: 'blue',
         label: 'დასაწყები',
+        labelShort: 'მალე',
         icon: <ClockCircleOutlined />,
       },
-      [TournamentStatus.STARTED]: { color: 'green', label: 'მიმდინარე', icon: <PlayCircleOutlined /> },
+      [TournamentStatus.STARTED]: {
+        color: 'green',
+        label: 'მიმდინარე',
+        labelShort: 'LIVE',
+        icon: <PlayCircleOutlined />,
+      },
       [TournamentStatus.FINISHED]: {
         color: 'default',
         label: 'დასრულებული',
+        labelShort: 'დასრულდა',
         icon: <CheckCircleOutlined />,
       },
     };
     const c = config[status];
     return (
-      <Tag color={c?.color} icon={c?.icon}>
-        {c?.label}
+      <Tag color={c?.color} icon={c?.icon} className="!m-0">
+        <span className="hidden sm:inline">{c?.label}</span>
+        <span className="sm:hidden">{c?.labelShort}</span>
       </Tag>
     );
   };
@@ -163,8 +241,9 @@ export const Tournaments: React.FC = () => {
       title: 'აღწერა',
       dataIndex: 'description',
       key: 'description',
+      ellipsis: true,
       render: (text: string) => (
-        <Text strong className="line-clamp-2">
+        <Text strong className="line-clamp-2 text-xs sm:text-sm">
           {text}
         </Text>
       ),
@@ -172,10 +251,12 @@ export const Tournaments: React.FC = () => {
     {
       title: 'ვიქტორინა',
       key: 'quiz',
+      ellipsis: true,
+      responsive: ['md'] as ('md' | 'sm' | 'lg' | 'xl' | 'xxl' | 'xs')[],
       render: (record: Tournament) => (
         <div className="flex items-center gap-2">
-          <TrophyOutlined className="text-yellow-500" />
-          <Text>{record.quiz.quizName}</Text>
+          <TrophyOutlined className="text-yellow-500 flex-shrink-0" />
+          <Text className="truncate text-xs sm:text-sm">{record.quiz.quizName}</Text>
         </div>
       ),
     },
@@ -183,13 +264,19 @@ export const Tournaments: React.FC = () => {
       title: 'ავტორი',
       dataIndex: 'authorUsername',
       key: 'authorUsername',
-      render: (text: string) => <Tag>{text}</Tag>,
+      responsive: ['lg'] as ('md' | 'sm' | 'lg' | 'xl' | 'xxl' | 'xs')[],
+      render: (text: string) => <Tag className="text-xs">{text}</Tag>,
     },
     {
-      title: 'დაწყების დრო',
+      title: 'დაწყება',
       dataIndex: 'startDate',
       key: 'startDate',
-      render: (date: string) => <Text>{dayjs(date).format('DD/MM/YYYY HH:mm')}</Text>,
+      responsive: ['sm'] as ('md' | 'sm' | 'lg' | 'xl' | 'xxl' | 'xs')[],
+      render: (date: string) => (
+        <Text className="text-xs sm:text-sm whitespace-nowrap">
+          {dayjs(date).format('DD/MM/YY HH:mm')}
+        </Text>
+      ),
     },
     {
       title: 'სტატუსი',
@@ -198,12 +285,19 @@ export const Tournaments: React.FC = () => {
       render: (status: TournamentStatus) => getStatusTag(status),
     },
     {
-      title: 'ქმედებები',
+      title: '',
       key: 'actions',
+      width: isMobile ? 80 : 200,
       render: (record: Tournament) => (
-        <Space>
-          <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} size="small">
-            რედაქტირება
+        <Space size="small" className="flex-wrap">
+          <Button
+            type="link"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+            size="small"
+            className="!px-1"
+          >
+            <span className="hidden lg:inline">რედაქტირება</span>
           </Button>
           <Popconfirm
             title="დარწმუნებული ხართ?"
@@ -212,8 +306,8 @@ export const Tournaments: React.FC = () => {
             okText="დიახ"
             cancelText="არა"
           >
-            <Button type="link" danger icon={<DeleteOutlined />} size="small">
-              წაშლა
+            <Button type="link" danger icon={<DeleteOutlined />} size="small" className="!px-1">
+              <span className="hidden lg:inline">წაშლა</span>
             </Button>
           </Popconfirm>
         </Space>
@@ -226,10 +320,12 @@ export const Tournaments: React.FC = () => {
   const finishedCount = tournaments.filter((t) => t.status === TournamentStatus.FINISHED).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <Title level={2}>ტურნირების მართვა</Title>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+        <Title level={2} className="!mb-0 !text-xl sm:!text-2xl">
+          ტურნირების მართვა
+        </Title>
         <Button
           type="primary"
           icon={<PlusOutlined />}
@@ -238,60 +334,63 @@ export const Tournaments: React.FC = () => {
             form.resetFields();
             setIsModalVisible(true);
           }}
-          size="large"
+          size={isMobile ? 'middle' : 'large'}
+          className="w-full sm:w-auto"
         >
           ახალი ტურნირი
         </Button>
       </div>
 
       {/* Statistics */}
-      <Row gutter={16}>
-        <Col span={6}>
-          <Card>
+      <Row gutter={[8, 8]} className="sm:gutter-16">
+        <Col xs={12} sm={12} md={6}>
+          <Card size="small" className="h-full">
             <Statistic
-              title="სულ ტურნირი"
+              title={<span className="text-xs sm:text-sm">სულ</span>}
               value={totalTournaments}
-              prefix={<TrophyOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              prefix={<TrophyOutlined className="text-sm sm:text-base" />}
+              valueStyle={{ color: '#1890ff', fontSize: isMobile ? '18px' : '24px' }}
             />
           </Card>
         </Col>
-        <Col span={6}>
-          <Card>
+        <Col xs={12} sm={12} md={6}>
+          <Card size="small" className="h-full">
             <Statistic
-              title="დასაწყები"
+              title={<span className="text-xs sm:text-sm">დასაწყები</span>}
               value={toStartCount}
-              prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              prefix={<ClockCircleOutlined className="text-sm sm:text-base" />}
+              valueStyle={{ color: '#1890ff', fontSize: isMobile ? '18px' : '24px' }}
             />
           </Card>
         </Col>
-        <Col span={6}>
-          <Card>
+        <Col xs={12} sm={12} md={6}>
+          <Card size="small" className="h-full">
             <Statistic
-              title="მიმდინარე"
+              title={<span className="text-xs sm:text-sm">მიმდინარე</span>}
               value={startedCount}
-              prefix={<PlayCircleOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              prefix={<PlayCircleOutlined className="text-sm sm:text-base" />}
+              valueStyle={{ color: '#52c41a', fontSize: isMobile ? '18px' : '24px' }}
             />
           </Card>
         </Col>
-        <Col span={6}>
-          <Card>
+        <Col xs={12} sm={12} md={6}>
+          <Card size="small" className="h-full">
             <Statistic
-              title="დასრულებული"
+              title={<span className="text-xs sm:text-sm">დასრულებული</span>}
               value={finishedCount}
-              prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#999' }}
+              prefix={<CheckCircleOutlined className="text-sm sm:text-base" />}
+              valueStyle={{ color: '#999', fontSize: isMobile ? '18px' : '24px' }}
             />
           </Card>
         </Col>
       </Row>
 
-      {/* Filter */}
-      <Card>
-        <div className="flex items-center gap-4 mb-4">
-          <Text strong>ფილტრი:</Text>
+      {/* Filter and Content */}
+      <Card size={isMobile ? 'small' : 'default'}>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4">
+          <Text strong className="text-sm">
+            ფილტრი:
+          </Text>
           <Select
             placeholder="სტატუსი"
             allowClear
@@ -300,7 +399,8 @@ export const Tournaments: React.FC = () => {
               setStatusFilter(val);
               setCurrentPage(1);
             }}
-            style={{ width: 200 }}
+            className="w-full sm:w-48"
+            size={isMobile ? 'middle' : 'large'}
           >
             <Option value={TournamentStatus.TO_START}>დასაწყები</Option>
             <Option value={TournamentStatus.STARTED}>მიმდინარე</Option>
@@ -308,24 +408,71 @@ export const Tournaments: React.FC = () => {
           </Select>
         </div>
 
-        <Table
-          columns={columns}
-          dataSource={tournaments}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            current: currentPage,
-            pageSize,
-            total: totalTournaments,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) => `${range[0]}-${range[1]} ${total} ტურნირიდან`,
-          }}
-          onChange={(pagination) => {
-            setCurrentPage(pagination.current || 1);
-            setPageSize(pagination.pageSize || pageSize);
-          }}
-        />
+        {/* Mobile Card View */}
+        {isMobile ? (
+          <div>
+            {loading ? (
+              <div className="text-center py-8 text-gray-500">იტვირთება...</div>
+            ) : tournaments.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">ტურნირები არ მოიძებნა</div>
+            ) : (
+              <>
+                {tournaments.map((tournament) => (
+                  <TournamentMobileCard
+                    key={tournament.id}
+                    tournament={tournament}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    getStatusTag={getStatusTag}
+                  />
+                ))}
+                {/* Simple Pagination for Mobile */}
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                  <Button
+                    size="small"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => p - 1)}
+                  >
+                    წინა
+                  </Button>
+                  <span className="text-xs text-gray-500">
+                    გვერდი {currentPage} / {Math.ceil(totalTournaments / pageSize) || 1}
+                  </span>
+                  <Button
+                    size="small"
+                    disabled={currentPage >= Math.ceil(totalTournaments / pageSize)}
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                  >
+                    შემდეგი
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+          /* Desktop Table View */
+          <Table
+            columns={columns}
+            dataSource={tournaments}
+            rowKey="id"
+            loading={loading}
+            size="middle"
+            scroll={{ x: 600 }}
+            pagination={{
+              current: currentPage,
+              pageSize,
+              total: totalTournaments,
+              showSizeChanger: true,
+              showQuickJumper: !isMobile,
+              showTotal: (total, range) => `${range[0]}-${range[1]} ${total} ტურნირიდან`,
+              size: 'default',
+            }}
+            onChange={(pagination) => {
+              setCurrentPage(pagination.current || 1);
+              setPageSize(pagination.pageSize || pageSize);
+            }}
+          />
+        )}
       </Card>
 
       {/* Create / Edit Modal */}
@@ -337,7 +484,8 @@ export const Tournaments: React.FC = () => {
           setEditingTournament(null);
         }}
         footer={null}
-        width={600}
+        width={isMobile ? '100%' : 600}
+        style={isMobile ? { top: 20, maxWidth: 'calc(100% - 32px)', margin: '0 auto' } : undefined}
       >
         <Form
           form={form}
@@ -346,6 +494,7 @@ export const Tournaments: React.FC = () => {
           initialValues={{
             status: TournamentStatus.TO_START,
           }}
+          size={isMobile ? 'middle' : 'large'}
         >
           <Form.Item
             name="description"
@@ -404,19 +553,20 @@ export const Tournaments: React.FC = () => {
           </Form.Item>
 
           <Form.Item className="mb-0">
-            <Space>
-              <Button type="primary" htmlType="submit" loading={loading}>
-                {editingTournament ? 'განახლება' : 'შექმნა'}
-              </Button>
+            <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
               <Button
                 onClick={() => {
                   setIsModalVisible(false);
                   setEditingTournament(null);
                 }}
+                className="w-full sm:w-auto"
               >
                 გაუქმება
               </Button>
-            </Space>
+              <Button type="primary" htmlType="submit" loading={loading} className="w-full sm:w-auto">
+                {editingTournament ? 'განახლება' : 'შექმნა'}
+              </Button>
+            </div>
           </Form.Item>
         </Form>
       </Modal>

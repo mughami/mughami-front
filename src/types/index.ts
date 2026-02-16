@@ -60,6 +60,7 @@ export interface Tournament {
   authorId: number;
   authorUsername: string;
   startDate: string;
+  endDate?: string;
   status: TournamentStatus;
   createdAt: string;
   updatedAt: string;
