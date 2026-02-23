@@ -376,6 +376,13 @@ const Header = () => {
                 <BarChartOutlined className="mr-1" /> პოლები
               </Link>
 
+              <Link
+                to="/login"
+                className="ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors"
+              >
+                <TrophyOutlined className="mr-1" /> ტურნირები
+              </Link>
+
               <div className="ml-6 flex items-center gap-2">
                 <Link
                   to="/login"
@@ -422,6 +429,13 @@ const Header = () => {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <BarChartOutlined className="mr-1" /> პოლები
+              </Link>
+              <Link
+                to="/login"
+                className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <TrophyOutlined className="mr-1" /> ტურნირები
               </Link>
               <div className="pt-2 flex items-center gap-2 px-3">
                 <Link
