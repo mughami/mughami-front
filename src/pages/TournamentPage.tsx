@@ -18,11 +18,21 @@ import type { Tournament } from '../types';
 
 const { Title, Text } = Typography;
 
+// Ensure backend dates (which may lack Z suffix) are parsed as UTC
+function toUTC(dateStr: string): number {
+  const s = dateStr.endsWith('Z') || /[+-]\d{2}:?\d{2}$/.test(dateStr) ? dateStr : dateStr + 'Z';
+  return new Date(s).getTime();
+}
+
+function formatDate(dateStr: string): string {
+  return new Date(toUTC(dateStr)).toLocaleDateString('ka-GE', { timeZone: 'Asia/Tbilisi' });
+}
+
 // ─── Countdown Hook ──────────────────────────────────────────────────
 
 function useCountdown(targetDate: string) {
   const calcTimeLeft = useCallback(() => {
-    const diff = new Date(targetDate).getTime() - Date.now();
+    const diff = toUTC(targetDate) - Date.now();
     if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
     return {
       days: Math.floor(diff / (1000 * 60 * 60 * 24)),
@@ -181,12 +191,12 @@ const TournamentCard: React.FC<{ tournament: Tournament }> = ({ tournament }) =>
         <div className="flex flex-wrap items-center gap-2 text-[10px] sm:text-xs text-gray-500 mb-3 sm:mb-4">
           <div className="flex items-center gap-1 sm:gap-1.5 bg-gray-50 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-md sm:rounded-lg">
             <CalendarOutlined className="text-gray-400" />
-            <span>დაწყება: {new Date(tournament.startDate).toLocaleDateString('ka-GE')}</span>
+            <span>დაწყება: {formatDate(tournament.startDate)}</span>
           </div>
           {tournament.endDate && (
             <div className="flex items-center gap-1 sm:gap-1.5 bg-gray-50 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-md sm:rounded-lg">
               <ClockCircleOutlined className="text-gray-400" />
-              <span>დასრულება: {new Date(tournament.endDate).toLocaleDateString('ka-GE')}</span>
+              <span>დასრულება: {formatDate(tournament.endDate)}</span>
             </div>
           )}
         </div>

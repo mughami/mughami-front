@@ -27,6 +27,12 @@ import {
   PlayCircleOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
+
+// Parse backend date (may lack Z suffix) as UTC, then convert to local Georgia time
+const parseUTC = (date: string) => dayjs.utc(date).local();
+
 import { useTournamentStore } from '../../store/tournamentStore';
 import { useQuizStore } from '../../store/quizStore';
 import { TournamentStatus } from '../../types';
@@ -72,7 +78,7 @@ const TournamentMobileCard: React.FC<{
           <Tag className="text-xs">{tournament.authorUsername}</Tag>
           <span className="flex items-center gap-1">
             <ClockCircleOutlined />
-            {dayjs(tournament.startDate).format('DD/MM/YY HH:mm')}
+            {parseUTC(tournament.startDate).format('DD/MM/YY HH:mm')}
           </span>
         </div>
 
@@ -190,7 +196,7 @@ export const Tournaments: React.FC = () => {
     form.setFieldsValue({
       description: tournament.description,
       quizId: tournament.quiz.quizId,
-      startDate: dayjs(tournament.startDate),
+      startDate: parseUTC(tournament.startDate),
       status: tournament.status,
     });
     setIsModalVisible(true);
@@ -274,7 +280,7 @@ export const Tournaments: React.FC = () => {
       responsive: ['sm'] as ('md' | 'sm' | 'lg' | 'xl' | 'xxl' | 'xs')[],
       render: (date: string) => (
         <Text className="text-xs sm:text-sm whitespace-nowrap">
-          {dayjs(date).format('DD/MM/YY HH:mm')}
+          {parseUTC(date).format('DD/MM/YY HH:mm')}
         </Text>
       ),
     },
