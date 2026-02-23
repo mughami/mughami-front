@@ -139,7 +139,7 @@ const TournamentCard: React.FC<{ tournament: Tournament }> = ({ tournament }) =>
   const config = statusConfig[tournament.status];
 
   const handlePlay = () => {
-    navigate(`/quiz/play/${tournament.quiz.quizId}`);
+    navigate(`/quiz/play/${tournament.quiz.quizId}`, { state: { quiz: tournament.quiz } });
   };
 
   return (

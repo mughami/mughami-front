@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   Card,
   Button,
@@ -34,6 +34,7 @@ const { Title, Text } = Typography;
 const QuizPlayPage: React.FC = () => {
   const { quizId } = useParams<{ quizId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const {
     currentQuiz,
@@ -57,6 +58,7 @@ const QuizPlayPage: React.FC = () => {
     fetchSuggestions,
     clearCurrentQuiz,
     clearCurrentQuestions,
+    setCurrentQuiz,
     getQuizPhoto,
     getQuestionPhoto,
   } = useQuizStore();
@@ -83,7 +85,12 @@ const QuizPlayPage: React.FC = () => {
 
     if (quizId) {
       const id = parseInt(quizId);
-      fetchUserQuiz(id);
+      const stateQuiz = location.state?.quiz;
+      if (stateQuiz) {
+        setCurrentQuiz(stateQuiz);
+      } else {
+        fetchUserQuiz(id);
+      }
       fetchQuizQuestions(id, 0, 50);
     }
 
@@ -93,7 +100,7 @@ const QuizPlayPage: React.FC = () => {
       clearCurrentQuiz();
       clearCurrentQuestions();
     };
-  }, [quizId, fetchUserQuiz, fetchQuizQuestions, resetQuiz, clearCurrentQuiz, clearCurrentQuestions]);
+  }, [quizId, location.state, fetchUserQuiz, fetchQuizQuestions, resetQuiz, clearCurrentQuiz, clearCurrentQuestions, setCurrentQuiz]);
 
   useEffect(() => {
     if (quizCompleted) {

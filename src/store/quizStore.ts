@@ -91,6 +91,7 @@ interface QuizState {
   clearError: () => void;
   clearCurrentQuiz: () => void;
   clearCurrentQuestions: () => void;
+  setCurrentQuiz: (quiz: Quiz) => void;
 }
 
 export const useQuizStore = create<QuizState>((set) => ({
@@ -509,6 +510,7 @@ export const useQuizStore = create<QuizState>((set) => ({
   clearError: () => set({ error: null }),
   clearCurrentQuiz: () => set({ currentQuiz: null }),
   clearCurrentQuestions: () => set({ currentQuestions: [] }),
+  setCurrentQuiz: (quiz: Quiz) => set({ currentQuiz: quiz, loading: false }),
 
   // Quiz playing actions
   startQuiz: async (quizId: number) => {
