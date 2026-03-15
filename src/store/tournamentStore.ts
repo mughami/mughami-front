@@ -4,6 +4,7 @@ import type {
   CreateTournamentRequest,
   UpdateTournamentRequest,
   TournamentStatus,
+  LeaderboardEntry,
 } from '../types';
 import tournamentService from '../services/api/tournamentService';
 
@@ -42,6 +43,15 @@ interface TournamentState {
   fetchFinishedTournaments: (page?: number, size?: number) => Promise<void>;
   fetchActiveTournaments: (page?: number, size?: number) => Promise<void>;
 
+  // ─── Leaderboard ─────────────────────────────────────────────
+  leaderboard: LeaderboardEntry[];
+  leaderboardTotal: number;
+  myLeaderboardEntry: LeaderboardEntry | null;
+  leaderboardLoading: boolean;
+  fetchLeaderboard: (tournamentId: number, page?: number, size?: number) => Promise<void>;
+  fetchMyLeaderboardEntry: (tournamentId: number) => Promise<void>;
+  clearLeaderboard: () => void;
+
   // ─── Utility ───────────────────────────────────────────────────
   clearError: () => void;
   clearCurrentTournament: () => void;
@@ -59,6 +69,11 @@ export const useTournamentStore = create<TournamentState>((set) => ({
 
   loading: false,
   error: null,
+
+  leaderboard: [],
+  leaderboardTotal: 0,
+  myLeaderboardEntry: null,
+  leaderboardLoading: false,
 
   // ─── Admin Actions ───────────────────────────────────────────────
 
@@ -277,6 +292,36 @@ export const useTournamentStore = create<TournamentState>((set) => ({
       });
     }
   },
+
+  // ─── Leaderboard ─────────────────────────────────────────────────
+
+  fetchLeaderboard: async (tournamentId: number, page = 0, size = 10) => {
+    set({ leaderboardLoading: true });
+    try {
+      const response = await tournamentService.getLeaderboard(tournamentId, page, size);
+      set({
+        leaderboard: response.content,
+        leaderboardTotal: response.totalElements,
+        leaderboardLoading: false,
+      });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'ლიდერბორდის ჩატვირთვა ვერ მოხერხდა',
+        leaderboardLoading: false,
+      });
+    }
+  },
+
+  fetchMyLeaderboardEntry: async (tournamentId: number) => {
+    try {
+      const entry = await tournamentService.getMyLeaderboardEntry(tournamentId);
+      set({ myLeaderboardEntry: entry });
+    } catch {
+      set({ myLeaderboardEntry: null });
+    }
+  },
+
+  clearLeaderboard: () => set({ leaderboard: [], leaderboardTotal: 0, myLeaderboardEntry: null }),
 
   // ─── Utility ─────────────────────────────────────────────────────
 

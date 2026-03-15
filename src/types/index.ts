@@ -91,3 +91,28 @@ export interface UpdateTournamentRequest {
   startDate: string;
   status: TournamentStatus;
 }
+
+// Leaderboard types
+export interface LeaderboardEntry {
+  rank: number;
+  userId: number;
+  username: string;
+  firstName: string;
+  lastName: string;
+  correctAnswers: number;
+  totalQuestions: number;
+  scorePercentage: number;
+  timeTakenSeconds: number;
+}
+
+export interface LeaderboardResponse {
+  totalPages: number;
+  totalElements: number;
+  first: boolean;
+  last: boolean;
+  size: number;
+  content: LeaderboardEntry[];
+  number: number;
+  numberOfElements: number;
+  empty: boolean;
+}

@@ -22,6 +22,7 @@ const Home = lazy(() => import('./pages/Home'));
 const Admin = lazy(() => import('./pages/Admin'));
 const PollsPage = lazy(() => import('./pages/PollsPage'));
 const TournamentPage = lazy(() => import('./pages/TournamentPage'));
+const TournamentLeaderboardPage = lazy(() => import('./pages/TournamentLeaderboardPage'));
 import { useAuthStore } from './store';
 import { UserRole } from './types';
 import './App.css';
@@ -175,6 +176,14 @@ function App() {
           element={
             <ProtectedRoute>
               <TournamentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tournaments/:tournamentId/leaderboard"
+          element={
+            <ProtectedRoute>
+              <TournamentLeaderboardPage />
             </ProtectedRoute>
           }
         />

@@ -9,6 +9,7 @@ import {
   ArrowRightOutlined,
   CalendarOutlined,
   FireOutlined,
+  CrownOutlined,
 } from '@ant-design/icons';
 import Layout from '../components/Layout';
 import { useTournamentStore } from '../store/tournamentStore';
@@ -149,7 +150,9 @@ const TournamentCard: React.FC<{ tournament: Tournament }> = ({ tournament }) =>
   const config = statusConfig[tournament.status];
 
   const handlePlay = () => {
-    navigate(`/quiz/play/${tournament.quiz.quizId}`, { state: { quiz: tournament.quiz } });
+    navigate(`/quiz/play/${tournament.quiz.quizId}`, {
+      state: { quiz: tournament.quiz, tournamentId: tournament.id },
+    });
   };
 
   return (
@@ -222,16 +225,25 @@ const TournamentCard: React.FC<{ tournament: Tournament }> = ({ tournament }) =>
         )}
 
         {/* Action Buttons */}
-        <div className="mt-auto">
+        <div className="mt-auto space-y-2">
           {tournament.status === TournamentStatus.STARTED && (
-            <button
-              onClick={handlePlay}
-              className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg sm:rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg transform hover:scale-[1.02] text-sm sm:text-base"
-            >
-              <PlayCircleOutlined className="text-base sm:text-lg" />
-              <span>თამაში</span>
-              <ArrowRightOutlined className="text-xs sm:text-sm" />
-            </button>
+            <>
+              <button
+                onClick={handlePlay}
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg sm:rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg transform hover:scale-[1.02] text-sm sm:text-base"
+              >
+                <PlayCircleOutlined className="text-base sm:text-lg" />
+                <span>თამაში</span>
+                <ArrowRightOutlined className="text-xs sm:text-sm" />
+              </button>
+              <button
+                onClick={() => navigate(`/tournaments/${tournament.id}/leaderboard`)}
+                className="w-full bg-amber-50 text-amber-700 font-medium py-2 px-4 rounded-lg sm:rounded-xl flex items-center justify-center gap-2 border border-amber-200 hover:bg-amber-100 transition-colors text-xs sm:text-sm"
+              >
+                <CrownOutlined />
+                <span>ლიდერბორდი</span>
+              </button>
+            </>
           )}
 
           {tournament.status === TournamentStatus.TO_START && (
@@ -242,10 +254,13 @@ const TournamentCard: React.FC<{ tournament: Tournament }> = ({ tournament }) =>
           )}
 
           {tournament.status === TournamentStatus.FINISHED && (
-            <div className="w-full bg-gray-50 text-gray-500 font-medium py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg sm:rounded-xl flex items-center justify-center gap-2 border border-gray-200 text-xs sm:text-sm">
-              <CheckCircleOutlined />
-              <span>დასრულებულია</span>
-            </div>
+            <button
+              onClick={() => navigate(`/tournaments/${tournament.id}/leaderboard`)}
+              className="w-full bg-gradient-to-r from-amber-400 to-yellow-500 text-white font-semibold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg sm:rounded-xl hover:from-amber-500 hover:to-yellow-600 transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg text-sm sm:text-base"
+            >
+              <CrownOutlined className="text-base sm:text-lg" />
+              <span>ლიდერბორდი</span>
+            </button>
           )}
         </div>
       </div>

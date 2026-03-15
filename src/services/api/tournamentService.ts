@@ -5,6 +5,8 @@ import type {
   CreateTournamentRequest,
   UpdateTournamentRequest,
   TournamentStatus,
+  LeaderboardEntry,
+  LeaderboardResponse,
 } from '../../types';
 
 const tournamentService = {
@@ -103,6 +105,26 @@ const tournamentService = {
   ): Promise<TournamentResponse> => {
     const response = await apiClient.get<TournamentResponse>(
       `/app/tournament/by-quiz/${quizId}?page=${page}&size=${size}`,
+    );
+    return response.data;
+  },
+
+  // ─── Leaderboard Endpoints ─────────────────────────────────────────
+
+  getLeaderboard: async (
+    tournamentId: number,
+    page: number = 0,
+    size: number = 10,
+  ): Promise<LeaderboardResponse> => {
+    const response = await apiClient.get<LeaderboardResponse>(
+      `/app/tournament/${tournamentId}/leaderboard?page=${page}&size=${size}`,
+    );
+    return response.data;
+  },
+
+  getMyLeaderboardEntry: async (tournamentId: number): Promise<LeaderboardEntry> => {
+    const response = await apiClient.get<LeaderboardEntry>(
+      `/app/tournament/${tournamentId}/leaderboard/me`,
     );
     return response.data;
   },

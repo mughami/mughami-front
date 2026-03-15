@@ -26,7 +26,9 @@ import {
   HomeOutlined,
 } from '@ant-design/icons';
 import type { Quiz } from '../../services/api/quizService';
+import type { LeaderboardEntry } from '../../types';
 import { useQuizStore, cleanupBlobUrl } from '../../store/quizStore';
+import { useTournamentStore } from '../../store/tournamentStore';
 import Layout from '../../components/Layout';
 
 const { Title, Text } = Typography;
@@ -77,6 +79,17 @@ const QuizPlayPage: React.FC = () => {
   const [suggestionPhotos, setSuggestionPhotos] = useState<Record<number, string>>({});
   const suggestionPhotosRef = useRef<Set<number>>(new Set());
 
+  // Tournament context
+  const tournamentId = location.state?.tournamentId as number | undefined;
+  const {
+    leaderboard,
+    myLeaderboardEntry,
+    leaderboardLoading,
+    fetchLeaderboard,
+    fetchMyLeaderboardEntry,
+    clearLeaderboard,
+  } = useTournamentStore();
+
   useEffect(() => {
     // Reset any previous quiz play state when switching quizzes
     resetQuiz();
@@ -95,22 +108,28 @@ const QuizPlayPage: React.FC = () => {
     }
 
     return () => {
-      // Clean up when leaving the page
       resetQuiz();
       clearCurrentQuiz();
       clearCurrentQuestions();
+      clearLeaderboard();
     };
   }, [quizId, location.state, fetchUserQuiz, fetchQuizQuestions, resetQuiz, clearCurrentQuiz, clearCurrentQuestions, setCurrentQuiz]);
 
   useEffect(() => {
     if (quizCompleted) {
-      // Try subCategoryId first, fall back to categoryId for suggestions
-      const suggestionId = currentQuiz?.subCategoryId || currentQuiz?.categoryId;
-      if (suggestionId) {
-        fetchSuggestions(suggestionId);
+      if (tournamentId) {
+        // Tournament quiz — fetch leaderboard
+        fetchLeaderboard(tournamentId, 0, 20);
+        fetchMyLeaderboardEntry(tournamentId);
+      } else {
+        // Regular quiz — fetch suggestions
+        const suggestionId = currentQuiz?.subCategoryId || currentQuiz?.categoryId;
+        if (suggestionId) {
+          fetchSuggestions(suggestionId);
+        }
       }
     }
-  }, [quizCompleted, currentQuiz?.subCategoryId, currentQuiz?.categoryId, fetchSuggestions]);
+  }, [quizCompleted, tournamentId, currentQuiz?.subCategoryId, currentQuiz?.categoryId, fetchSuggestions, fetchLeaderboard, fetchMyLeaderboardEntry]);
 
   // Fetch photos for suggested quizzes
   useEffect(() => {
@@ -519,6 +538,19 @@ const QuizPlayPage: React.FC = () => {
               ? 'yellow'
               : 'red';
 
+    const formatLeaderboardTime = (seconds: number) => {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const getRankMedal = (rank: number) => {
+      if (rank === 1) return <span className="text-2xl">🥇</span>;
+      if (rank === 2) return <span className="text-2xl">🥈</span>;
+      if (rank === 3) return <span className="text-2xl">🥉</span>;
+      return <span className="text-sm font-bold text-gray-500">#{rank}</span>;
+    };
+
     return (
       <Layout>
         <div className="max-w-4xl mx-auto py-8 px-4">
@@ -535,7 +567,7 @@ const QuizPlayPage: React.FC = () => {
             title={
               <div className="text-center">
                 <Title level={2} className="mb-2">
-                  ვიქტორინა დასრულდა!
+                  {tournamentId ? 'ტურნირის ვიქტორინა დასრულდა!' : 'ვიქტორინა დასრულდა!'}
                 </Title>
                 <Badge count={grade} color={gradeColor} className="text-2xl font-bold" />
               </div>
@@ -549,20 +581,31 @@ const QuizPlayPage: React.FC = () => {
               </div>
             }
             extra={[
-              // <Button
-              //   key="results"
-              //   size="large"
-              //   onClick={() => navigate('/quiz/results')}
-              //   className="mr-4"
-              // >
-              //   <HistoryOutlined className="mr-2" />
-              //   ჩემი შედეგები
-              // </Button>,
-              <Button key="home" size="large" onClick={handleGoHome}>
+              tournamentId && (
+                <Button
+                  key="leaderboard"
+                  type="primary"
+                  size="large"
+                  onClick={() => navigate(`/tournaments/${tournamentId}/leaderboard`)}
+                >
+                  <TrophyOutlined className="mr-2" />
+                  სრული ლიდერბორდი
+                </Button>
+              ),
+              <Button
+                key="tournaments"
+                size="large"
+                onClick={() => {
+                  resetQuiz();
+                  clearCurrentQuiz();
+                  clearCurrentQuestions();
+                  navigate(tournamentId ? '/tournaments' : '/');
+                }}
+              >
                 <HomeOutlined className="mr-2" />
-                მთავარ გვერდზე
+                {tournamentId ? 'ტურნირებზე დაბრუნება' : 'მთავარ გვერდზე'}
               </Button>,
-            ]}
+            ].filter(Boolean)}
           >
             <Row gutter={[16, 16]} className="mt-8">
               <Col xs={24} sm={8}>
@@ -597,15 +640,120 @@ const QuizPlayPage: React.FC = () => {
             </Row>
           </Result>
 
-          {/* Recommended quizzes */}
-          {suggestionsLoading ? (
+          {/* Tournament Leaderboard */}
+          {tournamentId && (
+            <div className="mt-10">
+              <div className="text-center mb-6">
+                <Title level={3} className="!mb-1">
+                  <TrophyOutlined className="mr-2 text-yellow-500" />
+                  ტურნირის ლიდერბორდი
+                </Title>
+                <Text className="text-gray-500">ტოპ მოთამაშეები</Text>
+              </div>
+
+              {/* My position highlight */}
+              {myLeaderboardEntry && (
+                <Card className="mb-4 border-2 border-blue-400 bg-blue-50 shadow-md">
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                        #{myLeaderboardEntry.rank}
+                      </div>
+                      <div>
+                        <Text strong className="text-base block">შენი პოზიცია</Text>
+                        <Text className="text-gray-500 text-sm">
+                          {myLeaderboardEntry.correctAnswers}/{myLeaderboardEntry.totalQuestions} სწორი
+                          {' · '}{myLeaderboardEntry.scorePercentage}%
+                          {' · '}{formatLeaderboardTime(myLeaderboardEntry.timeTakenSeconds)}
+                        </Text>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <Text strong className="text-2xl text-blue-600">
+                        {myLeaderboardEntry.scorePercentage}%
+                      </Text>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {leaderboardLoading ? (
+                <div className="text-center py-12">
+                  <Spin size="large" />
+                  <div className="mt-4 text-gray-500">ლიდერბორდი იტვირთება...</div>
+                </div>
+              ) : leaderboard.length > 0 ? (
+                <Card className="shadow-lg border-0 overflow-hidden">
+                  <div className="divide-y divide-gray-100">
+                    {leaderboard.slice(0, 10).map((entry: LeaderboardEntry) => {
+                      const isMe = myLeaderboardEntry?.userId === entry.userId;
+                      return (
+                        <div
+                          key={entry.userId}
+                          className={`flex items-center justify-between py-3 px-2 sm:px-4 transition-colors ${
+                            isMe ? 'bg-blue-50' : 'hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
+                              {getRankMedal(entry.rank)}
+                            </div>
+                            <div className="min-w-0">
+                              <Text strong className={`block truncate text-sm sm:text-base ${isMe ? 'text-blue-600' : ''}`}>
+                                {entry.firstName} {entry.lastName}
+                                {isMe && <span className="text-blue-400 text-xs ml-1">(შენ)</span>}
+                              </Text>
+                              <Text className="text-gray-400 text-xs">@{entry.username}</Text>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 sm:gap-6 flex-shrink-0">
+                            <div className="text-center hidden sm:block">
+                              <Text className="text-xs text-gray-400 block">სწორი</Text>
+                              <Text strong className="text-sm">{entry.correctAnswers}/{entry.totalQuestions}</Text>
+                            </div>
+                            <div className="text-center hidden sm:block">
+                              <Text className="text-xs text-gray-400 block">დრო</Text>
+                              <Text className="text-sm">{formatLeaderboardTime(entry.timeTakenSeconds)}</Text>
+                            </div>
+                            <div className="text-center">
+                              <Text strong className={`text-lg ${
+                                entry.rank <= 3 ? 'text-yellow-600' : 'text-gray-700'
+                              }`}>
+                                {entry.scorePercentage}%
+                              </Text>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {leaderboard.length > 10 && (
+                    <div className="text-center py-4 border-t border-gray-100">
+                      <Button
+                        type="link"
+                        onClick={() => navigate(`/tournaments/${tournamentId}/leaderboard`)}
+                      >
+                        სრული ლიდერბორდის ნახვა ({leaderboard.length}+ მოთამაშე)
+                      </Button>
+                    </div>
+                  )}
+                </Card>
+              ) : (
+                <Card className="text-center py-8">
+                  <Text className="text-gray-500">ლიდერბორდი ჯერ ცარიელია</Text>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {/* Recommended quizzes (only for non-tournament) */}
+          {!tournamentId && (suggestionsLoading ? (
             <div className="mt-10 text-center py-12 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl">
               <Spin size="large" />
               <div className="mt-4 text-gray-500 font-medium">რეკომენდაციების ჩატვირთვა...</div>
             </div>
           ) : suggestions.length > 0 ? (
             <div className="mt-10">
-              {/* Section Header */}
               <div className="text-center mb-8">
                 <Title
                   level={3}
@@ -615,7 +763,6 @@ const QuizPlayPage: React.FC = () => {
                 </Title>
               </div>
 
-              {/* Quiz Cards */}
               <Row gutter={[20, 20]}>
                 {suggestions.map((quiz: Quiz, index: number) => {
                   const gradients = [
@@ -644,7 +791,6 @@ const QuizPlayPage: React.FC = () => {
                           navigate(`/quiz/play/${quiz.quizId}`);
                         }}
                       >
-                        {/* Image or Gradient Header */}
                         <div className="relative h-40 overflow-hidden">
                           {photoUrl ? (
                             <>
@@ -669,7 +815,6 @@ const QuizPlayPage: React.FC = () => {
                           )}
                         </div>
 
-                        {/* Content */}
                         <div className="p-5 bg-white">
                           <Title
                             level={5}
@@ -694,7 +839,7 @@ const QuizPlayPage: React.FC = () => {
                 })}
               </Row>
             </div>
-          ) : null}
+          ) : null)}
         </div>
       </Layout>
     );
