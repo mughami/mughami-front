@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Typography, Spin, Card, Button, Pagination, Empty } from 'antd';
 import {
-  TrophyOutlined,
+  // TrophyOutlined,
   ArrowLeftOutlined,
   ClockCircleOutlined,
   CheckCircleOutlined,
@@ -111,9 +111,7 @@ const TournamentLeaderboardPage: React.FC = () => {
               <Title level={2} className="!text-white !mb-2 text-xl sm:text-3xl">
                 ტურნირის ლიდერბორდი
               </Title>
-              <Text className="text-white/80 text-sm sm:text-base">
-                {leaderboardTotal} მოთამაშე
-              </Text>
+              <Text className="text-white/80 text-sm sm:text-base">{leaderboardTotal} მოთამაშე</Text>
             </div>
           </div>
         </div>
@@ -128,7 +126,9 @@ const TournamentLeaderboardPage: React.FC = () => {
                     <span className="text-white font-bold text-xl">#{myLeaderboardEntry.rank}</span>
                   </div>
                   <div>
-                    <Text strong className="text-lg block text-blue-800">შენი პოზიცია</Text>
+                    <Text strong className="text-lg block text-blue-800">
+                      შენი პოზიცია
+                    </Text>
                     <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
                       <span className="flex items-center gap-1">
                         <CheckCircleOutlined className="text-green-500" />
@@ -188,16 +188,16 @@ const TournamentLeaderboardPage: React.FC = () => {
                             className={`block truncate text-sm sm:text-base ${isMe ? 'text-blue-600' : ''}`}
                           >
                             {entry.firstName} {entry.lastName}
-                            {isMe && (
-                              <span className="text-blue-400 text-xs ml-1.5">(შენ)</span>
-                            )}
+                            {isMe && <span className="text-blue-400 text-xs ml-1.5">(შენ)</span>}
                           </Text>
                           <Text className="text-gray-400 text-xs block truncate">
                             @{entry.username}
                           </Text>
                           {/* Mobile-only stats */}
                           <div className="flex items-center gap-3 mt-1 sm:hidden text-xs text-gray-500">
-                            <span>{entry.correctAnswers}/{entry.totalQuestions} სწორი</span>
+                            <span>
+                              {entry.correctAnswers}/{entry.totalQuestions} სწორი
+                            </span>
                             <span>{formatTime(entry.timeTakenSeconds)}</span>
                           </div>
                         </div>

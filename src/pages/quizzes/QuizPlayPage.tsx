@@ -113,7 +113,16 @@ const QuizPlayPage: React.FC = () => {
       clearCurrentQuestions();
       clearLeaderboard();
     };
-  }, [quizId, location.state, fetchUserQuiz, fetchQuizQuestions, resetQuiz, clearCurrentQuiz, clearCurrentQuestions, setCurrentQuiz]);
+  }, [
+    quizId,
+    location.state,
+    fetchUserQuiz,
+    fetchQuizQuestions,
+    resetQuiz,
+    clearCurrentQuiz,
+    clearCurrentQuestions,
+    setCurrentQuiz,
+  ]);
 
   useEffect(() => {
     if (quizCompleted) {
@@ -129,7 +138,15 @@ const QuizPlayPage: React.FC = () => {
         }
       }
     }
-  }, [quizCompleted, tournamentId, currentQuiz?.subCategoryId, currentQuiz?.categoryId, fetchSuggestions, fetchLeaderboard, fetchMyLeaderboardEntry]);
+  }, [
+    quizCompleted,
+    tournamentId,
+    currentQuiz?.subCategoryId,
+    currentQuiz?.categoryId,
+    fetchSuggestions,
+    fetchLeaderboard,
+    fetchMyLeaderboardEntry,
+  ]);
 
   // Fetch photos for suggested quizzes
   useEffect(() => {
@@ -321,13 +338,13 @@ const QuizPlayPage: React.FC = () => {
     }
   };
 
-  const handleGoHome = () => {
-    // Do not persist partial results; simply navigate away
-    resetQuiz();
-    clearCurrentQuiz();
-    clearCurrentQuestions();
-    navigate('/');
-  };
+  // const handleGoHome = () => {
+  //   // Do not persist partial results; simply navigate away
+  //   resetQuiz();
+  //   clearCurrentQuiz();
+  //   clearCurrentQuestions();
+  //   navigate('/');
+  // };
 
   const getProgressPercentage = () => {
     return ((currentQuestionIndex + 1) / currentQuestions.length) * 100;
@@ -660,11 +677,14 @@ const QuizPlayPage: React.FC = () => {
                         #{myLeaderboardEntry.rank}
                       </div>
                       <div>
-                        <Text strong className="text-base block">შენი პოზიცია</Text>
+                        <Text strong className="text-base block">
+                          შენი პოზიცია
+                        </Text>
                         <Text className="text-gray-500 text-sm">
                           {myLeaderboardEntry.correctAnswers}/{myLeaderboardEntry.totalQuestions} სწორი
-                          {' · '}{myLeaderboardEntry.scorePercentage}%
-                          {' · '}{formatLeaderboardTime(myLeaderboardEntry.timeTakenSeconds)}
+                          {' · '}
+                          {myLeaderboardEntry.scorePercentage}%{' · '}
+                          {formatLeaderboardTime(myLeaderboardEntry.timeTakenSeconds)}
                         </Text>
                       </div>
                     </div>
@@ -699,7 +719,10 @@ const QuizPlayPage: React.FC = () => {
                               {getRankMedal(entry.rank)}
                             </div>
                             <div className="min-w-0">
-                              <Text strong className={`block truncate text-sm sm:text-base ${isMe ? 'text-blue-600' : ''}`}>
+                              <Text
+                                strong
+                                className={`block truncate text-sm sm:text-base ${isMe ? 'text-blue-600' : ''}`}
+                              >
                                 {entry.firstName} {entry.lastName}
                                 {isMe && <span className="text-blue-400 text-xs ml-1">(შენ)</span>}
                               </Text>
@@ -709,16 +732,23 @@ const QuizPlayPage: React.FC = () => {
                           <div className="flex items-center gap-3 sm:gap-6 flex-shrink-0">
                             <div className="text-center hidden sm:block">
                               <Text className="text-xs text-gray-400 block">სწორი</Text>
-                              <Text strong className="text-sm">{entry.correctAnswers}/{entry.totalQuestions}</Text>
+                              <Text strong className="text-sm">
+                                {entry.correctAnswers}/{entry.totalQuestions}
+                              </Text>
                             </div>
                             <div className="text-center hidden sm:block">
                               <Text className="text-xs text-gray-400 block">დრო</Text>
-                              <Text className="text-sm">{formatLeaderboardTime(entry.timeTakenSeconds)}</Text>
+                              <Text className="text-sm">
+                                {formatLeaderboardTime(entry.timeTakenSeconds)}
+                              </Text>
                             </div>
                             <div className="text-center">
-                              <Text strong className={`text-lg ${
-                                entry.rank <= 3 ? 'text-yellow-600' : 'text-gray-700'
-                              }`}>
+                              <Text
+                                strong
+                                className={`text-lg ${
+                                  entry.rank <= 3 ? 'text-yellow-600' : 'text-gray-700'
+                                }`}
+                              >
                                 {entry.scorePercentage}%
                               </Text>
                             </div>
@@ -747,99 +777,100 @@ const QuizPlayPage: React.FC = () => {
           )}
 
           {/* Recommended quizzes (only for non-tournament) */}
-          {!tournamentId && (suggestionsLoading ? (
-            <div className="mt-10 text-center py-12 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl">
-              <Spin size="large" />
-              <div className="mt-4 text-gray-500 font-medium">რეკომენდაციების ჩატვირთვა...</div>
-            </div>
-          ) : suggestions.length > 0 ? (
-            <div className="mt-10">
-              <div className="text-center mb-8">
-                <Title
-                  level={3}
-                  className="!mb-2 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent "
-                >
-                  რეკომენდებული ვიქტორინები
-                </Title>
+          {!tournamentId &&
+            (suggestionsLoading ? (
+              <div className="mt-10 text-center py-12 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl">
+                <Spin size="large" />
+                <div className="mt-4 text-gray-500 font-medium">რეკომენდაციების ჩატვირთვა...</div>
               </div>
+            ) : suggestions.length > 0 ? (
+              <div className="mt-10">
+                <div className="text-center mb-8">
+                  <Title
+                    level={3}
+                    className="!mb-2 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent "
+                  >
+                    რეკომენდებული ვიქტორინები
+                  </Title>
+                </div>
 
-              <Row gutter={[20, 20]}>
-                {suggestions.map((quiz: Quiz, index: number) => {
-                  const gradients = [
-                    'from-blue-500 via-blue-600 to-indigo-600',
-                    'from-emerald-500 via-green-500 to-teal-600',
-                    'from-purple-500 via-violet-500 to-indigo-600',
-                    'from-orange-500 via-amber-500 to-yellow-500',
-                    'from-pink-500 via-rose-500 to-red-500',
-                  ];
-                  const gradient = gradients[index % gradients.length];
-                  const icons = ['🧠', '📚', '💡', '🎓', '⭐'];
-                  const icon = icons[index % icons.length];
-                  const photoUrl = suggestionPhotos[quiz.quizId];
+                <Row gutter={[20, 20]}>
+                  {suggestions.map((quiz: Quiz, index: number) => {
+                    const gradients = [
+                      'from-blue-500 via-blue-600 to-indigo-600',
+                      'from-emerald-500 via-green-500 to-teal-600',
+                      'from-purple-500 via-violet-500 to-indigo-600',
+                      'from-orange-500 via-amber-500 to-yellow-500',
+                      'from-pink-500 via-rose-500 to-red-500',
+                    ];
+                    const gradient = gradients[index % gradients.length];
+                    const icons = ['🧠', '📚', '💡', '🎓', '⭐'];
+                    const icon = icons[index % icons.length];
+                    const photoUrl = suggestionPhotos[quiz.quizId];
 
-                  return (
-                    <Col xs={24} sm={12} md={8} key={quiz.quizId}>
-                      <Card
-                        hoverable
-                        className="h-full border-0 overflow-hidden group cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300"
-                        style={{ borderRadius: '20px' }}
-                        bodyStyle={{ padding: 0 }}
-                        onClick={() => {
-                          resetQuiz();
-                          clearCurrentQuiz();
-                          clearCurrentQuestions();
-                          navigate(`/quiz/play/${quiz.quizId}`);
-                        }}
-                      >
-                        <div className="relative h-40 overflow-hidden">
-                          {photoUrl ? (
-                            <>
-                              <img
-                                src={photoUrl}
-                                alt={quiz.quizName}
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                              <div className="absolute bottom-3 left-3 flex items-center gap-2"></div>
-                            </>
-                          ) : (
-                            <div className={`w-full h-full bg-gradient-to-br ${gradient} relative`}>
-                              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-                              <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                  <span className="text-3xl">{icon}</span>
+                    return (
+                      <Col xs={24} sm={12} md={8} key={quiz.quizId}>
+                        <Card
+                          hoverable
+                          className="h-full border-0 overflow-hidden group cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300"
+                          style={{ borderRadius: '20px' }}
+                          bodyStyle={{ padding: 0 }}
+                          onClick={() => {
+                            resetQuiz();
+                            clearCurrentQuiz();
+                            clearCurrentQuestions();
+                            navigate(`/quiz/play/${quiz.quizId}`);
+                          }}
+                        >
+                          <div className="relative h-40 overflow-hidden">
+                            {photoUrl ? (
+                              <>
+                                <img
+                                  src={photoUrl}
+                                  alt={quiz.quizName}
+                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                                <div className="absolute bottom-3 left-3 flex items-center gap-2"></div>
+                              </>
+                            ) : (
+                              <div className={`w-full h-full bg-gradient-to-br ${gradient} relative`}>
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+                                <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                    <span className="text-3xl">{icon}</span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          )}
-                        </div>
+                            )}
+                          </div>
 
-                        <div className="p-5 bg-white">
-                          <Title
-                            level={5}
-                            className="!mb-3 text-gray-800 group-hover:text-blue-600 transition-colors"
-                            ellipsis={{ rows: 2 }}
-                          >
-                            {quiz.quizName}
-                          </Title>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-gray-400 text-sm">
-                              <PlayCircleOutlined />
-                              <span>დაწყება</span>
-                            </div>
-                            <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
-                              <ArrowRightOutlined className="text-sm" />
+                          <div className="p-5 bg-white">
+                            <Title
+                              level={5}
+                              className="!mb-3 text-gray-800 group-hover:text-blue-600 transition-colors"
+                              ellipsis={{ rows: 2 }}
+                            >
+                              {quiz.quizName}
+                            </Title>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2 text-gray-400 text-sm">
+                                <PlayCircleOutlined />
+                                <span>დაწყება</span>
+                              </div>
+                              <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
+                                <ArrowRightOutlined className="text-sm" />
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </Card>
-                    </Col>
-                  );
-                })}
-              </Row>
-            </div>
-          ) : null)}
+                        </Card>
+                      </Col>
+                    );
+                  })}
+                </Row>
+              </div>
+            ) : null)}
         </div>
       </Layout>
     );
