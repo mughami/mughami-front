@@ -10,6 +10,8 @@ import {
 } from '@ant-design/icons';
 import Layout from '../components/Layout';
 import { useTournamentStore } from '../store/tournamentStore';
+import { useAuthStore } from '../store/authStore';
+import { UserRole } from '../types';
 import type { LeaderboardEntry } from '../types';
 
 const { Title, Text } = Typography;
@@ -17,6 +19,8 @@ const { Title, Text } = Typography;
 const TournamentLeaderboardPage: React.FC = () => {
   const { tournamentId } = useParams<{ tournamentId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const isAdmin = user?.userRole === UserRole.ADMIN;
   const {
     leaderboard,
     leaderboardTotal,
@@ -33,16 +37,16 @@ const TournamentLeaderboardPage: React.FC = () => {
   useEffect(() => {
     if (tournamentId) {
       const id = parseInt(tournamentId);
-      fetchLeaderboard(id, 0, pageSize);
+      fetchLeaderboard(id, 0, pageSize, isAdmin);
       fetchMyLeaderboardEntry(id);
     }
     return () => clearLeaderboard();
-  }, [tournamentId, fetchLeaderboard, fetchMyLeaderboardEntry, clearLeaderboard]);
+  }, [tournamentId, isAdmin, fetchLeaderboard, fetchMyLeaderboardEntry, clearLeaderboard]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     if (tournamentId) {
-      fetchLeaderboard(parseInt(tournamentId), page - 1, pageSize);
+      fetchLeaderboard(parseInt(tournamentId), page - 1, pageSize, isAdmin);
     }
   };
 

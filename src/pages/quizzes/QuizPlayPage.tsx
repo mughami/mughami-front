@@ -29,6 +29,8 @@ import type { Quiz } from '../../services/api/quizService';
 import type { LeaderboardEntry } from '../../types';
 import { useQuizStore, cleanupBlobUrl } from '../../store/quizStore';
 import { useTournamentStore } from '../../store/tournamentStore';
+import { useAuthStore } from '../../store/authStore';
+import { UserRole } from '../../types';
 import Layout from '../../components/Layout';
 
 const { Title, Text } = Typography;
@@ -81,6 +83,8 @@ const QuizPlayPage: React.FC = () => {
 
   // Tournament context
   const tournamentId = location.state?.tournamentId as number | undefined;
+  const { user } = useAuthStore();
+  const isAdmin = user?.userRole === UserRole.ADMIN;
   const {
     leaderboard,
     myLeaderboardEntry,
@@ -128,7 +132,7 @@ const QuizPlayPage: React.FC = () => {
     if (quizCompleted) {
       if (tournamentId) {
         // Tournament quiz — fetch leaderboard
-        fetchLeaderboard(tournamentId, 0, 20);
+        fetchLeaderboard(tournamentId, 0, 20, isAdmin);
         fetchMyLeaderboardEntry(tournamentId);
       } else {
         // Regular quiz — fetch suggestions
@@ -141,6 +145,7 @@ const QuizPlayPage: React.FC = () => {
   }, [
     quizCompleted,
     tournamentId,
+    isAdmin,
     currentQuiz?.subCategoryId,
     currentQuiz?.categoryId,
     fetchSuggestions,

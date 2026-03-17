@@ -48,7 +48,7 @@ interface TournamentState {
   leaderboardTotal: number;
   myLeaderboardEntry: LeaderboardEntry | null;
   leaderboardLoading: boolean;
-  fetchLeaderboard: (tournamentId: number, page?: number, size?: number) => Promise<void>;
+  fetchLeaderboard: (tournamentId: number, page?: number, size?: number, isAdmin?: boolean) => Promise<void>;
   fetchMyLeaderboardEntry: (tournamentId: number) => Promise<void>;
   clearLeaderboard: () => void;
 
@@ -295,10 +295,12 @@ export const useTournamentStore = create<TournamentState>((set) => ({
 
   // ─── Leaderboard ─────────────────────────────────────────────────
 
-  fetchLeaderboard: async (tournamentId: number, page = 0, size = 10) => {
+  fetchLeaderboard: async (tournamentId: number, page = 0, size = 10, isAdmin = false) => {
     set({ leaderboardLoading: true });
     try {
-      const response = await tournamentService.getLeaderboard(tournamentId, page, size);
+      const response = isAdmin
+        ? await tournamentService.getAdminLeaderboard(tournamentId, page, size)
+        : await tournamentService.getLeaderboard(tournamentId, page, size);
       set({
         leaderboard: response.content,
         leaderboardTotal: response.totalElements,
