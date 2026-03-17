@@ -103,6 +103,7 @@ export interface LeaderboardEntry {
   totalQuestions: number;
   scorePercentage: number;
   timeTakenSeconds: number;
+  completedAt?: string;
 }
 
 export interface LeaderboardResponse {

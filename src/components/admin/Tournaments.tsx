@@ -16,6 +16,7 @@ import {
   Row,
   Col,
   Statistic,
+  Progress,
 } from 'antd';
 import {
   PlusOutlined,
@@ -25,7 +26,10 @@ import {
   ClockCircleOutlined,
   CheckCircleOutlined,
   PlayCircleOutlined,
+  OrderedListOutlined,
 } from '@ant-design/icons';
+import tournamentService from '../../services/api/tournamentService';
+import type { LeaderboardEntry } from '../../types';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 dayjs.extend(utc);
@@ -54,8 +58,9 @@ const TournamentMobileCard: React.FC<{
   tournament: Tournament;
   onEdit: (tournament: Tournament) => void;
   onDelete: (id: number) => void;
+  onLeaderboard: (tournament: Tournament) => void;
   getStatusTag: (status: TournamentStatus) => React.ReactNode;
-}> = ({ tournament, onEdit, onDelete, getStatusTag }) => {
+}> = ({ tournament, onEdit, onDelete, onLeaderboard, getStatusTag }) => {
   return (
     <Card className="mb-3 shadow-sm" size="small">
       <div className="space-y-3">
@@ -84,6 +89,15 @@ const TournamentMobileCard: React.FC<{
 
         {/* Actions */}
         <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+          <Button
+            type="link"
+            icon={<OrderedListOutlined />}
+            onClick={() => onLeaderboard(tournament)}
+            size="small"
+            className="!px-0"
+          >
+            ლიდერბორდი
+          </Button>
           <Button
             type="link"
             icon={<EditOutlined />}
@@ -130,6 +144,13 @@ export const Tournaments: React.FC = () => {
   const [pageSize, setPageSize] = useState<number>(10);
   const [statusFilter, setStatusFilter] = useState<TournamentStatus | undefined>(undefined);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Leaderboard modal state
+  const [leaderboardTournament, setLeaderboardTournament] = useState<Tournament | null>(null);
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [leaderboardPage, setLeaderboardPage] = useState<number>(1);
+  const [leaderboardTotal, setLeaderboardTotal] = useState<number>(0);
 
   // Check for mobile viewport
   useEffect(() => {
@@ -210,6 +231,25 @@ export const Tournaments: React.FC = () => {
     } catch {
       message.error('ტურნირის წაშლისას მოხდა შეცდომა');
     }
+  };
+
+  const fetchLeaderboard = async (tournamentId: number, page: number) => {
+    setLeaderboardLoading(true);
+    try {
+      const res = await tournamentService.getAdminLeaderboard(tournamentId, page - 1, 10);
+      setLeaderboardData(res.content);
+      setLeaderboardTotal(res.totalElements);
+    } catch {
+      message.error('ლიდერბორდის ჩატვირთვისას მოხდა შეცდომა');
+    } finally {
+      setLeaderboardLoading(false);
+    }
+  };
+
+  const handleOpenLeaderboard = (tournament: Tournament) => {
+    setLeaderboardTournament(tournament);
+    setLeaderboardPage(1);
+    fetchLeaderboard(tournament.id, 1);
   };
 
   const getStatusTag = (status: TournamentStatus) => {
@@ -296,6 +336,15 @@ export const Tournaments: React.FC = () => {
       width: isMobile ? 80 : 200,
       render: (record: Tournament) => (
         <Space size="small" className="flex-wrap">
+          <Button
+            type="link"
+            icon={<OrderedListOutlined />}
+            onClick={() => handleOpenLeaderboard(record)}
+            size="small"
+            className="!px-1"
+          >
+            <span className="hidden lg:inline">ლიდერბორდი</span>
+          </Button>
           <Button
             type="link"
             icon={<EditOutlined />}
@@ -429,6 +478,7 @@ export const Tournaments: React.FC = () => {
                     tournament={tournament}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    onLeaderboard={handleOpenLeaderboard}
                     getStatusTag={getStatusTag}
                   />
                 ))}
@@ -480,6 +530,95 @@ export const Tournaments: React.FC = () => {
           />
         )}
       </Card>
+
+      {/* Leaderboard Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <TrophyOutlined className="text-yellow-500" />
+            <span>ლიდერბორდი — {leaderboardTournament?.description}</span>
+          </div>
+        }
+        open={!!leaderboardTournament}
+        onCancel={() => {
+          setLeaderboardTournament(null);
+          setLeaderboardData([]);
+        }}
+        footer={null}
+        width={isMobile ? '100%' : 800}
+        style={isMobile ? { top: 20, maxWidth: 'calc(100% - 32px)', margin: '0 auto' } : undefined}
+      >
+        <Table
+          dataSource={leaderboardData}
+          rowKey="userId"
+          loading={leaderboardLoading}
+          size="small"
+          scroll={{ x: 600 }}
+          pagination={{
+            current: leaderboardPage,
+            pageSize: 10,
+            total: leaderboardTotal,
+            showTotal: (total, range) => `${range[0]}-${range[1]} / ${total}`,
+            onChange: (page) => {
+              setLeaderboardPage(page);
+              if (leaderboardTournament) fetchLeaderboard(leaderboardTournament.id, page);
+            },
+          }}
+          columns={[
+            {
+              title: '#',
+              dataIndex: 'rank',
+              key: 'rank',
+              width: 50,
+              render: (rank: number) => (
+                <Text strong style={{ color: rank === 1 ? '#faad14' : rank === 2 ? '#8c8c8c' : rank === 3 ? '#cd7f32' : undefined }}>
+                  {rank}
+                </Text>
+              ),
+            },
+            {
+              title: 'მომხმარებელი',
+              key: 'user',
+              render: (record: LeaderboardEntry) => (
+                <div>
+                  <Text strong className="block text-sm">{record.firstName} {record.lastName}</Text>
+                  <Text type="secondary" className="text-xs">@{record.username}</Text>
+                </div>
+              ),
+            },
+            {
+              title: 'სწორი პასუხები',
+              key: 'answers',
+              responsive: ['sm'] as ('md' | 'sm' | 'lg' | 'xl' | 'xxl' | 'xs')[],
+              render: (record: LeaderboardEntry) => (
+                <Text className="text-sm">{record.correctAnswers} / {record.totalQuestions}</Text>
+              ),
+            },
+            {
+              title: 'ქულა',
+              dataIndex: 'scorePercentage',
+              key: 'scorePercentage',
+              render: (score: number) => (
+                <Progress percent={Math.round(score)} size="small" status={score >= 80 ? 'success' : score >= 50 ? 'normal' : 'exception'} />
+              ),
+            },
+            {
+              title: 'დრო (წთ)',
+              dataIndex: 'timeTakenSeconds',
+              key: 'timeTakenSeconds',
+              responsive: ['md'] as ('md' | 'sm' | 'lg' | 'xl' | 'xxl' | 'xs')[],
+              render: (t: number) => <Text className="text-sm">{(t / 60).toFixed(1)}წთ</Text>,
+            },
+            {
+              title: 'დასრულდა',
+              dataIndex: 'completedAt',
+              key: 'completedAt',
+              responsive: ['lg'] as ('md' | 'sm' | 'lg' | 'xl' | 'xxl' | 'xs')[],
+              render: (date: string) => date ? <Text className="text-xs">{parseUTC(date).format('DD/MM/YY HH:mm')}</Text> : '—',
+            },
+          ]}
+        />
+      </Modal>
 
       {/* Create / Edit Modal */}
       <Modal

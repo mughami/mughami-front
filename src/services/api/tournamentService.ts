@@ -122,6 +122,17 @@ const tournamentService = {
     return response.data;
   },
 
+  getAdminLeaderboard: async (
+    tournamentId: number,
+    page: number = 0,
+    size: number = 10,
+  ): Promise<LeaderboardResponse> => {
+    const response = await apiClient.get<LeaderboardResponse>(
+      `/admin/tournament/${tournamentId}/leaderboard?page=${page}&size=${size}`,
+    );
+    return response.data;
+  },
+
   getMyLeaderboardEntry: async (tournamentId: number): Promise<LeaderboardEntry> => {
     const response = await apiClient.get<LeaderboardEntry>(
       `/app/tournament/${tournamentId}/leaderboard/me`,
