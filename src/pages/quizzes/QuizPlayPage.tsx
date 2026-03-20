@@ -133,7 +133,7 @@ const QuizPlayPage: React.FC = () => {
       if (tournamentId) {
         // Tournament quiz — fetch leaderboard
         fetchLeaderboard(tournamentId, 0, 20, isAdmin);
-        fetchMyLeaderboardEntry(tournamentId);
+        fetchMyLeaderboardEntry(tournamentId, isAdmin);
       } else {
         // Regular quiz — fetch suggestions
         const suggestionId = currentQuiz?.subCategoryId || currentQuiz?.categoryId;

@@ -38,7 +38,7 @@ const TournamentLeaderboardPage: React.FC = () => {
     if (tournamentId) {
       const id = parseInt(tournamentId);
       fetchLeaderboard(id, 0, pageSize, isAdmin);
-      fetchMyLeaderboardEntry(id);
+      fetchMyLeaderboardEntry(id, isAdmin);
     }
     return () => clearLeaderboard();
   }, [tournamentId, isAdmin, fetchLeaderboard, fetchMyLeaderboardEntry, clearLeaderboard]);

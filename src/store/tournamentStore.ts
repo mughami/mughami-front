@@ -7,6 +7,7 @@ import type {
   LeaderboardEntry,
 } from '../types';
 import tournamentService from '../services/api/tournamentService';
+import { useAuthStore } from './authStore';
 
 interface TournamentState {
   // Data
@@ -49,7 +50,7 @@ interface TournamentState {
   myLeaderboardEntry: LeaderboardEntry | null;
   leaderboardLoading: boolean;
   fetchLeaderboard: (tournamentId: number, page?: number, size?: number, isAdmin?: boolean) => Promise<void>;
-  fetchMyLeaderboardEntry: (tournamentId: number) => Promise<void>;
+  fetchMyLeaderboardEntry: (tournamentId: number, isAdmin?: boolean) => Promise<void>;
   clearLeaderboard: () => void;
 
   // ─── Utility ───────────────────────────────────────────────────
@@ -314,10 +315,16 @@ export const useTournamentStore = create<TournamentState>((set) => ({
     }
   },
 
-  fetchMyLeaderboardEntry: async (tournamentId: number) => {
+  fetchMyLeaderboardEntry: async (tournamentId: number, isAdmin = false) => {
     try {
-      const entry = await tournamentService.getMyLeaderboardEntry(tournamentId);
-      set({ myLeaderboardEntry: entry });
+      const response = isAdmin
+        ? await tournamentService.getAdminLeaderboard(tournamentId)
+        : await tournamentService.getMyLeaderboardEntry(tournamentId);
+      const userId = useAuthStore.getState().user?.id;
+      const myEntry = response.content.find(
+        (entry) => String(entry.userId) === String(userId),
+      ) ?? null;
+      set({ myLeaderboardEntry: myEntry });
     } catch {
       set({ myLeaderboardEntry: null });
     }
