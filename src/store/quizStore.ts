@@ -516,6 +516,7 @@ export const useQuizStore = create<QuizState>((set) => ({
   startQuiz: async (quizId: number) => {
     set({ loading: true, error: null });
     try {
+      await quizService.startQuiz(quizId);
       await quizService.getUserQuizQuestions(quizId, 0, 50);
       set({
         quizStarted: true,

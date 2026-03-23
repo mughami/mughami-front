@@ -25,7 +25,7 @@ import {
   PlayCircleOutlined,
   HomeOutlined,
 } from '@ant-design/icons';
-import type { Quiz } from '../../services/api/quizService';
+import quizService, { type Quiz } from '../../services/api/quizService';
 import type { LeaderboardEntry } from '../../types';
 import { useQuizStore, cleanupBlobUrl } from '../../store/quizStore';
 import { useTournamentStore } from '../../store/tournamentStore';
@@ -294,6 +294,7 @@ const QuizPlayPage: React.FC = () => {
     if (quizId) {
       try {
         const id = parseInt(quizId);
+        await quizService.startQuiz(id);
         await fetchUserQuiz(id);
         await fetchQuizQuestions(id, 0, 50);
         useQuizStore.setState({
