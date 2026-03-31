@@ -252,7 +252,6 @@ const PublicQuizPlayPage: React.FC = () => {
     if (!quizStarted || quizCompleted) return;
 
     const currentQuestion = currentQuestions[currentQuestionIndex];
-    if (selectedAnswers[currentQuestion.id] !== undefined) return;
     selectAnswer(currentQuestion.id, answerIndex);
     setAnswerAnimation(true);
     setTimeout(() => setAnswerAnimation(false), 200);

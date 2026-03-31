@@ -25,6 +25,7 @@ import {
   PlayCircleOutlined,
   HomeOutlined,
 } from '@ant-design/icons';
+import { isAxiosError } from 'axios';
 import quizService, { type Quiz } from '../../services/api/quizService';
 import type { LeaderboardEntry } from '../../types';
 import { useQuizStore, cleanupBlobUrl } from '../../store/quizStore';
@@ -304,10 +305,14 @@ const QuizPlayPage: React.FC = () => {
           loading: false,
         });
       } catch (error) {
-        useQuizStore.setState({
-          error: error instanceof Error ? error.message : 'Failed to start quiz',
-          loading: false,
-        });
+        let msg = 'ვიქტორინის დაწყება ვერ მოხერხდა';
+        if (isAxiosError(error) && error.response?.status === 400) {
+          const serverMsg: string = error.response.data?.message ?? '';
+          if (serverMsg.toLowerCase().includes('already completed')) {
+            msg = 'თქვენ უკვე გაიარეთ ეს ტურნირი';
+          }
+        }
+        useQuizStore.setState({ error: msg, loading: false });
       }
     }
   };
@@ -315,7 +320,6 @@ const QuizPlayPage: React.FC = () => {
   const handleAnswerSelect = async (answerIndex: number) => {
     if (!quizStarted || quizCompleted) return;
     const currentQuestion = currentQuestions[currentQuestionIndex];
-    if (selectedAnswers[currentQuestion.id] !== undefined) return;
     try {
       await selectAnswer(currentQuestion.id, answerIndex);
       setAnswerAnimation(true);
