@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getErrorMessage } from '../utils/errorMessages';
 import dashboardService, {
   type DashboardStats,
   type QuizStatsResponse,
@@ -26,8 +27,8 @@ const useDashboardStore = create<DashboardStore>((set) => ({
       set({ loading: true, error: null });
       const stats = await dashboardService.getStats();
       set({ stats, loading: false });
-    } catch {
-      set({ error: 'Failed to fetch dashboard statistics', loading: false });
+    } catch (error) {
+      set({ error: getErrorMessage(error, 'სტატისტიკის ჩატვირთვა ვერ მოხერხდა'), loading: false });
     }
   },
   fetchQuizStats: async (page = 1, size = 10) => {
@@ -35,8 +36,8 @@ const useDashboardStore = create<DashboardStore>((set) => ({
       set({ quizStatsLoading: true, error: null });
       const data = await dashboardService.getQuizStats(page, size);
       set({ quizStats: data, quizStatsLoading: false });
-    } catch {
-      set({ error: 'Failed to fetch quiz statistics', quizStatsLoading: false });
+    } catch (error) {
+      set({ error: getErrorMessage(error, 'ვიქტორინის სტატისტიკის ჩატვირთვა ვერ მოხერხდა'), quizStatsLoading: false });
     }
   },
 }));

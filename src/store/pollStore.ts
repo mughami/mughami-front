@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getErrorMessage } from '../utils/errorMessages';
 import pollService, { type Poll, type CreatePollRequest } from '../services/api/pollService';
 
 interface PollStore {
@@ -23,8 +24,8 @@ export const usePollStore = create<PollStore>((set) => ({
       set({ loading: true, error: null });
       const response = await pollService.getAdminPolls(page, size);
       set({ polls: response.content, loading: false });
-    } catch {
-      set({ error: 'Failed to fetch polls', loading: false });
+    } catch (error) {
+      set({ error: getErrorMessage(error, 'გამოკითხვების ჩატვირთვა ვერ მოხერხდა'), loading: false });
     }
   },
 
@@ -33,8 +34,8 @@ export const usePollStore = create<PollStore>((set) => ({
       set({ loading: true, error: null });
       const response = await pollService.getPolls(page, size);
       set({ polls: response.content, loading: false });
-    } catch {
-      set({ error: 'Failed to fetch polls', loading: false });
+    } catch (error) {
+      set({ error: getErrorMessage(error, 'გამოკითხვების ჩატვირთვა ვერ მოხერხდა'), loading: false });
     }
   },
 
@@ -43,8 +44,8 @@ export const usePollStore = create<PollStore>((set) => ({
       set({ loading: true, error: null });
       await pollService.createPoll(data);
       set({ loading: false });
-    } catch {
-      set({ error: 'Failed to create poll', loading: false });
+    } catch (error) {
+      set({ error: getErrorMessage(error, 'გამოკითხვის შექმნა ვერ მოხერხდა'), loading: false });
     }
   },
 
@@ -53,8 +54,8 @@ export const usePollStore = create<PollStore>((set) => ({
       set({ loading: true, error: null });
       await pollService.deletePoll(id);
       set({ loading: false });
-    } catch {
-      set({ error: 'Failed to delete poll', loading: false });
+    } catch (error) {
+      set({ error: getErrorMessage(error, 'გამოკითხვის წაშლა ვერ მოხერხდა'), loading: false });
     }
   },
 
@@ -63,8 +64,8 @@ export const usePollStore = create<PollStore>((set) => ({
       set({ loading: true, error: null });
       await pollService.updatePoll(id, data);
       set({ loading: false });
-    } catch {
-      set({ error: 'Failed to update poll', loading: false });
+    } catch (error) {
+      set({ error: getErrorMessage(error, 'გამოკითხვის განახლება ვერ მოხერხდა'), loading: false });
     }
   },
 
@@ -75,8 +76,8 @@ export const usePollStore = create<PollStore>((set) => ({
       // Refresh polls to get updated results
       const response = await pollService.getPolls(0, 10);
       set({ polls: response.content, loading: false });
-    } catch {
-      set({ error: 'Failed to submit vote', loading: false });
+    } catch (error) {
+      set({ error: getErrorMessage(error, 'ხმის მიცემა ვერ მოხერხდა'), loading: false });
     }
   },
 }));

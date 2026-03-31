@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getErrorMessage } from '../utils/errorMessages';
 import publicQuizService, {
   guestQuizService,
   type GuestQuizStartResponse,
@@ -123,9 +124,9 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
       });
 
       // Do not persist quizzes in localStorage
-    } catch {
+    } catch (error) {
       set({
-        error: 'Failed to fetch public quizzes',
+        error: getErrorMessage(error, 'ვიქტორინების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -155,9 +156,9 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
       } else {
         throw new Error('Quiz not available');
       }
-    } catch {
+    } catch (error) {
       set({
-        error: 'Failed to fetch quiz',
+        error: getErrorMessage(error, 'ვიქტორინის ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -175,9 +176,9 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
         totalQuestions: response.totalElements,
         loading: false,
       });
-    } catch {
+    } catch (error) {
       set({
-        error: 'Failed to fetch quiz questions',
+        error: getErrorMessage(error, 'კითხვების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -227,9 +228,9 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
           // ignore prefetch failure
         }
       }
-    } catch {
+    } catch (error) {
       set({
-        error: 'Failed to start quiz',
+        error: getErrorMessage(error, 'ვიქტორინის დაწყება ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -337,9 +338,9 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
     try {
       const photoUrl = await publicQuizService.getPublicQuizPhoto(quizId);
       return photoUrl;
-    } catch {
+    } catch (error) {
       set({
-        error: 'Failed to get quiz photo',
+        error: getErrorMessage(error, 'ვიქტორინის ფოტოს ჩატვირთვა ვერ მოხერხდა'),
       });
       return '';
     }
@@ -349,9 +350,9 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
     try {
       const photoUrl = await publicQuizService.getPublicQuestionPhoto(questionId);
       return photoUrl;
-    } catch {
+    } catch (error) {
       set({
-        error: 'Failed to get question photo',
+        error: getErrorMessage(error, 'კითხვის ფოტოს ჩატვირთვა ვერ მოხერხდა'),
       });
       return '';
     }

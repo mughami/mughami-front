@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { authService, type User } from '../services';
 import type { Gender } from '../services/api/authService';
+import { getErrorMessage } from '../utils/errorMessages';
 
 interface AuthState {
   user: User | null;
@@ -79,7 +80,7 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           set({
             isLoading: false,
-            error: error instanceof Error ? error.message : 'შეცდომა ავტორიზაციისას',
+            error: getErrorMessage(error, 'შეცდომა ავტორიზაციისას'),
           });
           return null;
         }
@@ -100,7 +101,7 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           set({
             isLoading: false,
-            error: error instanceof Error ? error.message : 'შეცდომა რეგისტრაციისას',
+            error: getErrorMessage(error, 'შეცდომა რეგისტრაციისას'),
           });
         }
       },

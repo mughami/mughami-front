@@ -52,7 +52,7 @@ const TournamentLeaderboardPage: React.FC = () => {
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
@@ -140,7 +140,7 @@ const TournamentLeaderboardPage: React.FC = () => {
                       </span>
                       <span className="flex items-center gap-1">
                         <ClockCircleOutlined className="text-blue-500" />
-                        {formatTime(myLeaderboardEntry.timeTakenSeconds)}
+                        {formatTime(myLeaderboardEntry.durationSeconds)}
                       </span>
                     </div>
                   </div>
@@ -202,7 +202,7 @@ const TournamentLeaderboardPage: React.FC = () => {
                             <span>
                               {entry.correctAnswers}/{entry.totalQuestions} სწორი
                             </span>
-                            <span>{formatTime(entry.timeTakenSeconds)}</span>
+                            <span>{formatTime(entry.durationSeconds)}</span>
                           </div>
                         </div>
                         <div className="w-24 text-center hidden sm:block">
@@ -212,7 +212,7 @@ const TournamentLeaderboardPage: React.FC = () => {
                         </div>
                         <div className="w-24 text-center hidden sm:block">
                           <Text className="text-sm text-gray-600">
-                            {formatTime(entry.timeTakenSeconds)}
+                            {formatTime(entry.durationSeconds)}
                           </Text>
                         </div>
                         <div className="w-20 text-right flex-shrink-0">

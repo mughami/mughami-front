@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getErrorMessage } from '../utils/errorMessages';
 import { categoryService, type Category } from '../services';
 import { useAuthStore } from './authStore';
 import type { CategoryResponse, CategoryRequest, SubCategoryResponse } from '../types';
@@ -46,7 +47,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'შეცდომა კატეგორიების ჩატვირთვისას',
+        error: getErrorMessage(error, 'კატეგორიების ჩატვირთვა ვერ მოხერხდა'),
       });
     }
   },
@@ -59,7 +60,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'შეცდომა კატეგორიის ჩატვირთვისას',
+        error: getErrorMessage(error, 'კატეგორიის ჩატვირთვა ვერ მოხერხდა'),
       });
     }
   },
@@ -72,7 +73,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'შეცდომა კატეგორიების ჩატვირთვისას',
+        error: getErrorMessage(error, 'კატეგორიების ჩატვირთვა ვერ მოხერხდა'),
       });
     }
   },
@@ -89,7 +90,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'შეცდომა კატეგორიის შექმნისას',
+        error: getErrorMessage(error, 'კატეგორიის შექმნა ვერ მოხერხდა'),
       });
       throw error; // Re-throw so component can handle it
     }
@@ -105,7 +106,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'შეცდომა კატეგორიის განახლებისას',
+        error: getErrorMessage(error, 'კატეგორიის განახლება ვერ მოხერხდა'),
       });
       throw error;
     }
@@ -123,7 +124,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'შეცდომა კატეგორიის წაშლისას',
+        error: getErrorMessage(error, 'კატეგორიის წაშლა ვერ მოხერხდა'),
       });
       throw error;
     }
@@ -147,7 +148,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'შეცდომა ქვეკატეგორიების ჩატვირთვისას',
+        error: getErrorMessage(error, 'ქვეკატეგორიების ჩატვირთვა ვერ მოხერხდა'),
       });
       throw error;
     }
@@ -166,7 +167,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'შეცდომა ქვეკატეგორიის შექმნისას',
+        error: getErrorMessage(error, 'ქვეკატეგორიის შექმნა ვერ მოხერხდა'),
       });
       throw error;
     }
@@ -191,7 +192,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'შეცდომა ქვეკატეგორიის განახლებისას',
+        error: getErrorMessage(error, 'ქვეკატეგორიის განახლება ვერ მოხერხდა'),
       });
       throw error;
     }
@@ -216,7 +217,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'შეცდომა ქვეკატეგორიის წაშლისას',
+        error: getErrorMessage(error, 'ქვეკატეგორიის წაშლა ვერ მოხერხდა'),
       });
       throw error;
     }

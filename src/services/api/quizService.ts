@@ -289,6 +289,10 @@ const quizService = {
     await apiClient.post(`/app/quiz/${quizId}/start`);
   },
 
+  submitQuiz: async (quizId: number): Promise<void> => {
+    await apiClient.post(`/app/quiz/${quizId}/submit`);
+  },
+
   // Quiz suggestions for authenticated users
   getQuizSuggestions: async (subcategoryId: number): Promise<Quiz[]> => {
     const response = await apiClient.get<Quiz[]>(`/app/quiz/suggestions/${subcategoryId}`);

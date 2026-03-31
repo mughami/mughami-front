@@ -571,7 +571,19 @@ export const Tournaments: React.FC = () => {
               key: 'rank',
               width: 50,
               render: (rank: number) => (
-                <Text strong style={{ color: rank === 1 ? '#faad14' : rank === 2 ? '#8c8c8c' : rank === 3 ? '#cd7f32' : undefined }}>
+                <Text
+                  strong
+                  style={{
+                    color:
+                      rank === 1
+                        ? '#faad14'
+                        : rank === 2
+                          ? '#8c8c8c'
+                          : rank === 3
+                            ? '#cd7f32'
+                            : undefined,
+                  }}
+                >
                   {rank}
                 </Text>
               ),
@@ -581,8 +593,12 @@ export const Tournaments: React.FC = () => {
               key: 'user',
               render: (record: LeaderboardEntry) => (
                 <div>
-                  <Text strong className="block text-sm">{record.firstName} {record.lastName}</Text>
-                  <Text type="secondary" className="text-xs">@{record.username}</Text>
+                  <Text strong className="block text-sm">
+                    {record.firstName} {record.lastName}
+                  </Text>
+                  <Text type="secondary" className="text-xs">
+                    @{record.username}
+                  </Text>
                 </div>
               ),
             },
@@ -591,7 +607,9 @@ export const Tournaments: React.FC = () => {
               key: 'answers',
               responsive: ['sm'] as ('md' | 'sm' | 'lg' | 'xl' | 'xxl' | 'xs')[],
               render: (record: LeaderboardEntry) => (
-                <Text className="text-sm">{record.correctAnswers} / {record.totalQuestions}</Text>
+                <Text className="text-sm">
+                  {record.correctAnswers} / {record.totalQuestions}
+                </Text>
               ),
             },
             {
@@ -599,22 +617,31 @@ export const Tournaments: React.FC = () => {
               dataIndex: 'scorePercentage',
               key: 'scorePercentage',
               render: (score: number) => (
-                <Progress percent={Math.round(score)} size="small" status={score >= 80 ? 'success' : score >= 50 ? 'normal' : 'exception'} />
+                <Progress
+                  percent={Math.round(score)}
+                  size="small"
+                  status={score >= 80 ? 'success' : score >= 50 ? 'normal' : 'exception'}
+                />
               ),
             },
             {
               title: 'დრო (წთ)',
-              dataIndex: 'timeTakenSeconds',
-              key: 'timeTakenSeconds',
+              dataIndex: 'durationSeconds',
+              key: 'durationSeconds',
               responsive: ['md'] as ('md' | 'sm' | 'lg' | 'xl' | 'xxl' | 'xs')[],
-              render: (t: number) => <Text className="text-sm">{(t / 60).toFixed(1)}წთ</Text>,
+              render: (t: number) => { const m = Math.floor(t / 60); const s = Math.floor(t % 60); return <Text className="text-sm">{m}:{s.toString().padStart(2, '0')}</Text>; },
             },
             {
               title: 'დასრულდა',
               dataIndex: 'completedAt',
               key: 'completedAt',
               responsive: ['lg'] as ('md' | 'sm' | 'lg' | 'xl' | 'xxl' | 'xs')[],
-              render: (date: string) => date ? <Text className="text-xs">{parseUTC(date).format('DD/MM/YY HH:mm')}</Text> : '—',
+              render: (date: string) =>
+                date ? (
+                  <Text className="text-xs">{parseUTC(date).format('DD/MM/YY HH:mm')}</Text>
+                ) : (
+                  '—'
+                ),
             },
           ]}
         />

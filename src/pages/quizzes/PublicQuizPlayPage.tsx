@@ -252,6 +252,7 @@ const PublicQuizPlayPage: React.FC = () => {
     if (!quizStarted || quizCompleted) return;
 
     const currentQuestion = currentQuestions[currentQuestionIndex];
+    if (selectedAnswers[currentQuestion.id] !== undefined) return;
     selectAnswer(currentQuestion.id, answerIndex);
     setAnswerAnimation(true);
     setTimeout(() => setAnswerAnimation(false), 200);
@@ -259,11 +260,12 @@ const PublicQuizPlayPage: React.FC = () => {
 
   const handleSubmitAnswer = async () => {
     const currentQuestion = currentQuestions[currentQuestionIndex];
+    if (submittedQuestions[currentQuestion.id]) return;
+    setSubmittedQuestions((prev) => ({ ...prev, [currentQuestion.id]: true }));
     try {
       await submitAnswer(currentQuestion.id);
       setAnswerAnimation(true);
       setTimeout(() => setAnswerAnimation(false), 200);
-      setSubmittedQuestions((prev) => ({ ...prev, [currentQuestion.id]: true }));
     } catch (error) {
       console.error('Failed to submit answer:', error);
     }
@@ -321,7 +323,7 @@ const PublicQuizPlayPage: React.FC = () => {
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 

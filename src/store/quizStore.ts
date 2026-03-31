@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { useAuthStore } from './index';
+import { getErrorMessage } from '../utils/errorMessages';
 import quizService, {
   type Quiz,
   type QuizQuestion,
@@ -124,7 +125,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       // Do not persist quizzes in localStorage
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to fetch quizzes',
+        error: getErrorMessage(error, 'ვიქტორინების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -141,7 +142,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to fetch admin quizzes',
+        error: getErrorMessage(error, 'ვიქტორინების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -157,7 +158,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to fetch quiz',
+        error: getErrorMessage(error, 'ვიქტორინის ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -197,7 +198,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       }
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to fetch user quiz',
+        error: getErrorMessage(error, 'ვიქტორინის ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -214,7 +215,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to fetch quiz questions',
+        error: getErrorMessage(error, 'კითხვების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -231,7 +232,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to fetch admin quiz questions',
+        error: getErrorMessage(error, 'კითხვების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -274,7 +275,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       return newQuiz;
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to create quiz',
+        error: getErrorMessage(error, 'ვიქტორინის შექმნა ვერ მოხერხდა'),
         loading: false,
       });
       throw error;
@@ -296,7 +297,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       return result;
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to create question',
+        error: getErrorMessage(error, 'კითხვის შექმნა ვერ მოხერხდა'),
         loading: false,
       });
       throw error;
@@ -311,7 +312,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       // This will be handled by the component calling this function
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to delete question',
+        error: getErrorMessage(error, 'კითხვის წაშლა ვერ მოხერხდა'),
         loading: false,
       });
       throw error;
@@ -329,7 +330,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       }));
       return updated;
     } catch (error) {
-      set({ loading: false, error: error instanceof Error ? error.message : 'Failed to update quiz' });
+      set({ loading: false, error: getErrorMessage(error, 'ვიქტორინის განახლება ვერ მოხერხდა') });
       throw error;
     }
   },
@@ -344,7 +345,7 @@ export const useQuizStore = create<QuizState>((set) => ({
         loading: false,
       }));
     } catch (error) {
-      set({ loading: false, error: error instanceof Error ? error.message : 'Failed to delete quiz' });
+      set({ loading: false, error: getErrorMessage(error, 'ვიქტორინის წაშლა ვერ მოხერხდა') });
       throw error;
     }
   },
@@ -361,7 +362,7 @@ export const useQuizStore = create<QuizState>((set) => ({
     } catch (error) {
       set({
         loading: false,
-        error: error instanceof Error ? error.message : 'Failed to delete question',
+        error: getErrorMessage(error, 'კითხვის წაშლა ვერ მოხერხდა'),
       });
       throw error;
     }
@@ -391,7 +392,7 @@ export const useQuizStore = create<QuizState>((set) => ({
     } catch (error) {
       set({
         loading: false,
-        error: error instanceof Error ? error.message : 'Failed to update question',
+        error: getErrorMessage(error, 'კითხვის განახლება ვერ მოხერხდა'),
       });
       throw error;
     }
@@ -425,7 +426,7 @@ export const useQuizStore = create<QuizState>((set) => ({
     } catch (error) {
       set({
         loading: false,
-        error: error instanceof Error ? error.message : 'Failed to update answer',
+        error: getErrorMessage(error, 'პასუხის განახლება ვერ მოხერხდა'),
       });
       throw error;
     }
@@ -444,7 +445,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       }));
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to add quiz photo',
+        error: getErrorMessage(error, 'ფოტოს ატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
       throw error;
@@ -464,7 +465,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       }));
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to add question photo',
+        error: getErrorMessage(error, 'ფოტოს ატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
       throw error;
@@ -477,7 +478,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       return photoUrl;
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to get quiz photo',
+        error: getErrorMessage(error, 'ვიქტორინის ფოტოს ჩატვირთვა ვერ მოხერხდა'),
       });
       return '';
     }
@@ -489,7 +490,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       return photoUrl;
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to get question photo',
+        error: getErrorMessage(error, 'კითხვის ფოტოს ჩატვირთვა ვერ მოხერხდა'),
       });
       return '';
     }
@@ -526,7 +527,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to start quiz',
+        error: getErrorMessage(error, 'ვიქტორინის დაწყება ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -557,7 +558,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       if (!selected) throw new Error('No answer selected');
       await quizService.fillQuizAnswer(state.currentQuiz.quizId, questionId, selected.id);
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Failed to submit answer' });
+      set({ error: getErrorMessage(error, 'პასუხის გაგზავნა ვერ მოხერხდა') });
       throw error;
     }
   },

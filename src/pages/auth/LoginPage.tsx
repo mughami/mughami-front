@@ -21,15 +21,17 @@ const LoginPage = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormInputs>();
-  const { login: loginUser, error: authError } = useAuthStore();
+  const { login: loginUser } = useAuthStore();
   const [api, contextHolder] = notification.useNotification();
   const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
     const user = await loginUser(data.email, data.password);
-    console.log(user);
     if (!user) {
+      const { error: latestError } = useAuthStore.getState();
       api['error']({
-        message: 'შეცდომა',
-        description: authError,
+        message: 'ავტორიზაცია ვერ მოხერხდა',
+        description: latestError ?? 'არასწორი ელ-ფოსტა ან პაროლი. გთხოვთ სცადოთ ხელახლა.',
+        duration: 5,
+        style: { borderRadius: 12 },
       });
     } else {
       if (user.userRole === UserRole.ADMIN) {

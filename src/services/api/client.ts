@@ -50,29 +50,11 @@ apiClient.interceptors.response.use(
         const baseUrl = API_URL.replace(/\/+$/, '');
         const refreshUrl = `${baseUrl}/authentication/refresh-token`;
 
-        // Call refresh token endpoint with Authorization header (access token)
-        const currentAccessToken = localStorage.getItem('token');
-        let response;
-        try {
-          response = await axios.post(
-            refreshUrl,
-            { token: refreshToken },
-            {
-              headers: currentAccessToken
-                ? { Authorization: `Bearer ${currentAccessToken}` }
-                : undefined,
-              timeout: 15000,
-            },
-          );
-        } catch (e: unknown) {
-          // If CORS/preflight or network issue occurs, try once without Authorization header as fallback
-          const err = e as { response?: unknown };
-          if (!err.response) {
-            response = await axios.post(refreshUrl, { token: refreshToken }, { timeout: 15000 });
-          } else {
-            throw err;
-          }
-        }
+        const response = await axios.post(
+          refreshUrl,
+          { token: refreshToken },
+          { timeout: 15000 },
+        );
 
         const { token, refreshToken: newRefreshToken } = response.data;
 

@@ -315,6 +315,7 @@ const QuizPlayPage: React.FC = () => {
   const handleAnswerSelect = async (answerIndex: number) => {
     if (!quizStarted || quizCompleted) return;
     const currentQuestion = currentQuestions[currentQuestionIndex];
+    if (selectedAnswers[currentQuestion.id] !== undefined) return;
     try {
       await selectAnswer(currentQuestion.id, answerIndex);
       setAnswerAnimation(true);
@@ -326,20 +327,28 @@ const QuizPlayPage: React.FC = () => {
 
   const handleSubmitAnswer = async () => {
     const currentQuestion = currentQuestions[currentQuestionIndex];
+    if (submittedQuestions[currentQuestion.id]) return;
+    setSubmittedQuestions((prev) => ({ ...prev, [currentQuestion.id]: true }));
     try {
       await submitAnswer(currentQuestion.id);
       setAnswerAnimation(true);
       setTimeout(() => setAnswerAnimation(false), 200);
-      setSubmittedQuestions((prev) => ({ ...prev, [currentQuestion.id]: true }));
     } catch (error) {
       console.error('Failed to submit answer:', error);
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentQuestionIndex < currentQuestions.length - 1) {
       nextQuestion();
     } else {
+      if (currentQuiz && !isAdmin) {
+        try {
+          await quizService.submitQuiz(currentQuiz.quizId);
+        } catch (error) {
+          console.error('Failed to submit quiz:', error);
+        }
+      }
       completeQuiz();
     }
   };
@@ -371,7 +380,7 @@ const QuizPlayPage: React.FC = () => {
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
@@ -563,7 +572,7 @@ const QuizPlayPage: React.FC = () => {
 
     const formatLeaderboardTime = (seconds: number) => {
       const mins = Math.floor(seconds / 60);
-      const secs = seconds % 60;
+      const secs = Math.floor(seconds % 60);
       return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
@@ -690,7 +699,7 @@ const QuizPlayPage: React.FC = () => {
                           {myLeaderboardEntry.correctAnswers}/{myLeaderboardEntry.totalQuestions} სწორი
                           {' · '}
                           {myLeaderboardEntry.scorePercentage}%{' · '}
-                          {formatLeaderboardTime(myLeaderboardEntry.timeTakenSeconds)}
+                          {formatLeaderboardTime(myLeaderboardEntry.durationSeconds)}
                         </Text>
                       </div>
                     </div>
@@ -745,7 +754,7 @@ const QuizPlayPage: React.FC = () => {
                             <div className="text-center hidden sm:block">
                               <Text className="text-xs text-gray-400 block">დრო</Text>
                               <Text className="text-sm">
-                                {formatLeaderboardTime(entry.timeTakenSeconds)}
+                                {formatLeaderboardTime(entry.durationSeconds)}
                               </Text>
                             </div>
                             <div className="text-center">

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getErrorMessage } from '../utils/errorMessages';
 import { paymentService, type PaymentIntent } from '../services';
 
 interface PaymentState {
@@ -32,7 +33,7 @@ export const usePaymentStore = create<PaymentState>((set) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'შეცდომა გადახდის ინიციალიზაციისას',
+        error: getErrorMessage(error, 'გადახდის ინიციალიზაცია ვერ მოხერხდა'),
       });
       return null;
     }
@@ -47,7 +48,7 @@ export const usePaymentStore = create<PaymentState>((set) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'შეცდომა გადახდის დადასტურებისას',
+        error: getErrorMessage(error, 'გადახდის დადასტურება ვერ მოხერხდა'),
       });
       return false;
     }
@@ -61,7 +62,7 @@ export const usePaymentStore = create<PaymentState>((set) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'შეცდომა გადახდების ისტორიის ჩატვირთვისას',
+        error: getErrorMessage(error, 'გადახდების ისტორიის ჩატვირთვა ვერ მოხერხდა'),
       });
     }
   },

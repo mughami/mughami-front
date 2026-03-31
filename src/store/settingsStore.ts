@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getErrorMessage } from '../utils/errorMessages';
 import settingsService, { type Settings } from '../services/api/settingsService';
 
 interface SettingsStore {
@@ -19,8 +20,8 @@ const useSettingsStore = create<SettingsStore>((set) => ({
     try {
       const settings = await settingsService.getSettings();
       set({ settings, loading: false });
-    } catch {
-      set({ error: 'Failed to fetch settings', loading: false });
+    } catch (error) {
+      set({ error: getErrorMessage(error, 'პარამეტრების ჩატვირთვა ვერ მოხერხდა'), loading: false });
     }
   },
 
@@ -29,8 +30,8 @@ const useSettingsStore = create<SettingsStore>((set) => ({
     try {
       const updatedSettings = await settingsService.updateSettings(newSettings);
       set({ settings: updatedSettings, loading: false });
-    } catch {
-      set({ error: 'Failed to update settings', loading: false });
+    } catch (error) {
+      set({ error: getErrorMessage(error, 'პარამეტრების განახლება ვერ მოხერხდა'), loading: false });
     }
   },
 }));

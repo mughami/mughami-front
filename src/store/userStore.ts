@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getErrorMessage } from '../utils/errorMessages';
 import userService, {
   type CreateUserRequest,
   type UpdateUserRequest,
@@ -35,8 +36,8 @@ const useUserStore = create<UserStore>((set) => ({
         totalUsers: response.length,
         loading: false,
       });
-    } catch {
-      set({ error: 'Failed to fetch users', loading: false });
+    } catch (error) {
+      set({ error: getErrorMessage(error, 'მომხმარებლების ჩატვირთვა ვერ მოხერხდა'), loading: false });
     }
   },
 
@@ -45,8 +46,8 @@ const useUserStore = create<UserStore>((set) => ({
     try {
       const deletedUsers = await userService.getDeletedUsers();
       set({ deletedUsers, loading: false });
-    } catch {
-      set({ error: 'Failed to fetch deleted users', loading: false });
+    } catch (error) {
+      set({ error: getErrorMessage(error, 'წაშლილი მომხმარებლების ჩატვირთვა ვერ მოხერხდა'), loading: false });
     }
   },
 
@@ -59,8 +60,8 @@ const useUserStore = create<UserStore>((set) => ({
         totalUsers: state.totalUsers + 1,
         loading: false,
       }));
-    } catch {
-      set({ error: 'Failed to create user', loading: false });
+    } catch (error) {
+      set({ error: getErrorMessage(error, 'მომხმარებლის შექმნა ვერ მოხერხდა'), loading: false });
     }
   },
 
@@ -72,8 +73,8 @@ const useUserStore = create<UserStore>((set) => ({
         users: state.users.map((user) => (user.id === userId ? updatedUser : user)),
         loading: false,
       }));
-    } catch {
-      set({ error: 'Failed to update user', loading: false });
+    } catch (error) {
+      set({ error: getErrorMessage(error, 'მომხმარებლის განახლება ვერ მოხერხდა'), loading: false });
     }
   },
 
@@ -86,8 +87,8 @@ const useUserStore = create<UserStore>((set) => ({
         totalUsers: state.totalUsers - 1,
         loading: false,
       }));
-    } catch {
-      set({ error: 'Failed to delete user', loading: false });
+    } catch (error) {
+      set({ error: getErrorMessage(error, 'მომხმარებლის წაშლა ვერ მოხერხდა'), loading: false });
     }
   },
 }));

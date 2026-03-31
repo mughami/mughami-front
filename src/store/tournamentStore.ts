@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getErrorMessage } from '../utils/errorMessages';
 import type {
   Tournament,
   CreateTournamentRequest,
@@ -89,7 +90,7 @@ export const useTournamentStore = create<TournamentState>((set) => ({
       });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'ტურნირების ჩატვირთვა ვერ მოხერხდა',
+        error: getErrorMessage(error, 'ტურნირების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -102,7 +103,7 @@ export const useTournamentStore = create<TournamentState>((set) => ({
       set({ currentTournament: tournament, loading: false });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'ტურნირის ჩატვირთვა ვერ მოხერხდა',
+        error: getErrorMessage(error, 'ტურნირის ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -120,7 +121,7 @@ export const useTournamentStore = create<TournamentState>((set) => ({
       return newTournament;
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'ტურნირის შექმნა ვერ მოხერხდა',
+        error: getErrorMessage(error, 'ტურნირის შექმნა ვერ მოხერხდა'),
         loading: false,
       });
       throw error;
@@ -140,7 +141,7 @@ export const useTournamentStore = create<TournamentState>((set) => ({
       return updated;
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'ტურნირის განახლება ვერ მოხერხდა',
+        error: getErrorMessage(error, 'ტურნირის განახლება ვერ მოხერხდა'),
         loading: false,
       });
       throw error;
@@ -160,7 +161,7 @@ export const useTournamentStore = create<TournamentState>((set) => ({
       }));
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'ტურნირის წაშლა ვერ მოხერხდა',
+        error: getErrorMessage(error, 'ტურნირის წაშლა ვერ მოხერხდა'),
         loading: false,
       });
       throw error;
@@ -175,7 +176,7 @@ export const useTournamentStore = create<TournamentState>((set) => ({
       set({ upcomingTournaments: response.content, loading: false });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'მომავალი ტურნირების ჩატვირთვა ვერ მოხერხდა',
+        error: getErrorMessage(error, 'მომავალი ტურნირების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -188,7 +189,7 @@ export const useTournamentStore = create<TournamentState>((set) => ({
       set({ startedTournaments: response.content, loading: false });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'მიმდინარე ტურნირების ჩატვირთვა ვერ მოხერხდა',
+        error: getErrorMessage(error, 'მიმდინარე ტურნირების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -201,7 +202,7 @@ export const useTournamentStore = create<TournamentState>((set) => ({
       set({ finishedTournaments: response.content, loading: false });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'დასრულებული ტურნირების ჩატვირთვა ვერ მოხერხდა',
+        error: getErrorMessage(error, 'დასრულებული ტურნირების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -220,7 +221,7 @@ export const useTournamentStore = create<TournamentState>((set) => ({
       });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'ტურნირების ჩატვირთვა ვერ მოხერხდა',
+        error: getErrorMessage(error, 'ტურნირების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -233,7 +234,7 @@ export const useTournamentStore = create<TournamentState>((set) => ({
       set({ currentTournament: tournament, loading: false });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'ტურნირის ჩატვირთვა ვერ მოხერხდა',
+        error: getErrorMessage(error, 'ტურნირის ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -246,7 +247,7 @@ export const useTournamentStore = create<TournamentState>((set) => ({
       set({ upcomingTournaments: response.content, loading: false });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'მომავალი ტურნირების ჩატვირთვა ვერ მოხერხდა',
+        error: getErrorMessage(error, 'მომავალი ტურნირების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -259,8 +260,7 @@ export const useTournamentStore = create<TournamentState>((set) => ({
       set({ startedTournaments: response.content, loading: false });
     } catch (error) {
       set({
-        error:
-          error instanceof Error ? error.message : 'მიმდინარე ტურნირების ჩატვირთვა ვერ მოხერხდა',
+        error: getErrorMessage(error, 'მიმდინარე ტურნირების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -273,8 +273,7 @@ export const useTournamentStore = create<TournamentState>((set) => ({
       set({ finishedTournaments: response.content, loading: false });
     } catch (error) {
       set({
-        error:
-          error instanceof Error ? error.message : 'დასრულებული ტურნირების ჩატვირთვა ვერ მოხერხდა',
+        error: getErrorMessage(error, 'დასრულებული ტურნირების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -287,8 +286,7 @@ export const useTournamentStore = create<TournamentState>((set) => ({
       set({ activeTournaments: response.content, loading: false });
     } catch (error) {
       set({
-        error:
-          error instanceof Error ? error.message : 'აქტიური ტურნირების ჩატვირთვა ვერ მოხერხდა',
+        error: getErrorMessage(error, 'აქტიური ტურნირების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -309,7 +307,7 @@ export const useTournamentStore = create<TournamentState>((set) => ({
       });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'ლიდერბორდის ჩატვირთვა ვერ მოხერხდა',
+        error: getErrorMessage(error, 'ლიდერბორდის ჩატვირთვა ვერ მოხერხდა'),
         leaderboardLoading: false,
       });
     }

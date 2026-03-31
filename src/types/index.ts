@@ -102,7 +102,7 @@ export interface LeaderboardEntry {
   correctAnswers: number;
   totalQuestions: number;
   scorePercentage: number;
-  timeTakenSeconds: number;
+  durationSeconds: number;
   completedAt?: string;
 }
 
