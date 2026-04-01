@@ -129,6 +129,12 @@ export const Users = () => {
         />
         <Table.Column title="ელ-ფოსტა" dataIndex="email" key="email" />
         <Table.Column
+          title="ტელეფონი"
+          dataIndex="phoneNumber"
+          key="phoneNumber"
+          render={(phone: string) => phone || '—'}
+        />
+        <Table.Column
           title="სტატუსი"
           dataIndex="status"
           key="status"

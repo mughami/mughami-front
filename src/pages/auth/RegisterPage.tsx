@@ -59,6 +59,7 @@ const RegisterPage = () => {
         data.password,
         Number(data.age),
         data.gender,
+        data.phoneNumber,
       );
 
       // Navigate to email verification page with email
@@ -353,6 +354,7 @@ const RegisterPage = () => {
             type="tel"
             autoComplete="tel"
             placeholder="ტელეფონის ნომერი"
+            maxLength={9}
             className={`form-input ${
               errors.phoneNumber ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''
             }`}

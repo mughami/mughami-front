@@ -4,6 +4,7 @@ import {
   MailOutlined,
   ManOutlined,
   WomanOutlined,
+  PhoneOutlined,
   // CalendarOutlined,
   LogoutOutlined,
   // EditOutlined,
@@ -216,6 +217,12 @@ const ProfilePage = () => {
                       <MailOutlined className="mr-2" />
                       {user?.email}
                     </p>
+                    {user?.phoneNumber && (
+                      <p className="text-gray-600 flex items-center text-sm mt-1">
+                        <PhoneOutlined className="mr-2" />
+                        {user.phoneNumber}
+                      </p>
+                    )}
                     {(user?.gender || user?.age) && (
                       <div className="flex items-center gap-4 mt-1">
                         {user?.gender && (

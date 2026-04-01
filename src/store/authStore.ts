@@ -20,6 +20,7 @@ interface AuthState {
     password: string,
     age: number,
     gender: Gender,
+    phoneNumber: string,
   ) => Promise<void>;
   logout: () => void;
   clearError: () => void;
@@ -94,10 +95,11 @@ export const useAuthStore = create<AuthState>()(
         password: string,
         age: number,
         gender: Gender,
+        phoneNumber: string,
       ) => {
         try {
           set({ isLoading: true, error: null });
-          await authService.register({ name, lastname, username, email, password, age, gender });
+          await authService.register({ name, lastname, username, email, password, age, gender, phoneNumber });
         } catch (error) {
           set({
             isLoading: false,

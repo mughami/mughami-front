@@ -17,6 +17,7 @@ export interface RegisterData {
   username: string;
   age: number;
   gender: Gender;
+  phoneNumber: string;
 }
 
 export interface User {
@@ -32,6 +33,7 @@ export interface User {
   permissions: string[];
   gender?: Gender;
   age?: number;
+  phoneNumber?: string;
 }
 
 export interface AuthResponse {
