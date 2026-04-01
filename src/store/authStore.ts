@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { authService, type User } from '../services';
-import type { Gender } from '../services/api/authService';
+import type { Gender, UpdateProfileData } from '../services/api/authService';
 import { getErrorMessage } from '../utils/errorMessages';
 
 interface AuthState {
@@ -25,6 +25,7 @@ interface AuthState {
   logout: () => void;
   clearError: () => void;
   getCurrentUser: () => Promise<User>;
+  updateProfile: (data: UpdateProfileData) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -113,6 +114,17 @@ export const useAuthStore = create<AuthState>()(
         const user = await authService.getCurrentUser();
         set({ user, isLoading: false });
         return user;
+      },
+
+      updateProfile: async (data: UpdateProfileData) => {
+        set({ isLoading: true, error: null });
+        try {
+          const updated = await authService.updateProfile(data);
+          set({ user: updated, isLoading: false });
+        } catch (error) {
+          set({ isLoading: false, error: getErrorMessage(error, 'პროფილის განახლება ვერ მოხერხდა') });
+          throw error;
+        }
       },
 
       logout: () => {

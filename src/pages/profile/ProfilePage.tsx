@@ -1,74 +1,81 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   UserOutlined,
   MailOutlined,
   ManOutlined,
   WomanOutlined,
   PhoneOutlined,
-  // CalendarOutlined,
   LogoutOutlined,
-  // EditOutlined,
+  EditOutlined,
   QuestionCircleOutlined,
   SafetyOutlined,
   WarningOutlined,
   NumberOutlined,
+  SaveOutlined,
+  CloseOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { useAuthStore } from '../../store';
-import { notification, Tooltip } from 'antd';
+import { notification, Tooltip, Spin } from 'antd';
 import { authService } from '../../services';
 import { UserStatus } from '../../types';
+import type { Gender } from '../../services/api/authService';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user, logout, updateProfile, isLoading } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [otp, setOtp] = useState('');
   const [api, contextHolder] = notification.useNotification();
+
   const [formData, setFormData] = useState({
-    name: user?.name || '',
+    firstName: user?.name || '',
+    lastName: user?.lastname || '',
+    userName: user?.username || '',
     email: user?.email || '',
+    phoneNumber: user?.phoneNumber || '',
+    age: user?.age?.toString() || '',
+    gender: (user?.gender || '') as Gender | '',
   });
 
-  // Update form data when user changes
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name,
-        email: user.email,
-      });
-    }
-  }, [user]);
-
-  // Format date to be more readable
-  // const formatDate = (dateString: string) => {
-  //   if (!dateString) return '';
-
-  //   const date = new Date(dateString);
-  //   return date.toLocaleDateString('ka-GE', {
-  //     year: 'numeric',
-  //     month: 'long',
-  //     day: 'numeric',
-  //   });
-  // };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleStartEdit = () => {
+    setFormData({
+      firstName: user?.name || '',
+      lastName: user?.lastname || '',
+      userName: user?.username || '',
+      email: user?.email || '',
+      phoneNumber: user?.phoneNumber || '',
+      age: user?.age?.toString() || '',
+      gender: (user?.gender || '') as Gender | '',
+    });
+    setIsEditing(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically call an API to update the user profile
-    // For now, we'll just toggle the editing state
-    setIsEditing(false);
-    // In a real app, you would update the user in the store after a successful API call
+    try {
+      await updateProfile({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        userName: formData.userName,
+        email: formData.email,
+        phoneNumber: formData.phoneNumber || undefined,
+        age: formData.age ? Number(formData.age) : undefined,
+        gender: (formData.gender as Gender) || undefined,
+      });
+      api['success']({ message: 'პროფილი წარმატებით განახლდა' });
+      setIsEditing(false);
+    } catch {
+      api['error']({ message: 'პროფილის განახლება ვერ მოხერხდა' });
+    }
   };
 
   const handleLogout = () => {
@@ -78,7 +85,6 @@ const ProfilePage = () => {
 
   const handleRequestOTP = async () => {
     if (!user?.email) return;
-
     try {
       setIsVerifying(true);
       await authService.resendOTP(user.email);
@@ -99,7 +105,6 @@ const ProfilePage = () => {
 
   const handleVerifyEmail = async () => {
     if (!user?.email || !otp) return;
-
     try {
       setIsVerifying(true);
       await authService.verifyAccount(user.email, otp);
@@ -119,19 +124,6 @@ const ProfilePage = () => {
     }
   };
 
-  //   if (!user) {
-  //     return (
-  //       <Layout>
-  //         <div className="text-center py-10">
-  //           <p className="text-xl text-red-600">მომხმარებელი არ არის ავტორიზებული</p>
-  //           <Link to="/login" className="form-link mt-4 inline-block">
-  //             შესვლა
-  //           </Link>
-  //         </div>
-  //       </Layout>
-  //     );
-  //   }
-
   return (
     <Layout>
       {contextHolder}
@@ -141,30 +133,64 @@ const ProfilePage = () => {
         <div className="bg-white rounded-xl shadow-card p-6 mb-6">
           {isEditing ? (
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="input-group">
+                  <label htmlFor="firstName" className="input-label">სახელი</label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <UserOutlined className="text-gray-400" />
+                    </span>
+                    <input
+                      id="firstName"
+                      name="firstName"
+                      type="text"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      className="form-input"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="lastName" className="input-label">გვარი</label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <UserOutlined className="text-gray-400" />
+                    </span>
+                    <input
+                      id="lastName"
+                      name="lastName"
+                      type="text"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      className="form-input"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="input-group">
-                <label htmlFor="name" className="input-label">
-                  სახელი
-                </label>
+                <label htmlFor="userName" className="input-label">მომხმარებლის სახელი</label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <UserOutlined className="text-gray-400" />
                   </span>
                   <input
-                    id="name"
-                    name="name"
+                    id="userName"
+                    name="userName"
                     type="text"
-                    value={formData.name}
+                    value={formData.userName}
                     onChange={handleInputChange}
-                    className="form-input "
+                    className="form-input"
                     required
                   />
                 </div>
               </div>
 
               <div className="input-group">
-                <label htmlFor="email" className="input-label">
-                  ელ-ფოსტა
-                </label>
+                <label htmlFor="email" className="input-label">ელ-ფოსტა</label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <MailOutlined className="text-gray-400" />
@@ -175,24 +201,75 @@ const ProfilePage = () => {
                     type="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="form-input "
+                    className="form-input"
                     required
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-3">
+              <div className="input-group">
+                <label htmlFor="phoneNumber" className="input-label">ტელეფონის ნომერი</label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <PhoneOutlined className="text-gray-400" />
+                  </span>
+                  <input
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    type="tel"
+                    maxLength={9}
+                    value={formData.phoneNumber}
+                    onChange={handleInputChange}
+                    className="form-input"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="input-group">
+                  <label htmlFor="age" className="input-label">ასაკი</label>
+                  <input
+                    id="age"
+                    name="age"
+                    type="number"
+                    min={1}
+                    max={150}
+                    value={formData.age}
+                    onChange={handleInputChange}
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="gender" className="input-label">სქესი</label>
+                  <select
+                    id="gender"
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleInputChange}
+                    className="form-input"
+                  >
+                    <option value="">აირჩიეთ სქესი</option>
+                    <option value="MALE">მამრობითი</option>
+                    <option value="FEMALE">მდედრობითი</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  className="flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                 >
-                  გაუქმება
+                  <CloseOutlined className="mr-1" /> გაუქმება
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark"
+                  disabled={isLoading}
+                  className="flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-dark disabled:opacity-60"
                 >
+                  {isLoading ? <Spin size="small" className="mr-2" /> : <SaveOutlined className="mr-1" />}
                   შენახვა
                 </button>
               </div>
@@ -206,14 +283,17 @@ const ProfilePage = () => {
                   </div>
                   <div className="ml-4">
                     <div className="flex items-center">
-                      <h2 className="text-xl font-bold text-gray-900">{user?.name}</h2>
+                      <h2 className="text-xl font-bold text-gray-900">{user?.name} {user?.lastname}</h2>
                       {user?.userStatus !== UserStatus.VERIFIED && (
                         <Tooltip title="თქვენი ელ-ფოსტა არ არის დადასტურებული">
                           <WarningOutlined className="ml-2 text-yellow-500" />
                         </Tooltip>
                       )}
                     </div>
-                    <p className="text-gray-600 flex items-center">
+                    {user?.username && (
+                      <p className="text-gray-400 text-sm">@{user.username}</p>
+                    )}
+                    <p className="text-gray-600 flex items-center mt-1">
                       <MailOutlined className="mr-2" />
                       {user?.email}
                     </p>
@@ -245,12 +325,12 @@ const ProfilePage = () => {
                     )}
                   </div>
                 </div>
-                {/* <button
-                  onClick={() => setIsEditing(true)}
+                <button
+                  onClick={handleStartEdit}
                   className="text-secondary hover:text-secondary-dark transition-colors"
                 >
                   <EditOutlined className="text-lg" />
-                </button> */}
+                </button>
               </div>
 
               {/* Email Verification Section */}

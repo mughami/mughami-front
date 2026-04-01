@@ -41,6 +41,16 @@ export interface AuthResponse {
   refreshToken: string;
 }
 
+export interface UpdateProfileData {
+  firstName?: string;
+  lastName?: string;
+  userName?: string;
+  email?: string;
+  phoneNumber?: string;
+  age?: number;
+  gender?: Gender;
+}
+
 export interface ForgotPasswordData {
   email: string;
   otp: string;
@@ -77,6 +87,11 @@ const authService = {
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     location.href = '/login';
+  },
+
+  updateProfile: async (data: UpdateProfileData): Promise<User> => {
+    const response = await apiClient.patch<User>('/app/user/update', data);
+    return response.data;
   },
 
   forgotPassword: async (data: ForgotPasswordData): Promise<void> => {
