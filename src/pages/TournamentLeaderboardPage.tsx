@@ -53,7 +53,8 @@ const TournamentLeaderboardPage: React.FC = () => {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    const ms = Math.round((seconds % 1) * 1000);
+    return `${mins}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
   };
 
   const getRankDisplay = (rank: number) => {
@@ -202,7 +203,7 @@ const TournamentLeaderboardPage: React.FC = () => {
                             <span>
                               {entry.correctAnswers}/{entry.totalQuestions} სწორი
                             </span>
-                            <span>{entry.durationSeconds}</span>
+                            <span>{formatTime(entry.durationSeconds)}</span>
                           </div>
                         </div>
                         <div className="w-24 text-center hidden sm:block">
@@ -211,7 +212,7 @@ const TournamentLeaderboardPage: React.FC = () => {
                           </Text>
                         </div>
                         <div className="w-24 text-center hidden sm:block">
-                          <Text className="text-sm text-gray-600">{entry.durationSeconds}</Text>
+                          <Text className="text-sm text-gray-600">{formatTime(entry.durationSeconds)}</Text>
                         </div>
                         <div className="w-20 text-right flex-shrink-0">
                           <Text
