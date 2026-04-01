@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import {
   UserOutlined,
   MailOutlined,
+  ManOutlined,
+  WomanOutlined,
   // CalendarOutlined,
   LogoutOutlined,
   EditOutlined,
   QuestionCircleOutlined,
   SafetyOutlined,
   WarningOutlined,
+  NumberOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
@@ -213,6 +216,24 @@ const ProfilePage = () => {
                       <MailOutlined className="mr-2" />
                       {user?.email}
                     </p>
+                    {(user?.gender || user?.age) && (
+                      <div className="flex items-center gap-4 mt-1">
+                        {user?.gender && (
+                          <p className="text-gray-600 flex items-center text-sm">
+                            {user.gender === 'MALE'
+                              ? <ManOutlined className="mr-1 text-blue-500" />
+                              : <WomanOutlined className="mr-1 text-pink-500" />}
+                            {user.gender === 'MALE' ? 'მამრობითი' : 'მდედრობითი'}
+                          </p>
+                        )}
+                        {user?.age && (
+                          <p className="text-gray-600 flex items-center text-sm">
+                            <NumberOutlined className="mr-1" />
+                            {user.age} წელი
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <button

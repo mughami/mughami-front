@@ -202,7 +202,7 @@ const TournamentLeaderboardPage: React.FC = () => {
                             <span>
                               {entry.correctAnswers}/{entry.totalQuestions} სწორი
                             </span>
-                            <span>{formatTime(entry.durationSeconds)}</span>
+                            <span>{entry.durationSeconds}</span>
                           </div>
                         </div>
                         <div className="w-24 text-center hidden sm:block">
@@ -211,9 +211,7 @@ const TournamentLeaderboardPage: React.FC = () => {
                           </Text>
                         </div>
                         <div className="w-24 text-center hidden sm:block">
-                          <Text className="text-sm text-gray-600">
-                            {formatTime(entry.durationSeconds)}
-                          </Text>
+                          <Text className="text-sm text-gray-600">{entry.durationSeconds}</Text>
                         </div>
                         <div className="w-20 text-right flex-shrink-0">
                           <Text

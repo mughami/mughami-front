@@ -30,6 +30,8 @@ export interface User {
   status: Status;
   username: string;
   permissions: string[];
+  gender?: Gender;
+  age?: number;
 }
 
 export interface AuthResponse {
