@@ -6,7 +6,7 @@ import {
   WomanOutlined,
   // CalendarOutlined,
   LogoutOutlined,
-  EditOutlined,
+  // EditOutlined,
   QuestionCircleOutlined,
   SafetyOutlined,
   WarningOutlined,
@@ -220,9 +220,11 @@ const ProfilePage = () => {
                       <div className="flex items-center gap-4 mt-1">
                         {user?.gender && (
                           <p className="text-gray-600 flex items-center text-sm">
-                            {user.gender === 'MALE'
-                              ? <ManOutlined className="mr-1 text-blue-500" />
-                              : <WomanOutlined className="mr-1 text-pink-500" />}
+                            {user.gender === 'MALE' ? (
+                              <ManOutlined className="mr-1 text-blue-500" />
+                            ) : (
+                              <WomanOutlined className="mr-1 text-pink-500" />
+                            )}
                             {user.gender === 'MALE' ? 'მამრობითი' : 'მდედრობითი'}
                           </p>
                         )}
@@ -236,12 +238,12 @@ const ProfilePage = () => {
                     )}
                   </div>
                 </div>
-                <button
+                {/* <button
                   onClick={() => setIsEditing(true)}
                   className="text-secondary hover:text-secondary-dark transition-colors"
                 >
                   <EditOutlined className="text-lg" />
-                </button>
+                </button> */}
               </div>
 
               {/* Email Verification Section */}
