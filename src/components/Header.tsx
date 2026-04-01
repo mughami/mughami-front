@@ -105,8 +105,8 @@ const Header = () => {
     );
   }
 
-  // If on public quiz pages, show simplified header without user-specific features
-  if (isPublicPage) {
+  // If on public quiz pages and NOT authenticated, show simplified header
+  if (isPublicPage && !isAuthenticated) {
     return (
       <header className="bg-auth-gradient shadow-md relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
