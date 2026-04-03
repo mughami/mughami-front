@@ -48,12 +48,13 @@ export interface QuestionsResponse {
 }
 
 export interface QuestionsByQuizResponse {
+  totalQuestions: number;
   page: {
     totalElements: number;
     totalPages: number;
     first: boolean;
     size: number;
-    content: { id: number }[];
+    content: { id: number; hasPhoto: boolean }[];
   };
 }
 

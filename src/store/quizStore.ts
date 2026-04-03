@@ -215,12 +215,12 @@ export const useQuizStore = create<QuizState>((set) => ({
         page,
         size,
       );
-      const { totalElements, content } = response.page;
-      const answeredCount = totalElements - content.length;
+      const { content } = response.page;
+      const answeredCount = response.totalQuestions - content.length;
       const questions = await Promise.all(content.map((item) => quizService.getUserQuestion(item.id)));
       set({
         currentQuestions: questions,
-        totalQuestions: totalElements,
+        totalQuestions: response.totalQuestions,
         answeredCount,
         loading: false,
       });
