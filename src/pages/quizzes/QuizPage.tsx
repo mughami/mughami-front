@@ -113,7 +113,7 @@ const QuizPage: React.FC = () => {
         missing.map(async (q) => {
           try {
             const res = await quizService.getUserQuizQuestions(q.quizId, 0, 1);
-            return [q.quizId, res.totalElements] as const;
+            return [q.quizId, res.page.totalElements] as const;
           } catch {
             return [q.quizId, 0] as const;
           }

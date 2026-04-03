@@ -47,6 +47,16 @@ export interface QuestionsResponse {
   empty: boolean;
 }
 
+export interface QuestionsByQuizResponse {
+  page: {
+    totalElements: number;
+    totalPages: number;
+    first: boolean;
+    size: number;
+    content: { id: number }[];
+  };
+}
+
 export interface CreateQuizRequest {
   name: string;
   categoryId: number;
@@ -207,8 +217,8 @@ const quizService = {
     quizId: number,
     page: number = 0,
     size: number = 10,
-  ): Promise<QuestionsResponse> => {
-    const response = await apiClient.get<QuestionsResponse>(
+  ): Promise<QuestionsByQuizResponse> => {
+    const response = await apiClient.get<QuestionsByQuizResponse>(
       `/app/quiz/${quizId}/questions-by-quiz?page=${page}&size=${size}`,
     );
     return response.data;

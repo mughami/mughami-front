@@ -12,6 +12,7 @@ import quizService, {
   type UpdateQuestionRequest,
   type QuizAnswer,
   type UpdateAnswerRequest,
+  type QuestionsByQuizResponse,
 } from '../services/api/quizService';
 
 interface QuizState {
@@ -20,6 +21,7 @@ interface QuizState {
   currentQuestions: QuizQuestion[];
   totalQuizzes: number;
   totalQuestions: number;
+  answeredCount: number;
   loading: boolean;
   error: string | null;
 
@@ -101,6 +103,7 @@ export const useQuizStore = create<QuizState>((set) => ({
   currentQuestions: [],
   totalQuizzes: 0,
   totalQuestions: 0,
+  answeredCount: 0,
   loading: false,
   error: null,
 
@@ -207,10 +210,18 @@ export const useQuizStore = create<QuizState>((set) => ({
   fetchQuizQuestions: async (quizId: number, page = 0, size = 10) => {
     set({ loading: true, error: null });
     try {
-      const response: QuestionsResponse = await quizService.getUserQuizQuestions(quizId, page, size);
+      const response: QuestionsByQuizResponse = await quizService.getUserQuizQuestions(
+        quizId,
+        page,
+        size,
+      );
+      const { totalElements, content } = response.page;
+      const answeredCount = totalElements - content.length;
+      const questions = await Promise.all(content.map((item) => quizService.getUserQuestion(item.id)));
       set({
-        currentQuestions: response.content,
-        totalQuestions: response.totalElements,
+        currentQuestions: questions,
+        totalQuestions: totalElements,
+        answeredCount,
         loading: false,
       });
     } catch (error) {
@@ -605,6 +616,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       quizStarted: false,
       quizCompleted: false,
       quizScore: 0,
+      answeredCount: 0,
       suggestions: [],
     });
   },

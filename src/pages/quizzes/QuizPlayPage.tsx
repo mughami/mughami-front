@@ -53,6 +53,8 @@ const QuizPlayPage: React.FC = () => {
     error,
     suggestions,
     suggestionsLoading,
+    totalQuestions,
+    answeredCount,
     fetchUserQuiz,
     fetchQuizQuestions,
     selectAnswer,
@@ -366,7 +368,8 @@ const QuizPlayPage: React.FC = () => {
   // };
 
   const getProgressPercentage = () => {
-    return ((currentQuestionIndex + 1) / currentQuestions.length) * 100;
+    if (totalQuestions === 0) return 0;
+    return ((answeredCount + currentQuestionIndex + 1) / totalQuestions) * 100;
   };
 
   const getCurrentQuestion = () => {
@@ -475,11 +478,11 @@ const QuizPlayPage: React.FC = () => {
               <div className="flex items-center justify-center space-x-6 text-gray-600 mb-6">
                 <div className="flex items-center">
                   <QuestionCircleOutlined className="mr-2" />
-                  <span>{currentQuestions.length} კითხვა</span>
+                  <span>{totalQuestions} კითხვა</span>
                 </div>
                 <div className="flex items-center">
                   <ClockCircleOutlined className="mr-2" />
-                  <span>~{Math.ceil(currentQuestions.length * 0.5)} წუთი</span>
+                  <span>~{Math.ceil(totalQuestions * 0.5)} წუთი</span>
                 </div>
                 {/* <div className="flex items-center">
                   <StarOutlined className="mr-2 text-yellow-500" />
@@ -552,7 +555,7 @@ const QuizPlayPage: React.FC = () => {
   }
 
   if (quizCompleted) {
-    const percentage = Math.round((quizScore / currentQuestions.length) * 100);
+    const percentage = Math.round((quizScore / totalQuestions) * 100);
     const grade =
       percentage >= 90
         ? 'A'
@@ -611,7 +614,7 @@ const QuizPlayPage: React.FC = () => {
             subTitle={
               <div className="text-center space-y-2">
                 <div className="text-2xl font-bold text-gray-800">
-                  {quizScore}/{currentQuestions.length} ({percentage}%)
+                  {quizScore}/{totalQuestions} ({percentage}%)
                 </div>
                 <div className="text-gray-600">დრო: {formatTime(timeSpent)}</div>
               </div>
@@ -927,7 +930,7 @@ const QuizPlayPage: React.FC = () => {
                 <div className="flex items-center">
                   <QuestionCircleOutlined className="mr-1" />
                   <span>
-                    კითხვა {currentQuestionIndex + 1} / {currentQuestions.length}
+                    კითხვა {answeredCount + currentQuestionIndex + 1} / {totalQuestions}
                   </span>
                 </div>
                 <div className="flex items-center">
@@ -964,7 +967,7 @@ const QuizPlayPage: React.FC = () => {
           <div className="mb-6">
             <div className="flex items-center mb-4">
               <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold mr-3">
-                {currentQuestionIndex + 1}
+                {answeredCount + currentQuestionIndex + 1}
               </div>
               <Title level={4} className="mb-0">
                 კითხვა
