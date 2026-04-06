@@ -170,10 +170,10 @@ const TournamentLeaderboardPage: React.FC = () => {
             <>
               {/* Table Header */}
               <div className="hidden sm:flex items-center px-6 py-3 bg-gray-100 rounded-t-xl text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                <div className="w-16">ადგილი</div>
-                <div className="flex-1">მოთამაშე</div>
+                <div className="w-14">ადგილი</div>
+                <div className="flex-1 ml-3">მოთამაშე</div>
                 <div className="w-24 text-center">სწორი</div>
-                <div className="w-24 text-center">დრო</div>
+                <div className="w-24 text-center">დრო <span className="normal-case">(წთ:წმ)</span></div>
                 <div className="w-20 text-right">ქულა</div>
               </div>
 

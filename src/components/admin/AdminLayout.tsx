@@ -48,7 +48,7 @@ export const AdminLayout = ({ children, selectedKey, onMenuSelect }: AdminLayout
     {
       key: 'contests',
       icon: <TrophyOutlined />,
-      label: 'კონკურსები',
+      label: 'ქვიზები',
     },
     {
       key: 'tournaments',
@@ -63,7 +63,7 @@ export const AdminLayout = ({ children, selectedKey, onMenuSelect }: AdminLayout
     {
       key: 'quiz-stats',
       icon: <BarChartOutlined />,
-      label: 'ვიქტორინის სტატისტიკა',
+      label: 'ქვიზების სტატისტიკა',
     },
     // {
     //   key: 'settings',

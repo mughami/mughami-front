@@ -19,6 +19,7 @@ interface QuizState {
   quizzes: Quiz[];
   currentQuiz: Quiz | null;
   currentQuestions: QuizQuestion[];
+  questionIds: { id: number; hasPhoto: boolean }[];
   totalQuizzes: number;
   totalQuestions: number;
   answeredCount: number;
@@ -52,6 +53,7 @@ interface QuizState {
 
   // Quiz playing actions
   startQuiz: (quizId: number) => Promise<void>;
+  fetchNextQuestion: () => Promise<void>;
   selectAnswer: (questionId: number, answerIndex: number) => Promise<void>;
   submitAnswer: (questionId: number) => Promise<void>;
   nextQuestion: () => void;
@@ -101,6 +103,7 @@ export const useQuizStore = create<QuizState>((set) => ({
   quizzes: [],
   currentQuiz: null,
   currentQuestions: [],
+  questionIds: [],
   totalQuizzes: 0,
   totalQuestions: 0,
   answeredCount: 0,
@@ -217,9 +220,10 @@ export const useQuizStore = create<QuizState>((set) => ({
       );
       const { content } = response.page;
       const answeredCount = response.totalQuestions - content.length;
-      const questions = await Promise.all(content.map((item) => quizService.getUserQuestion(item.id)));
+      const firstQuestion = content.length > 0 ? await quizService.getUserQuestion(content[0].id) : null;
       set({
-        currentQuestions: questions,
+        questionIds: content,
+        currentQuestions: firstQuestion ? [firstQuestion] : [],
         totalQuestions: response.totalQuestions,
         answeredCount,
         loading: false,
@@ -529,7 +533,6 @@ export const useQuizStore = create<QuizState>((set) => ({
     set({ loading: true, error: null });
     try {
       await quizService.startQuiz(quizId);
-      await quizService.getUserQuizQuestions(quizId, 0, 50);
       set({
         quizStarted: true,
         currentQuestionIndex: 0,
@@ -541,6 +544,24 @@ export const useQuizStore = create<QuizState>((set) => ({
         error: getErrorMessage(error, 'ვიქტორინის დაწყება ვერ მოხერხდა'),
         loading: false,
       });
+    }
+  },
+
+  fetchNextQuestion: async () => {
+    const state = useQuizStore.getState();
+    const nextIndex = state.currentQuestionIndex + 1;
+    if (nextIndex >= state.questionIds.length) return;
+    set({ loading: true });
+    try {
+      const nextId = state.questionIds[nextIndex];
+      const question = await quizService.getUserQuestion(nextId.id);
+      set((prev) => ({
+        currentQuestions: [...prev.currentQuestions, question],
+        loading: false,
+      }));
+    } catch (error) {
+      set({ loading: false, error: getErrorMessage(error, 'კითხვის ჩატვირთვა ვერ მოხერხდა') });
+      throw error;
     }
   },
 
@@ -617,6 +638,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       quizCompleted: false,
       quizScore: 0,
       answeredCount: 0,
+      questionIds: [],
       suggestions: [],
     });
   },

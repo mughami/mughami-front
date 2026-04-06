@@ -324,7 +324,7 @@ export const Quizzes: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <Title level={2}>ვიქტორინების მართვა</Title>
+        <Title level={2}>ქვიზების მართვა</Title>
         <Button
           type="primary"
           icon={<PlusOutlined />}

@@ -16,6 +16,7 @@ import {
   UserAddOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../store';
+import { useQuizStore } from '../store/quizStore';
 import { UserRole } from '../types';
 
 const Header = () => {
@@ -25,6 +26,7 @@ const Header = () => {
   const [moreOpen, setMoreOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { logout, user, isAuthenticated } = useAuthStore();
+  const { quizCompleted } = useQuizStore();
 
   const handleLogout = () => {
     logout();
@@ -39,8 +41,8 @@ const Header = () => {
 
   const isAdmin = user?.userRole === UserRole.ADMIN;
 
-  // Check if we're on a quiz playing page
-  const isQuizPlaying = location.pathname.startsWith('/quiz/play/');
+  // Check if we're on a quiz playing page (but not on the completion screen)
+  const isQuizPlaying = location.pathname.startsWith('/quiz/play/') && !quizCompleted;
 
   // Check if we're on public quiz pages
   const isPublicPage =

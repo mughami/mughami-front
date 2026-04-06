@@ -24,6 +24,7 @@ import {
   ClockCircleOutlined,
   PlayCircleOutlined,
   HomeOutlined,
+  CrownOutlined,
 } from '@ant-design/icons';
 import { isAxiosError } from 'axios';
 import quizService, { type Quiz } from '../../services/api/quizService';
@@ -57,6 +58,7 @@ const QuizPlayPage: React.FC = () => {
     answeredCount,
     fetchUserQuiz,
     fetchQuizQuestions,
+    fetchNextQuestion,
     selectAnswer,
     submitAnswer,
     nextQuestion,
@@ -345,7 +347,9 @@ const QuizPlayPage: React.FC = () => {
   };
 
   const handleNext = async () => {
-    if (currentQuestionIndex < currentQuestions.length - 1) {
+    const isLastQuestion = answeredCount + currentQuestionIndex + 1 === totalQuestions;
+    if (!isLastQuestion) {
+      await fetchNextQuestion();
       nextQuestion();
     } else {
       if (currentQuiz && !isAdmin) {
@@ -580,7 +584,8 @@ const QuizPlayPage: React.FC = () => {
     const formatLeaderboardTime = (seconds: number) => {
       const mins = Math.floor(seconds / 60);
       const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
+      const ms = Math.round((seconds % 1) * 1000);
+      return `${mins}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
     };
 
     const getRankMedal = (rank: number) => {
@@ -682,36 +687,47 @@ const QuizPlayPage: React.FC = () => {
           {/* Tournament Leaderboard */}
           {tournamentId && (
             <div className="mt-10">
-              <div className="text-center mb-6">
-                <Title level={3} className="!mb-1">
-                  <TrophyOutlined className="mr-2 text-yellow-500" />
-                  ტურნირის ლიდერბორდი
-                </Title>
-                <Text className="text-gray-500">ტოპ მოთამაშეები</Text>
+              <div className="bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 relative overflow-hidden rounded-2xl mb-6">
+                <div className="absolute inset-0 bg-black/10" />
+                <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-36 h-36 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+                <div className="relative z-10 py-6 px-6 text-center">
+                  <div className="inline-flex items-center justify-center w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl mb-3 shadow-xl">
+                    <CrownOutlined className="text-white text-2xl" />
+                  </div>
+                  <Title level={3} className="!text-white !mb-1">
+                    ტურნირის ლიდერბორდი
+                  </Title>
+                  <Text className="text-white/80 text-sm">ტოპ მოთამაშეები</Text>
+                </div>
               </div>
 
               {/* My position highlight */}
               {myLeaderboardEntry && (
-                <Card className="mb-4 border-2 border-blue-400 bg-blue-50 shadow-md">
-                  <div className="flex items-center justify-between flex-wrap gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-lg">
-                        #{myLeaderboardEntry.rank}
+                <Card className="mb-6 border-2 border-blue-400 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+                        <span className="text-white font-bold text-xl">#{myLeaderboardEntry.rank}</span>
                       </div>
                       <div>
-                        <Text strong className="text-base block">
+                        <Text strong className="text-lg block text-blue-800">
                           შენი პოზიცია
                         </Text>
-                        <Text className="text-gray-500 text-sm">
-                          {myLeaderboardEntry.correctAnswers}/{myLeaderboardEntry.totalQuestions} სწორი
-                          {' · '}
-                          {myLeaderboardEntry.scorePercentage}%{' · '}
-                          {formatLeaderboardTime(myLeaderboardEntry.durationSeconds)}
-                        </Text>
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
+                          <span className="flex items-center gap-1">
+                            <CheckCircleOutlined className="text-green-500" />
+                            {myLeaderboardEntry.correctAnswers}/{myLeaderboardEntry.totalQuestions}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <ClockCircleOutlined className="text-blue-500" />
+                            {formatLeaderboardTime(myLeaderboardEntry.durationSeconds)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <Text strong className="text-2xl text-blue-600">
+                      <Text className="text-3xl font-bold text-blue-600">
                         {myLeaderboardEntry.scorePercentage}%
                       </Text>
                     </div>
@@ -725,55 +741,61 @@ const QuizPlayPage: React.FC = () => {
                   <div className="mt-4 text-gray-500">ლიდერბორდი იტვირთება...</div>
                 </div>
               ) : leaderboard.length > 0 ? (
-                <Card className="shadow-lg border-0 overflow-hidden">
-                  <div className="divide-y divide-gray-100">
+                <>
+                  <div className="hidden sm:flex items-center px-6 py-3 bg-gray-100 rounded-t-xl text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <div className="w-10 flex-shrink-0"></div>
+                    <div className="flex-1 ml-3">მოთამაშე</div>
+                    <div className="w-24 text-center">სწორი</div>
+                    <div className="w-32 text-center">დრო (წთ:წმ)</div>
+                    <div className="w-16 text-right">ქულა</div>
+                  </div>
+                  <Card className="shadow-lg border-0 !rounded-t-none overflow-hidden">
+                  <div className="divide-y divide-gray-100 -mx-6 -my-6">
                     {leaderboard.slice(0, 10).map((entry: LeaderboardEntry) => {
                       const isMe = myLeaderboardEntry?.userId === entry.userId;
                       return (
                         <div
                           key={entry.userId}
-                          className={`flex items-center justify-between py-3 px-2 sm:px-4 transition-colors ${
+                          className={`flex items-center py-3 px-4 sm:px-6 transition-colors ${
                             isMe ? 'bg-blue-50' : 'hover:bg-gray-50'
                           }`}
                         >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
-                              {getRankMedal(entry.rank)}
-                            </div>
-                            <div className="min-w-0">
-                              <Text
-                                strong
-                                className={`block truncate text-sm sm:text-base ${isMe ? 'text-blue-600' : ''}`}
-                              >
-                                {entry.firstName} {entry.lastName}
-                                {isMe && <span className="text-blue-400 text-xs ml-1">(შენ)</span>}
-                              </Text>
-                              <Text className="text-gray-400 text-xs">@{entry.username}</Text>
+                          <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
+                            {getRankMedal(entry.rank)}
+                          </div>
+                          <div className="flex-1 min-w-0 ml-3">
+                            <Text
+                              strong
+                              className={`block truncate text-sm sm:text-base ${isMe ? 'text-blue-600' : ''}`}
+                            >
+                              {entry.firstName} {entry.lastName}
+                              {isMe && <span className="text-blue-400 text-xs ml-1">(შენ)</span>}
+                            </Text>
+                            <Text className="text-gray-400 text-xs">@{entry.username}</Text>
+                            <div className="flex items-center gap-3 mt-0.5 sm:hidden text-xs text-gray-500">
+                              <span>{entry.correctAnswers}/{entry.totalQuestions} სწორი</span>
+                              <span>{formatLeaderboardTime(entry.durationSeconds)}</span>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3 sm:gap-6 flex-shrink-0">
-                            <div className="text-center hidden sm:block">
-                              <Text className="text-xs text-gray-400 block">სწორი</Text>
-                              <Text strong className="text-sm">
-                                {entry.correctAnswers}/{entry.totalQuestions}
-                              </Text>
-                            </div>
-                            <div className="text-center hidden sm:block">
-                              <Text className="text-xs text-gray-400 block">დრო</Text>
-                              <Text className="text-sm">
-                                {formatLeaderboardTime(entry.durationSeconds)}
-                              </Text>
-                            </div>
-                            <div className="text-center">
-                              <Text
-                                strong
-                                className={`text-lg ${
-                                  entry.rank <= 3 ? 'text-yellow-600' : 'text-gray-700'
-                                }`}
-                              >
-                                {entry.scorePercentage}%
-                              </Text>
-                            </div>
+                          <div className="w-24 text-center hidden sm:block flex-shrink-0">
+                            <Text strong className="text-sm">
+                              {entry.correctAnswers}/{entry.totalQuestions}
+                            </Text>
+                          </div>
+                          <div className="w-32 text-center hidden sm:block flex-shrink-0">
+                            <Text className="text-sm">
+                              {formatLeaderboardTime(entry.durationSeconds)}
+                            </Text>
+                          </div>
+                          <div className="w-16 text-right flex-shrink-0">
+                            <Text
+                              strong
+                              className={`text-lg ${
+                                entry.rank <= 3 ? 'text-yellow-600' : 'text-gray-700'
+                              }`}
+                            >
+                              {entry.scorePercentage}%
+                            </Text>
                           </div>
                         </div>
                       );
@@ -789,7 +811,8 @@ const QuizPlayPage: React.FC = () => {
                       </Button>
                     </div>
                   )}
-                </Card>
+                  </Card>
+                </>
               ) : (
                 <Card className="text-center py-8">
                   <Text className="text-gray-500">ლიდერბორდი ჯერ ცარიელია</Text>
@@ -1076,7 +1099,7 @@ const QuizPlayPage: React.FC = () => {
                 className="px-6"
                 icon={<ArrowRightOutlined />}
               >
-                {currentQuestionIndex === currentQuestions.length - 1 ? 'დასრულება' : 'შემდეგი კითხვა'}
+                {answeredCount + currentQuestionIndex + 1 === totalQuestions ? 'დასრულება' : 'შემდეგი კითხვა'}
               </Button>
             )}
           </div>
