@@ -23,9 +23,24 @@ export interface UpdateUserRequest {
   permissions: string[];
 }
 
+export interface UserFilters {
+  createdFrom?: string;
+  createdTo?: string;
+  verifiedFrom?: string;
+  verifiedTo?: string;
+}
+
 const userService = {
-  getAllUsers: async (): Promise<UserResponse> => {
-    const response = await apiClient.get<UserResponse>(`/admin/user/get-all`);
+  getAllUsers: async (filters: UserFilters = {}): Promise<UserResponse> => {
+    const params = new URLSearchParams();
+    if (filters.createdFrom) params.set('createdFrom', filters.createdFrom);
+    if (filters.createdTo) params.set('createdTo', filters.createdTo);
+    if (filters.verifiedFrom) params.set('verifiedFrom', filters.verifiedFrom);
+    if (filters.verifiedTo) params.set('verifiedTo', filters.verifiedTo);
+    const query = params.toString();
+    const response = await apiClient.get<UserResponse>(
+      `/admin/user/get-all${query ? `?${query}` : ''}`,
+    );
     return response.data;
   },
 

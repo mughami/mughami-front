@@ -13,6 +13,8 @@ import quizService, {
   type QuizAnswer,
   type UpdateAnswerRequest,
   type QuestionsByQuizResponse,
+  type AdminQuizFilters,
+  type UserQuizFilters,
 } from '../services/api/quizService';
 
 interface QuizState {
@@ -43,8 +45,8 @@ interface QuizState {
   >;
 
   // Fetch quizzes
-  fetchUserQuizzes: (page?: number, size?: number) => Promise<void>;
-  fetchAdminQuizzes: (page?: number, size?: number) => Promise<void>;
+  fetchUserQuizzes: (page?: number, size?: number, filters?: UserQuizFilters) => Promise<void>;
+  fetchAdminQuizzes: (page?: number, size?: number, filters?: AdminQuizFilters) => Promise<void>;
   fetchQuiz: (quizId: number) => Promise<void>;
   fetchUserQuiz: (quizId: number) => Promise<void>;
   fetchQuizQuestions: (quizId: number, page?: number, size?: number) => Promise<void>;
@@ -118,17 +120,15 @@ export const useQuizStore = create<QuizState>((set) => ({
   quizScore: 0,
   quizResults: {},
 
-  fetchUserQuizzes: async (page = 0, size = 10) => {
+  fetchUserQuizzes: async (page = 0, size = 10, filters: UserQuizFilters = {}) => {
     set({ loading: true, error: null });
     try {
-      const response: QuizResponse = await quizService.getUserQuizzes(page, size);
+      const response: QuizResponse = await quizService.getUserQuizzes(page, size, filters);
       set({
         quizzes: response.content,
         totalQuizzes: response.totalElements,
         loading: false,
       });
-
-      // Do not persist quizzes in localStorage
     } catch (error) {
       set({
         error: getErrorMessage(error, 'ვიქტორინების ჩატვირთვა ვერ მოხერხდა'),
@@ -137,10 +137,10 @@ export const useQuizStore = create<QuizState>((set) => ({
     }
   },
 
-  fetchAdminQuizzes: async (page = 0, size = 10) => {
+  fetchAdminQuizzes: async (page = 0, size = 10, filters: AdminQuizFilters = {}) => {
     set({ loading: true, error: null });
     try {
-      const response: QuizResponse = await quizService.getAdminQuizzes(page, size);
+      const response: QuizResponse = await quizService.getAdminQuizzes(page, size, filters);
       set({
         quizzes: response.content,
         totalQuizzes: response.totalElements,
@@ -256,11 +256,7 @@ export const useQuizStore = create<QuizState>((set) => ({
   fetchQuizzesByCategory: async (categoryId: number, page = 0, size = 10) => {
     set({ loading: true, error: null });
     try {
-      const response: QuizResponse = await quizService.getQuizzesByCategoryUser(
-        categoryId,
-        page,
-        size,
-      );
+      const response: QuizResponse = await quizService.getUserQuizzes(page, size, { categoryId });
       const verified = response.content.filter((q) => q.quizStatus === 'VERIFIED');
       set({
         quizzes: verified,
@@ -268,8 +264,6 @@ export const useQuizStore = create<QuizState>((set) => ({
         loading: false,
       });
     } catch {
-      // Handle 404 or other errors gracefully - just show empty state
-      // Don't set error state for missing quizzes, as this is expected
       set({
         quizzes: [],
         totalQuizzes: 0,

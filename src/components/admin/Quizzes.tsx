@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import dayjs from 'dayjs';
 import {
   Table,
   Button,
@@ -17,6 +18,7 @@ import {
   Row,
   Col,
   Statistic,
+  DatePicker,
 } from 'antd';
 import {
   PlusOutlined,
@@ -29,8 +31,10 @@ import {
 } from '@ant-design/icons';
 import { useQuizStore, cleanupBlobUrl } from '../../store/quizStore';
 import { useCategoryStore } from '../../store/categoryStore';
-import type { Quiz, CreateQuizRequest } from '../../services/api/quizService';
+import type { Quiz, CreateQuizRequest, AdminQuizFilters } from '../../services/api/quizService';
 import { QuizManagement } from './QuizManagement';
+
+const { RangePicker } = DatePicker;
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -68,10 +72,38 @@ export const Quizzes: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
 
+  const [filters, setFilters] = useState<AdminQuizFilters>({ sortBy: 'CREATED_AT', sortDirection: 'DESC' });
+  const [nameInput, setNameInput] = useState('');
+  const [filterCategoryId, setFilterCategoryId] = useState<number | undefined>(undefined);
+
+  const filterSubcategoryOptions = useMemo(() => {
+    if (!filterCategoryId) return [];
+    const cat = adminCategories.find((c) => c.categoryId === filterCategoryId);
+    return (cat?.subCategoryResponseList || []).map((s) => ({
+      label: s.subCategoryName,
+      value: s.subCategoryId,
+    }));
+  }, [filterCategoryId, adminCategories]);
+
+  const updateFilter = (partial: Partial<AdminQuizFilters>) => {
+    setCurrentPage(1);
+    setFilters((f) => ({ ...f, ...partial }));
+  };
+
+  const handleClearFilters = () => {
+    setFilters({ sortBy: 'CREATED_AT', sortDirection: 'DESC' });
+    setNameInput('');
+    setFilterCategoryId(undefined);
+    setCurrentPage(1);
+  };
+
   useEffect(() => {
-    fetchAdminQuizzes(currentPage - 1, pageSize);
     fetchAdminCategories();
-  }, [fetchAdminQuizzes, fetchAdminCategories, currentPage, pageSize]);
+  }, [fetchAdminCategories]);
+
+  useEffect(() => {
+    fetchAdminQuizzes(currentPage - 1, pageSize, filters);
+  }, [fetchAdminQuizzes, currentPage, pageSize, filters]);
 
   useEffect(() => {
     // Fetch photos for quizzes that have photos
@@ -355,6 +387,119 @@ export const Quizzes: React.FC = () => {
           </Col>
         ))}
       </Row>
+
+      {/* Filters */}
+      <Card>
+        <Row gutter={[12, 12]} align="middle">
+          <Col xs={24} sm={12} md={5}>
+            <Input.Search
+              placeholder="სახელით ძიება"
+              allowClear
+              value={nameInput}
+              onChange={(e) => {
+                setNameInput(e.target.value);
+                if (!e.target.value) updateFilter({ name: undefined });
+              }}
+              onSearch={(v) => updateFilter({ name: v || undefined })}
+            />
+          </Col>
+          <Col xs={24} sm={12} md={3}>
+            <Select
+              placeholder="სტატუსი"
+              allowClear
+              style={{ width: '100%' }}
+              value={filters.quizStatus}
+              onChange={(v) => updateFilter({ quizStatus: v })}
+              options={[
+                { label: 'VERIFIED', value: 'VERIFIED' },
+                { label: 'PENDING', value: 'PENDING' },
+                { label: 'REJECTED', value: 'REJECTED' },
+              ]}
+            />
+          </Col>
+          <Col xs={24} sm={12} md={3}>
+            <Select
+              placeholder="ტიპი"
+              allowClear
+              style={{ width: '100%' }}
+              value={filters.quizType}
+              onChange={(v) => updateFilter({ quizType: v })}
+              options={[
+                { label: 'TOURNAMENT', value: 'TOURNAMENT' },
+                { label: 'FREE', value: 'FREE' },
+              ]}
+            />
+          </Col>
+          <Col xs={24} sm={12} md={4}>
+            <Select
+              placeholder="კატეგორია"
+              allowClear
+              style={{ width: '100%' }}
+              value={filters.categoryId}
+              onChange={(v: number | undefined) => {
+                setFilterCategoryId(v);
+                updateFilter({ categoryId: v, subcategoryId: undefined });
+              }}
+              options={adminCategories.map((c) => ({ label: c.categoryName, value: c.categoryId }))}
+            />
+          </Col>
+          <Col xs={24} sm={12} md={4}>
+            <Select
+              placeholder="ქვეკატეგორია"
+              allowClear
+              style={{ width: '100%' }}
+              disabled={!filterCategoryId}
+              value={filters.subcategoryId}
+              onChange={(v) => updateFilter({ subcategoryId: v })}
+              options={filterSubcategoryOptions}
+            />
+          </Col>
+          <Col xs={24} md={8}>
+            <RangePicker
+              style={{ width: '100%' }}
+              showTime
+              value={
+                filters.createdFrom && filters.createdTo
+                  ? [dayjs(filters.createdFrom), dayjs(filters.createdTo)]
+                  : null
+              }
+              onChange={(dates) =>
+                updateFilter({
+                  createdFrom: dates?.[0]?.toISOString() ?? undefined,
+                  createdTo: dates?.[1]?.toISOString() ?? undefined,
+                })
+              }
+            />
+          </Col>
+          <Col xs={12} sm={6} md={3}>
+            <Select
+              style={{ width: '100%' }}
+              value={filters.sortBy}
+              onChange={(v) => updateFilter({ sortBy: v })}
+              options={[
+                { label: 'სახელი', value: 'NAME' },
+                { label: 'ტიპი', value: 'TYPE' },
+                { label: 'შექმნის თარიღი', value: 'CREATED_AT' },
+                { label: 'სტატუსი', value: 'STATUS' },
+              ]}
+            />
+          </Col>
+          <Col xs={12} sm={6} md={3}>
+            <Select
+              style={{ width: '100%' }}
+              value={filters.sortDirection}
+              onChange={(v) => updateFilter({ sortDirection: v })}
+              options={[
+                { label: 'კლებადი', value: 'DESC' },
+                { label: 'მზარდი', value: 'ASC' },
+              ]}
+            />
+          </Col>
+          <Col>
+            <Button onClick={handleClearFilters}>გასუფთავება</Button>
+          </Col>
+        </Row>
+      </Card>
 
       {/* Quizzes Table */}
       <Card>

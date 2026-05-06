@@ -3,6 +3,7 @@ import { getErrorMessage } from '../utils/errorMessages';
 import userService, {
   type CreateUserRequest,
   type UpdateUserRequest,
+  type UserFilters,
 } from '../services/api/userService';
 import type { User } from '../services/api/authService';
 
@@ -12,7 +13,7 @@ interface UserStore {
   totalUsers: number;
   loading: boolean;
   error: string | null;
-  fetchUsers: () => Promise<void>;
+  fetchUsers: (filters?: UserFilters) => Promise<void>;
   fetchDeletedUsers: () => Promise<void>;
   createUser: (userData: CreateUserRequest) => Promise<void>;
   updateUser: (userId: string, userData: UpdateUserRequest) => Promise<void>;
@@ -26,11 +27,10 @@ const useUserStore = create<UserStore>((set) => ({
   loading: false,
   error: null,
 
-  fetchUsers: async () => {
+  fetchUsers: async (filters: UserFilters = {}) => {
     set({ loading: true, error: null });
     try {
-      const response = await userService.getAllUsers();
-      console.log('response', response);
+      const response = await userService.getAllUsers(filters);
       set({
         users: response,
         totalUsers: response.length,

@@ -94,10 +94,44 @@ export interface UpdateQuizRequest {
   quizStatus: 'PENDING' | 'VERIFIED';
 }
 
+export interface AdminQuizFilters {
+  name?: string;
+  quizStatus?: 'VERIFIED' | 'PENDING' | 'REJECTED';
+  quizType?: 'TOURNAMENT' | 'FREE';
+  categoryId?: number;
+  subcategoryId?: number;
+  createdFrom?: string;
+  createdTo?: string;
+  sortDirection?: 'ASC' | 'DESC';
+  sortBy?: 'NAME' | 'TYPE' | 'CREATED_AT' | 'STATUS';
+}
+
+export interface UserQuizFilters {
+  quizName?: string;
+  categoryId?: number;
+  subcategoryId?: number;
+  sortDirection?: 'ASC' | 'DESC';
+  sortBy?: 'NAME' | 'TYPE' | 'CREATED_AT' | 'STATUS';
+}
+
 const quizService = {
   // Admin endpoints
-  getAdminQuizzes: async (page: number = 0, size: number = 10): Promise<QuizResponse> => {
-    const response = await apiClient.get<QuizResponse>(`/admin/quiz?page=${page}&size=${size}`);
+  getAdminQuizzes: async (
+    page: number = 0,
+    size: number = 10,
+    filters: AdminQuizFilters = {},
+  ): Promise<QuizResponse> => {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (filters.name) params.set('name', filters.name);
+    if (filters.quizStatus) params.set('quizStatus', filters.quizStatus);
+    if (filters.quizType) params.set('quizType', filters.quizType);
+    if (filters.categoryId != null) params.set('categoryId', String(filters.categoryId));
+    if (filters.subcategoryId != null) params.set('subcategoryId', String(filters.subcategoryId));
+    if (filters.createdFrom) params.set('createdFrom', filters.createdFrom);
+    if (filters.createdTo) params.set('createdTo', filters.createdTo);
+    if (filters.sortDirection) params.set('sortDirection', filters.sortDirection);
+    if (filters.sortBy) params.set('sortBy', filters.sortBy);
+    const response = await apiClient.get<QuizResponse>(`/admin/quiz?${params.toString()}`);
     return response.data;
   },
 
@@ -175,42 +209,19 @@ const quizService = {
     return URL.createObjectURL(blob);
   },
 
-  getQuizzesByCategoryAdmin: async (
-    categoryId: number,
-    page: number = 0,
-    size: number = 10,
-  ): Promise<QuizResponse> => {
-    const response = await apiClient.get<QuizResponse>(
-      `/admin/quiz/quiz-by-category/${categoryId}?page=${page}&size=${size}`,
-    );
-    return response.data;
-  },
-
-  getQuizzesBySubcategoryAdmin: async (
-    subCategoryId: number,
-    page: number = 0,
-    size: number = 10,
-  ): Promise<QuizResponse> => {
-    const response = await apiClient.get<QuizResponse>(
-      `/admin/quiz/quiz-by-subcategory/${subCategoryId}?page=${page}&size=${size}`,
-    );
-    return response.data;
-  },
-
-  getQuizzesByCategoryUser: async (
-    categoryId: number,
-    page: number = 0,
-    size: number = 10,
-  ): Promise<QuizResponse> => {
-    const response = await apiClient.get<QuizResponse>(
-      `/app/quiz/quiz-by-category/${categoryId}?page=${page}&size=${size}`,
-    );
-    return response.data;
-  },
-
   // User endpoints
-  getUserQuizzes: async (page: number = 0, size: number = 10): Promise<QuizResponse> => {
-    const response = await apiClient.get<QuizResponse>(`/app/quiz?page=${page}&size=${size}`);
+  getUserQuizzes: async (
+    page: number = 0,
+    size: number = 10,
+    filters: UserQuizFilters = {},
+  ): Promise<QuizResponse> => {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (filters.quizName) params.set('quizName', filters.quizName);
+    if (filters.categoryId != null) params.set('categoryId', String(filters.categoryId));
+    if (filters.subcategoryId != null) params.set('subcategoryId', String(filters.subcategoryId));
+    if (filters.sortDirection) params.set('sortDirection', filters.sortDirection);
+    if (filters.sortBy) params.set('sortBy', filters.sortBy);
+    const response = await apiClient.get<QuizResponse>(`/app/quiz?${params.toString()}`);
     return response.data;
   },
 
