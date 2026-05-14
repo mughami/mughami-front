@@ -91,18 +91,14 @@ const categoryService = {
         response.data.map(async (category) => {
           try {
             if (useAdmin) {
-              const res: QuizResponse = await quizService.getQuizzesByCategoryAdmin(
-                category.categoryId,
-                0,
-                1,
-              );
+              const res: QuizResponse = await quizService.getAdminQuizzes(0, 1, {
+                categoryId: category.categoryId,
+              });
               return res.totalElements;
             }
-            const res: QuizResponse = await quizService.getQuizzesByCategoryUser(
-              category.categoryId,
-              0,
-              100,
-            );
+            const res: QuizResponse = await quizService.getUserQuizzes(0, 100, {
+              categoryId: category.categoryId,
+            });
             // Only count VERIFIED for public website
             const verified = res.content.filter((q) => q.quizStatus === 'VERIFIED');
             return verified.length;
