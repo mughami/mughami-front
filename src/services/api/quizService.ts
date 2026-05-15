@@ -21,6 +21,7 @@ export interface Quiz {
   subCategoryId?: number;
   hasPhoto: boolean;
   quizStatus?: 'PENDING' | 'VERIFIED';
+  quizType?: 'TOURNAMENT' | 'FREE';
 }
 
 export interface QuizResponse {
@@ -63,6 +64,7 @@ export interface CreateQuizRequest {
   categoryId: number;
   subCategoryId?: number;
   quizStatus?: 'PENDING' | 'VERIFIED';
+  quizType?: 'TOURNAMENT' | 'FREE';
 }
 
 export interface CreateQuestionRequest {
@@ -92,6 +94,7 @@ export interface UpdateQuizRequest {
   categoryId: number;
   subCategoryId?: number;
   quizStatus: 'PENDING' | 'VERIFIED';
+  quizType?: 'TOURNAMENT' | 'FREE';
 }
 
 export interface AdminQuizFilters {
@@ -142,6 +145,7 @@ const quizService = {
     };
     if (data.subCategoryId != null) payload['subcategoryId'] = data.subCategoryId;
     if (data.quizStatus !== undefined) payload['quizStatus'] = data.quizStatus;
+    if (data.quizType !== undefined) payload['quizType'] = data.quizType;
     const response = await apiClient.post<Quiz>('/admin/quiz', payload);
     return response.data;
   },
@@ -284,6 +288,7 @@ const quizService = {
       categoryId: data.categoryId,
       quizStatus: data.quizStatus,
       subcategoryId: data.subCategoryId || null,
+      quizType: data.quizType,
     };
 
     console.log(body);

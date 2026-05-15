@@ -37,6 +37,7 @@ import {
 } from '@ant-design/icons';
 import { useQuizStore, cleanupBlobUrl } from '../../store/quizStore';
 import { useCategoryStore } from '../../store/categoryStore';
+import { quizService } from '../../services';
 import type { Quiz, CreateQuizRequest, AdminQuizFilters } from '../../services/api/quizService';
 import { QuizManagement } from './QuizManagement';
 
@@ -49,6 +50,7 @@ interface FormValues {
   categoryId: number;
   subCategoryId?: number;
   quizStatus: 'PENDING' | 'VERIFIED';
+  quizType: 'TOURNAMENT' | 'FREE';
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -162,6 +164,7 @@ export const Quizzes: React.FC = () => {
         categoryId: values.categoryId,
         subCategoryId: values.subCategoryId,
         quizStatus: values.quizStatus,
+        quizType: values.quizType,
       };
       const newQuiz = await createQuiz(quizData);
       if (photoFile) await addQuizPhoto(newQuiz.quizId, photoFile);
@@ -182,6 +185,7 @@ export const Quizzes: React.FC = () => {
         categoryId: values.categoryId,
         subCategoryId: values.subCategoryId,
         quizStatus: values.quizStatus,
+        quizType: values.quizType,
       });
       message.success('ვიქტორინა წარმატებით განახლდა!');
       setIsModalVisible(false);
@@ -195,23 +199,29 @@ export const Quizzes: React.FC = () => {
   const handleSubmit = (values: FormValues) =>
     editingQuiz ? handleUpdateQuiz(values) : handleCreateQuiz(values);
 
-  const handleEditQuiz = (quiz: Quiz) => {
+  const handleEditQuiz = async (quiz: Quiz) => {
     setEditingQuiz(quiz);
-    const cat = adminCategories.find((c) => c.categoryId === quiz.categoryId);
-    const subs = (cat?.subCategoryResponseList || []).map((s) => ({
-      label: s.subCategoryName,
-      value: s.subCategoryId,
-    }));
-    setSubOptions((prev) => ({ ...prev, [quiz.categoryId]: subs }));
-    form.setFieldsValue({
-      quizName: quiz.quizName,
-      categoryId: quiz.categoryId,
-      subCategoryId:
-        (quiz as unknown as { subcategoryId?: number; subCategoryId?: number }).subcategoryId ??
-        (quiz as unknown as { subcategoryId?: number; subCategoryId?: number }).subCategoryId,
-      quizStatus: quiz.quizStatus || 'PENDING',
-    });
     setIsModalVisible(true);
+    try {
+      const full = await quizService.getAdminQuiz(quiz.quizId);
+      const cat = adminCategories.find((c) => c.categoryId === full.categoryId);
+      const subs = (cat?.subCategoryResponseList || []).map((s) => ({
+        label: s.subCategoryName,
+        value: s.subCategoryId,
+      }));
+      setSubOptions((prev) => ({ ...prev, [full.categoryId]: subs }));
+      form.setFieldsValue({
+        quizName: full.quizName,
+        categoryId: full.categoryId,
+        subCategoryId:
+          (full as unknown as { subcategoryId?: number; subCategoryId?: number }).subcategoryId ??
+          (full as unknown as { subcategoryId?: number; subCategoryId?: number }).subCategoryId,
+        quizStatus: full.quizStatus || 'PENDING',
+        quizType: full.quizType || 'FREE',
+      });
+    } catch {
+      message.error('ვიქტორინის მონაცემების ჩატვირთვა ვერ მოხერხდა');
+    }
   };
 
   const handleDeleteQuiz = async (quizId: number) => {
@@ -588,7 +598,7 @@ export const Quizzes: React.FC = () => {
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
-          initialValues={{ quizStatus: 'PENDING' }}
+          initialValues={{ quizStatus: 'PENDING', quizType: 'FREE' }}
         >
           <Form.Item
             name="quizName"
@@ -628,6 +638,15 @@ export const Quizzes: React.FC = () => {
             </Upload>
             <Text type="secondary" className="text-xs">800×600px, მაქს. 2MB</Text>
           </Form.Item>
+
+          {!editingQuiz && (
+            <Form.Item name="quizType" label="ტიპი" rules={[{ required: true, message: 'გთხოვთ აირჩიოთ ტიპი' }]}>
+              <Select>
+                <Option value="FREE">FREE</Option>
+                <Option value="TOURNAMENT">TOURNAMENT</Option>
+              </Select>
+            </Form.Item>
+          )}
 
           <Form.Item name="quizStatus" label="სტატუსი" rules={[{ required: true }]}>
             <Select>
