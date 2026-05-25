@@ -639,14 +639,12 @@ export const Quizzes: React.FC = () => {
             <Text type="secondary" className="text-xs">800×600px, მაქს. 2MB</Text>
           </Form.Item>
 
-          {!editingQuiz && (
-            <Form.Item name="quizType" label="ტიპი" rules={[{ required: true, message: 'გთხოვთ აირჩიოთ ტიპი' }]}>
-              <Select>
-                <Option value="FREE">FREE</Option>
-                <Option value="TOURNAMENT">TOURNAMENT</Option>
-              </Select>
-            </Form.Item>
-          )}
+          <Form.Item name="quizType" label="ტიპი" rules={[{ required: true, message: 'გთხოვთ აირჩიოთ ტიპი' }]}>
+            <Select>
+              <Option value="FREE">FREE</Option>
+              <Option value="TOURNAMENT">TOURNAMENT</Option>
+            </Select>
+          </Form.Item>
 
           <Form.Item name="quizStatus" label="სტატუსი" rules={[{ required: true }]}>
             <Select>
