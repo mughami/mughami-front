@@ -3,3 +3,4 @@ export { useCategoryStore } from './categoryStore';
 export { useQuizStore } from './quizStore';
 export { usePaymentStore } from './paymentStore';
 export { useTournamentStore } from './tournamentStore';
+export { useBracketStore } from './bracketStore';

@@ -12,6 +12,7 @@ import {
   // SettingOutlined,
   FormOutlined,
   CrownOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
@@ -59,6 +60,11 @@ export const AdminLayout = ({ children, selectedKey, onMenuSelect }: AdminLayout
       key: 'polls',
       icon: <FormOutlined />,
       label: 'გამოკითხვები',
+    },
+    {
+      key: 'brackets',
+      icon: <ThunderboltOutlined />,
+      label: 'ეს თუ ის',
     },
     {
       key: 'quiz-stats',

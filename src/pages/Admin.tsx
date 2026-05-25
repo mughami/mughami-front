@@ -6,6 +6,7 @@ import { Categories } from '../components/admin/Categories';
 import { Polls } from '../components/admin/Polls';
 import { Quizzes } from '../components/admin/Quizzes';
 import { Tournaments } from '../components/admin/Tournaments';
+import { Brackets } from '../components/admin/Brackets';
 import { Settings } from '../components/admin/Settings';
 import QuizStats from '../components/admin/QuizStats';
 import useDashboardStore from '../store/dashboardStore';
@@ -15,6 +16,7 @@ import { useTournamentStore } from '../store/tournamentStore';
 import useUserStore from '../store/userStore';
 import useSettingsStore from '../store/settingsStore';
 import { useCategoryStore } from '../store/categoryStore';
+import { useBracketStore } from '../store/bracketStore';
 
 const Admin = () => {
   const { fetchStats, fetchQuizStats } = useDashboardStore();
@@ -24,6 +26,7 @@ const Admin = () => {
   const { fetchUsers } = useUserStore();
   const { fetchSettings } = useSettingsStore();
   const { fetchAdminCategories } = useCategoryStore();
+  const { fetchAdminBrackets } = useBracketStore();
 
   const [selectedKey, setSelectedKey] = useState(() => {
     const savedKey = localStorage.getItem('adminSelectedKey');
@@ -52,6 +55,8 @@ const Admin = () => {
       fetchQuizStats(1, 10);
     } else if (selectedKey === 'tournaments') {
       fetchAdminTournaments();
+    } else if (selectedKey === 'brackets') {
+      fetchAdminBrackets();
     }
   }, [
     selectedKey,
@@ -63,6 +68,7 @@ const Admin = () => {
     fetchUsers,
     fetchAdminCategories,
     fetchSettings,
+    fetchAdminBrackets,
   ]);
 
   const renderContent = () => {
@@ -79,6 +85,8 @@ const Admin = () => {
         return <Quizzes />;
       case 'tournaments':
         return <Tournaments />;
+      case 'brackets':
+        return <Brackets />;
       case 'quiz-stats':
         return <QuizStats />;
       case 'settings':

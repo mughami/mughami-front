@@ -11,6 +11,7 @@ import {
   HistoryOutlined,
   HomeOutlined,
   BarChartOutlined,
+  ThunderboltOutlined,
   MoreOutlined,
   LoginOutlined,
   UserAddOutlined,
@@ -379,6 +380,15 @@ const Header = () => {
               </Link>
 
               <Link
+                to="/brackets"
+                className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                  location.pathname.startsWith('/brackets') ? 'bg-primary-dark' : ''
+                }`}
+              >
+                <ThunderboltOutlined className="mr-1" /> ეს თუ ის
+              </Link>
+
+              <Link
                 to="/login"
                 className="ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors"
               >
@@ -431,6 +441,15 @@ const Header = () => {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <BarChartOutlined className="mr-1" /> პოლები
+              </Link>
+              <Link
+                to="/brackets"
+                className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                  location.pathname.startsWith('/brackets') ? 'bg-primary-dark' : ''
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <ThunderboltOutlined className="mr-1" /> ეს თუ ის
               </Link>
               <Link
                 to="/login"
@@ -536,6 +555,16 @@ const Header = () => {
             >
               <BarChartOutlined className="mr-1" />
               პოლები
+            </Link>
+
+            <Link
+              to="/brackets"
+              className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                location.pathname.startsWith('/brackets') ? 'bg-primary-dark' : ''
+              }`}
+            >
+              <ThunderboltOutlined className="mr-1" />
+              ეს თუ ის
             </Link>
 
             {/* More dropdown to reduce clutter on smaller desktop widths */}
@@ -650,6 +679,17 @@ const Header = () => {
             >
               <BarChartOutlined className="mr-1" />
               პოლები
+            </Link>
+
+            <Link
+              to="/brackets"
+              className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                location.pathname.startsWith('/brackets') ? 'bg-primary-dark' : ''
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <ThunderboltOutlined className="mr-1" />
+              ეს თუ ის
             </Link>
 
             <Link

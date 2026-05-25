@@ -23,6 +23,8 @@ const Admin = lazy(() => import('./pages/Admin'));
 const PollsPage = lazy(() => import('./pages/PollsPage'));
 const TournamentPage = lazy(() => import('./pages/TournamentPage'));
 const TournamentLeaderboardPage = lazy(() => import('./pages/TournamentLeaderboardPage'));
+const BracketsListPage = lazy(() => import('./pages/brackets/BracketsListPage'));
+const BracketPlayPage = lazy(() => import('./pages/brackets/BracketPlayPage'));
 import { useAuthStore } from './store';
 import { UserRole } from './types';
 import './App.css';
@@ -187,6 +189,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/brackets" element={<BracketsListPage />} />
+        <Route path="/brackets/play/:bracketId" element={<BracketPlayPage />} />
 
         <Route path="/public-quizzes" element={<PublicQuizzesPage />} />
         <Route path="/public-quiz/play/:quizId" element={<PublicQuizPlayPage />} />
