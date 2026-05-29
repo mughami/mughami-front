@@ -282,7 +282,6 @@ const quizService = {
 
   // Admin: update quiz
   updateAdminQuiz: async (quizId: number, data: UpdateQuizRequest): Promise<Quiz> => {
-    console.log(data.subCategoryId);
     const body: Record<string, unknown> = {
       name: data.name,
       categoryId: data.categoryId,
@@ -290,8 +289,6 @@ const quizService = {
       subcategoryId: data.subCategoryId || null,
       quizType: data.quizType,
     };
-
-    console.log(body);
     const response = await apiClient.put<Quiz>(`/admin/quiz/${quizId}`, body);
     return response.data;
   },

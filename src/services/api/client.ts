@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Modal } from 'antd';
 
 // Base API configuration
 const DEV_API_URL = 'http://localhost:54321';
@@ -11,6 +12,38 @@ const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Clear auth state and redirect to login
+const forceLogout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('auth-storage');
+  window.location.href = '/login';
+};
+
+// Ask the user whether to keep the refreshed session or log out.
+// Guarded so concurrent 401s don't stack multiple modals.
+let sessionPromptInFlight: Promise<boolean> | null = null;
+const promptContinueSession = (): Promise<boolean> => {
+  if (sessionPromptInFlight) {
+    return sessionPromptInFlight;
+  }
+
+  sessionPromptInFlight = new Promise<boolean>((resolve) => {
+    Modal.confirm({
+      title: 'სესიის ვადა ამოიწურა',
+      content: 'გსურთ სესიის გაგრძელება თუ სისტემიდან გასვლა?',
+      okText: 'სესიის გაგრძელება',
+      cancelText: 'გასვლა',
+      onOk: () => resolve(true),
+      onCancel: () => resolve(false),
+    });
+  }).finally(() => {
+    sessionPromptInFlight = null;
+  });
+
+  return sessionPromptInFlight;
+};
 
 // Request interceptor for adding auth token
 apiClient.interceptors.request.use(
@@ -50,11 +83,7 @@ apiClient.interceptors.response.use(
         const baseUrl = API_URL.replace(/\/+$/, '');
         const refreshUrl = `${baseUrl}/authentication/refresh-token`;
 
-        const response = await axios.post(
-          refreshUrl,
-          { token: refreshToken },
-          { timeout: 15000 },
-        );
+        const response = await axios.post(refreshUrl, { token: refreshToken }, { timeout: 15000 });
 
         const { token, refreshToken: newRefreshToken } = response.data;
 
@@ -62,17 +91,22 @@ apiClient.interceptors.response.use(
         localStorage.setItem('token', token);
         localStorage.setItem('refreshToken', newRefreshToken);
 
+        // Session was successfully refreshed — let the user decide whether to
+        // continue or log out.
+        const continueSession = await promptContinueSession();
+        if (!continueSession) {
+          forceLogout();
+          return Promise.reject(error);
+        }
+
         // Update the failed request's authorization header
         originalRequest.headers.Authorization = `Bearer ${token}`;
 
         // Retry the original request
         return apiClient(originalRequest);
       } catch (refreshError) {
-        // If refresh token fails, logout user
-        // localStorage.removeItem('token');
-        // localStorage.removeItem('refreshToken');
-        // localStorage.removeItem('auth-storage');
-        // window.location.href = '/login';
+        // If refresh token fails, log the user out automatically
+        forceLogout();
         return Promise.reject(refreshError);
       }
     }
