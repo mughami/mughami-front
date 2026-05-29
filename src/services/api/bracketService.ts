@@ -6,11 +6,19 @@ export interface BracketOption {
   totalWinnings: number;
 }
 
+export type BracketStatus = 'ACTIVE' | 'PENDING';
+
 export interface Bracket {
   id: number;
   name: string;
   createdAt?: string;
+  status: BracketStatus;
   options: BracketOption[];
+}
+
+export interface UpdateBracketRequest {
+  name: string;
+  status: BracketStatus;
 }
 
 export interface BracketPageResponse {
@@ -64,8 +72,13 @@ const bracketService = {
     return response.data;
   },
 
-  createBracket: async (name: string): Promise<Bracket> => {
-    const response = await apiClient.post<Bracket>('/admin/bracket', { name });
+  createBracket: async (name: string, status: BracketStatus = 'PENDING'): Promise<Bracket> => {
+    const response = await apiClient.post<Bracket>('/admin/bracket', { name, status });
+    return response.data;
+  },
+
+  updateBracket: async (id: number, data: UpdateBracketRequest): Promise<Bracket> => {
+    const response = await apiClient.put<Bracket>(`/admin/bracket/${id}`, data);
     return response.data;
   },
 

@@ -3,6 +3,7 @@ import { getErrorMessage } from '../utils/errorMessages';
 import bracketService, {
   type Bracket,
   type BracketMatchup,
+  type BracketStatus,
   type BracketWinner,
 } from '../services/api/bracketService';
 
@@ -51,7 +52,8 @@ interface BracketStore {
   fetchBrackets: (page?: number, size?: number) => Promise<void>;
   fetchAdminBrackets: (page?: number, size?: number) => Promise<void>;
   fetchAdminBracket: (id: number) => Promise<Bracket | null>;
-  createBracket: (name: string) => Promise<void>;
+  createBracket: (name: string, status: BracketStatus) => Promise<void>;
+  updateBracket: (id: number, name: string, status: BracketStatus) => Promise<void>;
   deleteBracket: (id: number) => Promise<void>;
   addBracketOption: (bracketId: number, photo: File) => Promise<void>;
   deleteBracketOption: (bracketId: number, optionId: number) => Promise<void>;
@@ -128,10 +130,10 @@ export const useBracketStore = create<BracketStore>((set, get) => ({
     }
   },
 
-  createBracket: async (name: string) => {
+  createBracket: async (name: string, status: BracketStatus) => {
     try {
       set({ loading: true, error: null });
-      await bracketService.createBracket(name);
+      await bracketService.createBracket(name, status);
       const response = await bracketService.getAdminBrackets(0, DEFAULT_PAGE_SIZE);
       set({
         adminBrackets: response.content,
@@ -141,6 +143,25 @@ export const useBracketStore = create<BracketStore>((set, get) => ({
     } catch (error) {
       set({
         error: getErrorMessage(error, 'თამაშის შექმნა ვერ მოხერხდა'),
+        loading: false,
+      });
+      throw error;
+    }
+  },
+
+  updateBracket: async (id: number, name: string, status: BracketStatus) => {
+    try {
+      set({ loading: true, error: null });
+      await bracketService.updateBracket(id, { name, status });
+      const response = await bracketService.getAdminBrackets(0, DEFAULT_PAGE_SIZE);
+      set({
+        adminBrackets: response.content,
+        adminBracketsTotal: response.totalElements,
+        loading: false,
+      });
+    } catch (error) {
+      set({
+        error: getErrorMessage(error, 'თამაშის განახლება ვერ მოხერხდა'),
         loading: false,
       });
       throw error;

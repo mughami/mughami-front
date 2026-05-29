@@ -6,6 +6,7 @@ import {
   Input,
   Modal,
   Popconfirm,
+  Select,
   Space,
   Table,
   Tag,
@@ -17,6 +18,7 @@ import {
 import {
   PlusOutlined,
   DeleteOutlined,
+  EditOutlined,
   EyeOutlined,
   ThunderboltOutlined,
   UploadOutlined,
@@ -25,7 +27,12 @@ import {
 import type { UploadFile } from 'antd';
 import { useBracketStore } from '../../store';
 import bracketService from '../../services/api/bracketService';
-import type { Bracket, BracketOption } from '../../services/api/bracketService';
+import type { Bracket, BracketOption, BracketStatus } from '../../services/api/bracketService';
+
+const STATUS_META: Record<BracketStatus, { label: string; color: string }> = {
+  ACTIVE: { label: 'აქტიური', color: 'green' },
+  PENDING: { label: 'მოლოდინში', color: 'orange' },
+};
 
 const { Title } = Typography;
 
@@ -38,6 +45,7 @@ export const Brackets = () => {
     fetchAdminBrackets,
     fetchAdminBracket,
     createBracket,
+    updateBracket,
     deleteBracket,
     addBracketOption,
     deleteBracketOption,
@@ -45,8 +53,11 @@ export const Brackets = () => {
   } = useBracketStore();
 
   const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [createForm] = Form.useForm<{ name: string }>();
+  const [createForm] = Form.useForm<{ name: string; status: BracketStatus }>();
+  const [editForm] = Form.useForm<{ name: string; status: BracketStatus }>();
+  const [editingBracket, setEditingBracket] = useState<Bracket | null>(null);
   const [selectedBracket, setSelectedBracket] = useState<Bracket | null>(null);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -100,10 +111,29 @@ export const Brackets = () => {
   const handleCreate = async () => {
     try {
       const values = await createForm.validateFields();
-      await createBracket(values.name.trim());
+      await createBracket(values.name.trim(), values.status);
       message.success('თამაში წარმატებით შეიქმნა');
       createForm.resetFields();
       setCreateOpen(false);
+    } catch (err) {
+      if ((err as { errorFields?: unknown }).errorFields) return;
+    }
+  };
+
+  const openEdit = (bracket: Bracket) => {
+    setEditingBracket(bracket);
+    editForm.setFieldsValue({ name: bracket.name, status: bracket.status });
+    setEditOpen(true);
+  };
+
+  const handleEdit = async () => {
+    if (!editingBracket) return;
+    try {
+      const values = await editForm.validateFields();
+      await updateBracket(editingBracket.id, values.name.trim(), values.status);
+      message.success('თამაში განახლდა');
+      setEditOpen(false);
+      setEditingBracket(null);
     } catch (err) {
       if ((err as { errorFields?: unknown }).errorFields) return;
     }
@@ -183,6 +213,15 @@ export const Brackets = () => {
       ),
     },
     {
+      title: 'სტატუსი',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: BracketStatus) => {
+        const meta = STATUS_META[status] ?? { label: status, color: 'default' };
+        return <Tag color={meta.color}>{meta.label}</Tag>;
+      },
+    },
+    {
       title: 'ქმედებები',
       key: 'actions',
       align: 'right' as const,
@@ -190,6 +229,9 @@ export const Brackets = () => {
         <Space>
           <Button type="link" icon={<EyeOutlined />} onClick={() => openDetails(record)}>
             დეტალები
+          </Button>
+          <Button type="link" icon={<EditOutlined />} onClick={() => openEdit(record)}>
+            რედაქტირება
           </Button>
           <Popconfirm
             title="თამაშის წაშლა"
@@ -253,13 +295,61 @@ export const Brackets = () => {
         okText="შექმნა"
         cancelText="გაუქმება"
       >
-        <Form form={createForm} layout="vertical">
+        <Form form={createForm} layout="vertical" initialValues={{ status: 'PENDING' }}>
           <Form.Item
             name="name"
             label="დასახელება"
             rules={[{ required: true, message: 'გთხოვთ შეიყვანოთ დასახელება' }]}
           >
             <Input placeholder="მაგ: საუკეთესო სპორტსმენი" />
+          </Form.Item>
+          <Form.Item
+            name="status"
+            label="სტატუსი"
+            rules={[{ required: true, message: 'გთხოვთ აირჩიოთ სტატუსი' }]}
+          >
+            <Select
+              options={[
+                { value: 'ACTIVE', label: STATUS_META.ACTIVE.label },
+                { value: 'PENDING', label: STATUS_META.PENDING.label },
+              ]}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        title="თამაშის რედაქტირება"
+        open={editOpen}
+        onOk={handleEdit}
+        onCancel={() => {
+          setEditOpen(false);
+          setEditingBracket(null);
+        }}
+        confirmLoading={loading}
+        okText="შენახვა"
+        cancelText="გაუქმება"
+      >
+        <Form form={editForm} layout="vertical">
+          <Form.Item
+            name="name"
+            label="დასახელება"
+            rules={[{ required: true, message: 'გთხოვთ შეიყვანოთ დასახელება' }]}
+          >
+            <Input placeholder="მაგ: საუკეთესო სპორტსმენი" />
+          </Form.Item>
+          <Form.Item
+            name="status"
+            label="სტატუსი"
+            rules={[{ required: true, message: 'გთხოვთ აირჩიოთ სტატუსი' }]}
+          >
+            <Select
+              options={[
+                { value: 'ACTIVE', label: STATUS_META.ACTIVE.label },
+                { value: 'PENDING', label: STATUS_META.PENDING.label },
+              ]}
+            />
           </Form.Item>
         </Form>
       </Modal>
