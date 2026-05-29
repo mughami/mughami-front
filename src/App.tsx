@@ -97,7 +97,18 @@ const AuthRoute = ({ children }: { children: React.ReactElement }) => {
 };
 
 function App() {
-  // Redirect authenticated users away from auth pages
+  const { isAuthenticated, getCurrentUser } = useAuthStore();
+
+  // Re-fetch the current user on app load so role-based UI (e.g. the admin
+  // panel link) stays available across refreshes and tab reopens, including
+  // on public routes that don't mount ProtectedRoute/AdminRoute.
+  useEffect(() => {
+    if (isAuthenticated) {
+      getCurrentUser().catch((error) => {
+        console.error('Error fetching user on app load:', error);
+      });
+    }
+  }, [isAuthenticated, getCurrentUser]);
 
   return (
     <Suspense fallback={<Loading fullScreen={true} />}>
