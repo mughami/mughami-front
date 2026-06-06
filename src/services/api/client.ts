@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { Modal } from 'antd';
 
 // Base API configuration
 const DEV_API_URL = 'http://localhost:54321';
@@ -21,28 +20,47 @@ const forceLogout = () => {
   window.location.href = '/login';
 };
 
-// Ask the user whether to keep the refreshed session or log out.
-// Guarded so concurrent 401s don't stack multiple modals.
-let sessionPromptInFlight: Promise<boolean> | null = null;
-const promptContinueSession = (): Promise<boolean> => {
-  if (sessionPromptInFlight) {
-    return sessionPromptInFlight;
+// --- Single-flight refresh ----------------------------------------------
+// Refresh tokens are single-use/rotating: every successful refresh returns a
+// new refresh token and invalidates the old one. If several requests 401 at
+// once (common on page load) and each fires its own refresh, only the first
+// succeeds — the rest send the already-consumed token and get logged out.
+// We serialize refreshes: the first 401 performs the refresh, everyone else
+// waits for that single result.
+let refreshInFlight: Promise<string> | null = null;
+
+const performRefresh = async (): Promise<string> => {
+  const refreshToken = localStorage.getItem('refreshToken');
+  if (!refreshToken) {
+    throw new Error('No refresh token available');
   }
 
-  sessionPromptInFlight = new Promise<boolean>((resolve) => {
-    Modal.confirm({
-      title: 'სესიის ვადა ამოიწურა',
-      content: 'გსურთ სესიის გაგრძელება თუ სისტემიდან გასვლა?',
-      okText: 'სესიის გაგრძელება',
-      cancelText: 'გასვლა',
-      onOk: () => resolve(true),
-      onCancel: () => resolve(false),
-    });
-  }).finally(() => {
-    sessionPromptInFlight = null;
-  });
+  // Build refresh URL safely (avoid double slashes)
+  const baseUrl = API_URL.replace(/\/+$/, '');
+  const refreshUrl = `${baseUrl}/authentication/refresh-token`;
 
-  return sessionPromptInFlight;
+  const response = await axios.post(refreshUrl, { token: refreshToken }, { timeout: 15000 });
+
+  const { token, refreshToken: newRefreshToken } = response.data ?? {};
+  if (!token || !newRefreshToken) {
+    throw new Error('Refresh response missing token(s)');
+  }
+
+  // Update tokens in localStorage
+  localStorage.setItem('token', token);
+  localStorage.setItem('refreshToken', newRefreshToken);
+
+  return token;
+};
+
+// Returns the refreshed access token, deduplicating concurrent callers.
+const refreshAccessToken = (): Promise<string> => {
+  if (!refreshInFlight) {
+    refreshInFlight = performRefresh().finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
 };
 
 // Request interceptor for adding auth token
@@ -74,35 +92,12 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) {
-          throw new Error('No refresh token available');
-        }
+        // Deduplicated across concurrent 401s — only one network refresh runs.
+        const token = await refreshAccessToken();
 
-        // Build refresh URL safely (avoid double slashes)
-        const baseUrl = API_URL.replace(/\/+$/, '');
-        const refreshUrl = `${baseUrl}/authentication/refresh-token`;
-
-        const response = await axios.post(refreshUrl, { token: refreshToken }, { timeout: 15000 });
-
-        const { token, refreshToken: newRefreshToken } = response.data;
-
-        // Update tokens in localStorage
-        localStorage.setItem('token', token);
-        localStorage.setItem('refreshToken', newRefreshToken);
-
-        // Session was successfully refreshed — let the user decide whether to
-        // continue or log out.
-        const continueSession = await promptContinueSession();
-        if (!continueSession) {
-          forceLogout();
-          return Promise.reject(error);
-        }
-
-        // Update the failed request's authorization header
+        // Refresh succeeded silently — replay the original request with the
+        // new access token so the caller never sees the 401.
         originalRequest.headers.Authorization = `Bearer ${token}`;
-
-        // Retry the original request
         return apiClient(originalRequest);
       } catch (refreshError) {
         // If refresh token fails, log the user out automatically
