@@ -1,4 +1,5 @@
 import apiClient from './client';
+import type { CategoryResponse, SubCategoryResponse } from '../../types';
 
 export interface BracketOption {
   id: number;
@@ -8,17 +9,56 @@ export interface BracketOption {
 
 export type BracketStatus = 'ACTIVE' | 'PENDING';
 
+export type BracketType = 'FAVORITE' | 'NOT_FAVORITE';
+
 export interface Bracket {
   id: number;
   name: string;
   createdAt?: string;
   status: BracketStatus;
+  // Favorite state on GET responses (admin + public) is carried by `type`.
+  type?: BracketType;
+  // GET responses carry nested category objects (with names); the create/update
+  // request bodies still use the flat categoryId/subcategoryId fields.
+  categoryResponse?: CategoryResponse;
+  subCategoryResponse?: SubCategoryResponse;
   options: BracketOption[];
+}
+
+// Single source of truth for "is this bracket a favorite" from a GET response.
+export const isBracketFavorite = (bracket: Pick<Bracket, 'type'>): boolean =>
+  bracket.type === 'FAVORITE';
+
+export interface CreateBracketRequest {
+  name: string;
+  status: BracketStatus;
+  isFavorite?: boolean;
+  categoryId?: number;
+  subcategoryId?: number;
 }
 
 export interface UpdateBracketRequest {
   name: string;
   status: BracketStatus;
+  isFavorite?: boolean;
+  categoryId?: number;
+  subcategoryId?: number;
+}
+
+export interface SuggestedBracketOption {
+  id: number;
+  photoUrl: string;
+  name: string;
+  totalWinnings: number;
+}
+
+export interface SuggestedBracket {
+  id: number;
+  name: string;
+  createdAt?: string;
+  status: BracketStatus;
+  type: BracketType;
+  options: SuggestedBracketOption[];
 }
 
 export interface BracketPageResponse {
@@ -32,6 +72,34 @@ export interface BracketPageResponse {
   numberOfElements: number;
   empty: boolean;
 }
+
+export type SortDir = 'ASC' | 'DESC';
+
+export interface BracketQueryParams {
+  page?: number;
+  size?: number;
+  search?: string;
+  sortBy?: string;
+  categoryId?: number;
+  subcategoryId?: number;
+  sortDir?: SortDir;
+}
+
+// Admin listing additionally supports filtering by status.
+export interface AdminBracketQueryParams extends BracketQueryParams {
+  status?: BracketStatus;
+}
+
+// Serialize params, skipping empty/undefined so the backend applies its defaults.
+const buildBracketQuery = (params: Record<string, unknown>): string => {
+  const search = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      search.append(key, String(value));
+    }
+  });
+  return search.toString();
+};
 
 export interface BracketMatchup {
   holderId: number;
@@ -60,10 +128,10 @@ export interface VoteResponse {
 const bracketService = {
   // ─── Admin Endpoints ───────────────────────────────────────────────
 
-  getAdminBrackets: async (page = 0, size = 50): Promise<BracketPageResponse> => {
-    const response = await apiClient.get<BracketPageResponse>(
-      `/admin/bracket?page=${page}&size=${size}`,
-    );
+  getAdminBrackets: async (params: AdminBracketQueryParams = {}): Promise<BracketPageResponse> => {
+    const { page = 0, size = 50, sortDir = 'DESC', ...rest } = params;
+    const query = buildBracketQuery({ page, size, sortDir, ...rest });
+    const response = await apiClient.get<BracketPageResponse>(`/admin/bracket?${query}`);
     return response.data;
   },
 
@@ -72,8 +140,8 @@ const bracketService = {
     return response.data;
   },
 
-  createBracket: async (name: string, status: BracketStatus = 'PENDING'): Promise<Bracket> => {
-    const response = await apiClient.post<Bracket>('/admin/bracket', { name, status });
+  createBracket: async (data: CreateBracketRequest): Promise<Bracket> => {
+    const response = await apiClient.post<Bracket>('/admin/bracket', data);
     return response.data;
   },
 
@@ -110,11 +178,47 @@ const bracketService = {
     return response.data;
   },
 
+  // ─── Admin: Bracket Suggestions ───────────────────────────────────
+
+  getBracketSuggestions: async (bracketId: number): Promise<SuggestedBracket[]> => {
+    const response = await apiClient.get<SuggestedBracket[]>(
+      `/admin/brackets/${bracketId}/suggestions`,
+    );
+    return response.data;
+  },
+
+  addBracketSuggestions: async (
+    bracketId: number,
+    suggestedBracketIds: number[],
+  ): Promise<SuggestedBracket[]> => {
+    const response = await apiClient.post<SuggestedBracket[]>(
+      `/admin/brackets/${bracketId}/suggestions`,
+      { suggestedBracketIds },
+    );
+    return response.data;
+  },
+
+  removeBracketSuggestions: async (
+    bracketId: number,
+    suggestedBracketIds: number[],
+  ): Promise<void> => {
+    await apiClient.delete(`/admin/brackets/${bracketId}/suggestions`, {
+      data: { suggestedBracketIds },
+    });
+  },
+
   // ─── Customer (App) Endpoints ─────────────────────────────────────
 
-  getBrackets: async (page = 0, size = 50): Promise<BracketPageResponse> => {
-    const response = await apiClient.get<BracketPageResponse>(
-      `/app/bracket?page=${page}&size=${size}`,
+  getBrackets: async (params: BracketQueryParams = {}): Promise<BracketPageResponse> => {
+    const { page = 0, size = 50, sortDir = 'DESC', ...rest } = params;
+    const query = buildBracketQuery({ page, size, sortDir, ...rest });
+    const response = await apiClient.get<BracketPageResponse>(`/app/bracket?${query}`);
+    return response.data;
+  },
+
+  getSuggestionsForBracket: async (bracketId: number): Promise<SuggestedBracket[]> => {
+    const response = await apiClient.get<SuggestedBracket[]>(
+      `/app/bracket/suggestion/${bracketId}`,
     );
     return response.data;
   },

@@ -1,17 +1,49 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Spin } from 'antd';
+import { Spin, Input, Select, Pagination } from 'antd';
+import { StarFilled } from '@ant-design/icons';
 import Layout from '../../components/Layout';
 import { useAuthStore, useBracketStore } from '../../store';
+import categoryService from '../../services/api/categoryService';
+import type { CategoryResponse } from '../../types';
+
+const PAGE_SIZE = 12;
 
 const BracketsListPage = () => {
   const navigate = useNavigate();
-  const { brackets, loading, error, fetchBrackets } = useBracketStore();
+  const { brackets, bracketsTotal, loading, error, fetchBrackets } = useBracketStore();
   const { isAuthenticated } = useAuthStore();
 
+  const [page, setPage] = useState(0);
+  const [search, setSearch] = useState('');
+  const [categoryId, setCategoryId] = useState<number | undefined>();
+  const [subcategoryId, setSubcategoryId] = useState<number | undefined>();
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
+
   useEffect(() => {
-    fetchBrackets();
-  }, [fetchBrackets]);
+    categoryService
+      .getPublicCategories()
+      .then(setCategories)
+      .catch(() => setCategories([]));
+  }, []);
+
+  useEffect(() => {
+    fetchBrackets({
+      page,
+      size: PAGE_SIZE,
+      search: search || undefined,
+      categoryId,
+      subcategoryId,
+    });
+  }, [fetchBrackets, page, search, categoryId, subcategoryId]);
+
+  const subcategoryOptions =
+    categories
+      .find((c) => c.categoryId === categoryId)
+      ?.subCategoryResponseList.map((s) => ({
+        value: s.subCategoryId,
+        label: s.subCategoryName,
+      })) ?? [];
 
   const handleStart = (id: number) => {
     navigate(`/brackets/play/${id}`);
@@ -52,6 +84,49 @@ const BracketsListPage = () => {
 
         {/* Content */}
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-8 sm:py-16">
+          {/* Filters */}
+          <div className="mb-10 flex flex-wrap items-center gap-3">
+            <Input.Search
+              allowClear
+              size="large"
+              placeholder="ძებნა"
+              className="!w-full sm:!w-72"
+              onSearch={(value) => {
+                setSearch(value.trim());
+                setPage(0);
+              }}
+            />
+            <Select
+              allowClear
+              size="large"
+              placeholder="კატეგორია"
+              className="!w-full sm:!w-52"
+              value={categoryId}
+              onChange={(value) => {
+                setCategoryId(value);
+                setSubcategoryId(undefined);
+                setPage(0);
+              }}
+              options={categories.map((c) => ({
+                value: c.categoryId,
+                label: c.categoryName,
+              }))}
+            />
+            <Select
+              allowClear
+              size="large"
+              placeholder="ქვეკატეგორია"
+              className="!w-full sm:!w-52"
+              disabled={!categoryId}
+              value={subcategoryId}
+              onChange={(value) => {
+                setSubcategoryId(value);
+                setPage(0);
+              }}
+              options={subcategoryOptions}
+            />
+          </div>
+
           {loading && (
             <div className="flex justify-center py-20">
               <Spin size="large" />
@@ -110,8 +185,15 @@ const BracketsListPage = () => {
                       </div>
                       {/* Number badge */}
                       <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1 font-mono text-xs font-bold text-gray-900 shadow-md">
-                        {String(idx + 1).padStart(2, '0')}
+                        {String(page * PAGE_SIZE + idx + 1).padStart(2, '0')}
                       </span>
+                      {/* Favorite badge */}
+                      {bracket.type === 'FAVORITE' && (
+                        <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-amber-400 px-3 py-1 text-xs font-bold text-white shadow-md">
+                          <StarFilled />
+                          ფავორიტი
+                        </span>
+                      )}
                     </div>
 
                     {/* Bottom: name + CTA */}
@@ -135,6 +217,18 @@ const BracketsListPage = () => {
                 </li>
               ))}
             </ul>
+          )}
+
+          {!loading && !error && bracketsTotal > PAGE_SIZE && (
+            <div className="mt-12 flex justify-center">
+              <Pagination
+                current={page + 1}
+                pageSize={PAGE_SIZE}
+                total={bracketsTotal}
+                showSizeChanger={false}
+                onChange={(nextPage) => setPage(nextPage - 1)}
+              />
+            </div>
           )}
 
           {/* Registration / Login CTA — only for unauthenticated visitors */}

@@ -1,11 +1,20 @@
 import { create } from 'zustand';
 import { getErrorMessage } from '../utils/errorMessages';
 import bracketService, {
+  isBracketFavorite,
+  type AdminBracketQueryParams,
   type Bracket,
   type BracketMatchup,
-  type BracketStatus,
+  type BracketQueryParams,
   type BracketWinner,
+  type CreateBracketRequest,
+  type SuggestedBracket,
+  type UpdateBracketRequest,
 } from '../services/api/bracketService';
+
+// Favorite brackets surface first; order is otherwise preserved (stable sort).
+const sortFavoritesFirst = (brackets: Bracket[]): Bracket[] =>
+  [...brackets].sort((a, b) => Number(isBracketFavorite(b)) - Number(isBracketFavorite(a)));
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -40,6 +49,9 @@ interface BracketStore {
   adminBrackets: Bracket[];
   adminBracketsTotal: number;
   currentBracketDetails: Bracket | null;
+  suggestions: SuggestedBracket[];
+  suggestionsLoading: boolean;
+  playerSuggestions: SuggestedBracket[];
   sessionId: string | null;
   activeBracketId: number | null;
   activeBracketName: string | null;
@@ -48,15 +60,23 @@ interface BracketStore {
   loading: boolean;
   voting: boolean;
   error: string | null;
+  // Last admin query, reused when a mutation triggers a refresh so active
+  // filters/pagination are preserved.
+  adminQuery: AdminBracketQueryParams;
 
-  fetchBrackets: (page?: number, size?: number) => Promise<void>;
-  fetchAdminBrackets: (page?: number, size?: number) => Promise<void>;
+  fetchBrackets: (params?: BracketQueryParams) => Promise<void>;
+  fetchAdminBrackets: (params?: AdminBracketQueryParams) => Promise<void>;
   fetchAdminBracket: (id: number) => Promise<Bracket | null>;
-  createBracket: (name: string, status: BracketStatus) => Promise<void>;
-  updateBracket: (id: number, name: string, status: BracketStatus) => Promise<void>;
+  createBracket: (data: CreateBracketRequest) => Promise<void>;
+  updateBracket: (id: number, data: UpdateBracketRequest) => Promise<void>;
   deleteBracket: (id: number) => Promise<void>;
   addBracketOption: (bracketId: number, photo: File) => Promise<void>;
   deleteBracketOption: (bracketId: number, optionId: number) => Promise<void>;
+  fetchSuggestions: (bracketId: number) => Promise<void>;
+  addSuggestions: (bracketId: number, suggestedBracketIds: number[]) => Promise<void>;
+  removeSuggestion: (bracketId: number, suggestedBracketId: number) => Promise<void>;
+  clearSuggestions: () => void;
+  fetchPlayerSuggestions: (bracketId: number) => Promise<void>;
 
   startSession: (bracketId: number, bracketName: string) => Promise<void>;
   resumeSession: () => Promise<void>;
@@ -72,6 +92,9 @@ export const useBracketStore = create<BracketStore>((set, get) => ({
   adminBrackets: [],
   adminBracketsTotal: 0,
   currentBracketDetails: null,
+  suggestions: [],
+  suggestionsLoading: false,
+  playerSuggestions: [],
   sessionId: null,
   activeBracketId: null,
   activeBracketName: null,
@@ -80,13 +103,14 @@ export const useBracketStore = create<BracketStore>((set, get) => ({
   loading: false,
   voting: false,
   error: null,
+  adminQuery: { page: 0, size: DEFAULT_PAGE_SIZE },
 
-  fetchBrackets: async (page = 0, size = DEFAULT_PAGE_SIZE) => {
+  fetchBrackets: async (params = {}) => {
     try {
       set({ loading: true, error: null });
-      const response = await bracketService.getBrackets(page, size);
+      const response = await bracketService.getBrackets({ size: DEFAULT_PAGE_SIZE, ...params });
       set({
-        brackets: response.content,
+        brackets: sortFavoritesFirst(response.content),
         bracketsTotal: response.totalElements,
         loading: false,
       });
@@ -98,10 +122,11 @@ export const useBracketStore = create<BracketStore>((set, get) => ({
     }
   },
 
-  fetchAdminBrackets: async (page = 0, size = DEFAULT_PAGE_SIZE) => {
+  fetchAdminBrackets: async (params = {}) => {
+    const query: AdminBracketQueryParams = { size: DEFAULT_PAGE_SIZE, ...params };
     try {
-      set({ loading: true, error: null });
-      const response = await bracketService.getAdminBrackets(page, size);
+      set({ loading: true, error: null, adminQuery: query });
+      const response = await bracketService.getAdminBrackets(query);
       set({
         adminBrackets: response.content,
         adminBracketsTotal: response.totalElements,
@@ -130,11 +155,11 @@ export const useBracketStore = create<BracketStore>((set, get) => ({
     }
   },
 
-  createBracket: async (name: string, status: BracketStatus) => {
+  createBracket: async (data: CreateBracketRequest) => {
     try {
       set({ loading: true, error: null });
-      await bracketService.createBracket(name, status);
-      const response = await bracketService.getAdminBrackets(0, DEFAULT_PAGE_SIZE);
+      await bracketService.createBracket(data);
+      const response = await bracketService.getAdminBrackets(get().adminQuery);
       set({
         adminBrackets: response.content,
         adminBracketsTotal: response.totalElements,
@@ -149,11 +174,11 @@ export const useBracketStore = create<BracketStore>((set, get) => ({
     }
   },
 
-  updateBracket: async (id: number, name: string, status: BracketStatus) => {
+  updateBracket: async (id: number, data: UpdateBracketRequest) => {
     try {
       set({ loading: true, error: null });
-      await bracketService.updateBracket(id, { name, status });
-      const response = await bracketService.getAdminBrackets(0, DEFAULT_PAGE_SIZE);
+      await bracketService.updateBracket(id, data);
+      const response = await bracketService.getAdminBrackets(get().adminQuery);
       set({
         adminBrackets: response.content,
         adminBracketsTotal: response.totalElements,
@@ -172,7 +197,7 @@ export const useBracketStore = create<BracketStore>((set, get) => ({
     try {
       set({ loading: true, error: null });
       await bracketService.deleteBracket(id);
-      const response = await bracketService.getAdminBrackets(0, DEFAULT_PAGE_SIZE);
+      const response = await bracketService.getAdminBrackets(get().adminQuery);
       set({
         adminBrackets: response.content,
         adminBracketsTotal: response.totalElements,
@@ -214,6 +239,65 @@ export const useBracketStore = create<BracketStore>((set, get) => ({
         loading: false,
       });
       throw error;
+    }
+  },
+
+  fetchSuggestions: async (bracketId: number) => {
+    try {
+      set({ suggestionsLoading: true, error: null });
+      const suggestions = await bracketService.getBracketSuggestions(bracketId);
+      set({ suggestions, suggestionsLoading: false });
+    } catch (error) {
+      set({
+        error: getErrorMessage(error, 'შეთავაზებების ჩატვირთვა ვერ მოხერხდა'),
+        suggestionsLoading: false,
+      });
+    }
+  },
+
+  addSuggestions: async (bracketId: number, suggestedBracketIds: number[]) => {
+    try {
+      set({ suggestionsLoading: true, error: null });
+      const suggestions = await bracketService.addBracketSuggestions(
+        bracketId,
+        suggestedBracketIds,
+      );
+      set({ suggestions, suggestionsLoading: false });
+    } catch (error) {
+      set({
+        error: getErrorMessage(error, 'შეთავაზების დამატება ვერ მოხერხდა'),
+        suggestionsLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  removeSuggestion: async (bracketId: number, suggestedBracketId: number) => {
+    try {
+      set({ suggestionsLoading: true, error: null });
+      await bracketService.removeBracketSuggestions(bracketId, [suggestedBracketId]);
+      set((state) => ({
+        suggestions: state.suggestions.filter((s) => s.id !== suggestedBracketId),
+        suggestionsLoading: false,
+      }));
+    } catch (error) {
+      set({
+        error: getErrorMessage(error, 'შეთავაზების წაშლა ვერ მოხერხდა'),
+        suggestionsLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  clearSuggestions: () => set({ suggestions: [] }),
+
+  fetchPlayerSuggestions: async (bracketId: number) => {
+    try {
+      const playerSuggestions = await bracketService.getSuggestionsForBracket(bracketId);
+      set({ playerSuggestions });
+    } catch {
+      // Suggestions are a non-critical enhancement on the finish screen.
+      set({ playerSuggestions: [] });
     }
   },
 
@@ -330,6 +414,7 @@ export const useBracketStore = create<BracketStore>((set, get) => ({
       activeBracketName: null,
       matchup: null,
       winner: null,
+      playerSuggestions: [],
       error: null,
     });
   },

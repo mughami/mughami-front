@@ -118,6 +118,13 @@ const categoryService = {
     }
   },
 
+  // Raw public categories (with nested subcategories) for filters/selects.
+  // Uses /app/category so it is safe to call from non-admin pages.
+  getPublicCategories: async (): Promise<CategoryResponse[]> => {
+    const response = await apiClient.get<CategoryResponse[]>('/app/category');
+    return response.data;
+  },
+
   getCategoryById: async (id: string): Promise<Category> => {
     try {
       const categories = await categoryService.getCategories();

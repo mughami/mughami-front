@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Spin } from 'antd';
+import { StarFilled } from '@ant-design/icons';
 import Layout from '../../components/Layout';
 import MatchupCard from '../../components/brackets/MatchupCard';
 import { useBracketStore, useAuthStore } from '../../store';
@@ -16,12 +17,14 @@ const BracketPlayPage = () => {
     sessionId,
     activeBracketId,
     activeBracketName,
+    playerSuggestions,
     loading,
     voting,
     error,
     startSession,
     submitVote,
     resetSession,
+    fetchPlayerSuggestions,
   } = useBracketStore();
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -103,7 +106,7 @@ const BracketPlayPage = () => {
 
     const init = async () => {
       try {
-        const response = await bracketService.getBrackets(0, 100);
+        const response = await bracketService.getBrackets({ page: 0, size: 100 });
         const found = response.content.find((b) => b.id === id);
         const name = found?.name ?? 'თამაში';
         setBracketName(name);
@@ -139,6 +142,15 @@ const BracketPlayPage = () => {
     }, 400);
   };
 
+  // Once a winner is crowned, offer related brackets (if the backend has any).
+  useEffect(() => {
+    if (!winner) return;
+    const id = activeBracketId ?? Number(bracketId);
+    if (Number.isFinite(id)) {
+      fetchPlayerSuggestions(id);
+    }
+  }, [winner, activeBracketId, bracketId, fetchPlayerSuggestions]);
+
   const handlePlayAgain = async () => {
     setInitialRemaining(null);
     resetSession();
@@ -146,6 +158,15 @@ const BracketPlayPage = () => {
     if (Number.isFinite(id)) {
       await startSession(id, bracketName);
     }
+  };
+
+  const handleStartSuggestion = async (id: number, name: string) => {
+    setInitialRemaining(null);
+    setSelectedId(null);
+    resetSession();
+    setBracketName(name);
+    navigate(`/brackets/play/${id}`);
+    await startSession(id, name);
   };
 
   const handleBackToList = () => {
@@ -370,6 +391,68 @@ const BracketPlayPage = () => {
                   სხვა თამაში
                 </button>
               </div>
+
+              {/* Suggested brackets */}
+              {playerSuggestions.length > 0 && (
+                <div className="mt-14">
+                  <div className="mb-6 text-center">
+                    <div className="mb-2 inline-flex items-center gap-2">
+                      <span className="h-px w-6 bg-primary" />
+                      <span className="text-[11px] font-bold uppercase tracking-[0.35em] text-primary">
+                        შესაძლოა მოგეწონოს
+                      </span>
+                      <span className="h-px w-6 bg-primary" />
+                    </div>
+                    <h3 className="text-xl font-extrabold tracking-tight text-gray-900 sm:text-2xl">
+                      სხვა თამაშები შენთვის
+                    </h3>
+                  </div>
+                  <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {playerSuggestions.map((suggestion) => (
+                      <li key={suggestion.id}>
+                        <button
+                          type="button"
+                          onClick={() => handleStartSuggestion(suggestion.id, suggestion.name)}
+                          className="group relative block w-full overflow-hidden rounded-2xl bg-white text-left shadow-card ring-1 ring-gray-200/70 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl hover:ring-primary/40"
+                        >
+                          <div className="relative h-32 overflow-hidden bg-auth-gradient">
+                            <div className="absolute inset-0 grid grid-cols-2">
+                              <div className="bg-gradient-to-br from-secondary to-secondary-dark" />
+                              <div className="bg-gradient-to-br from-primary to-primary-dark" />
+                            </div>
+                            <div
+                              className="absolute inset-y-0 left-1/2 w-[2px] -translate-x-1/2 bg-white/50"
+                              style={{ transform: 'translateX(-50%) skewX(-12deg)' }}
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="font-black italic text-white text-[2.5rem] leading-none tracking-tighter drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-transform duration-500 group-hover:scale-110">
+                                VS
+                              </span>
+                            </div>
+                            {suggestion.type === 'FAVORITE' && (
+                              <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-md">
+                                <StarFilled />
+                                ფავორიტი
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center justify-between gap-2 p-4">
+                            <h4 className="truncate text-base font-bold tracking-tight text-gray-900 transition-colors group-hover:text-primary">
+                              {suggestion.name}
+                            </h4>
+                            <span
+                              aria-hidden
+                              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-all duration-300 group-hover:bg-primary group-hover:text-white group-hover:translate-x-0.5"
+                            >
+                              ⟶
+                            </span>
+                          </div>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               {!isAuthenticated && (
                 <div className="mt-14 overflow-hidden rounded-2xl border border-gray-100 bg-gradient-to-br from-white via-gray-50 to-white p-8 text-center shadow-card sm:p-10">
