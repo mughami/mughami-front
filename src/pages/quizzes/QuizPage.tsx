@@ -177,7 +177,7 @@ const QuizPage: React.FC = () => {
                   <div className="rounded-lg bg-white/10 px-4 py-3 text-white">
                     <div className="flex items-center gap-2 text-sm opacity-80">
                       <QuestionCircleOutlined />
-                      <span>ვიქტორინები</span>
+                      <span>ქვიზები</span>
                     </div>
                     <div className="text-2xl font-semibold leading-tight">
                       {displayedQuizzes.length}
@@ -194,7 +194,7 @@ const QuizPage: React.FC = () => {
           <Text type="secondary">ქვიზების რაოდენობა: {displayedQuizzes.length}</Text>
           <Space size={12} wrap>
             <Search
-              placeholder="მოძებნე ვიქტორინა სახელით"
+              placeholder="მოძებნე ქვიზი სახელით"
               allowClear
               onSearch={(v) => setSearchTerm(v)}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -220,10 +220,10 @@ const QuizPage: React.FC = () => {
               description={
                 <div>
                   <Title level={4} className="mb-2">
-                    ვიქტორინები ჯერ არ არის დამატებული
+                    ქვიზები ჯერ არ არის დამატებული
                   </Title>
                   <Text type="secondary">
-                    ამ კატეგორიის ვიქტორინები ჯერ არ არის შექმნილი. გთხოვთ, სცადოთ მოგვიანებით.
+                    ამ კატეგორიის ქვიზები ჯერ არ არის შექმნილი. გთხოვთ, სცადოთ მოგვიანებით.
                   </Text>
                 </div>
               }

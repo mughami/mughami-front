@@ -154,7 +154,7 @@ const Header = () => {
                   location.pathname === '/public-quizzes' ? 'bg-primary-dark' : ''
                 }`}
               >
-                <QuestionCircleOutlined className="mr-1" /> ღია ვიქტორინები
+                <QuestionCircleOutlined className="mr-1" /> ღია ქვიზები
               </Link>
 
               {!isAuthenticated ? (
@@ -275,7 +275,7 @@ const Header = () => {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <QuestionCircleOutlined className="mr-1" />
-                ღია ვიქტორინები
+                ღია ქვიზები
               </Link>
 
               <Link
@@ -367,7 +367,7 @@ const Header = () => {
                   location.pathname === '/public-quizzes' ? 'bg-primary-dark' : ''
                 }`}
               >
-                <QuestionCircleOutlined className="mr-1" /> ღია ვიქტორინები
+                <QuestionCircleOutlined className="mr-1" /> ღია ქვიზები
               </Link>
 
               <Link
@@ -431,7 +431,7 @@ const Header = () => {
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <QuestionCircleOutlined className="mr-1" /> ღია ვიქტორინები
+                <QuestionCircleOutlined className="mr-1" /> ღია ქვიზები
               </Link>
               <Link
                 to="/polls"
@@ -525,7 +525,7 @@ const Header = () => {
               }`}
             >
               <QuestionCircleOutlined className="mr-1" />
-              ღია ვიქტორინები
+              ღია ქვიზები
             </Link>
 
             <Link
@@ -646,7 +646,7 @@ const Header = () => {
               onClick={() => setMobileMenuOpen(false)}
             >
               <QuestionCircleOutlined className="mr-1" />
-              ღია ვიქტორინები
+              ღია ქვიზები
             </Link>
 
             <Link

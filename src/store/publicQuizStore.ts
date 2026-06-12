@@ -126,7 +126,7 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
       // Do not persist quizzes in localStorage
     } catch (error) {
       set({
-        error: getErrorMessage(error, 'ვიქტორინების ჩატვირთვა ვერ მოხერხდა'),
+        error: getErrorMessage(error, 'ქვიზების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -158,7 +158,7 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
       }
     } catch (error) {
       set({
-        error: getErrorMessage(error, 'ვიქტორინის ჩატვირთვა ვერ მოხერხდა'),
+        error: getErrorMessage(error, 'ქვიზის ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -230,7 +230,7 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
       }
     } catch (error) {
       set({
-        error: getErrorMessage(error, 'ვიქტორინის დაწყება ვერ მოხერხდა'),
+        error: getErrorMessage(error, 'ქვიზის დაწყება ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -340,7 +340,7 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
       return photoUrl;
     } catch (error) {
       set({
-        error: getErrorMessage(error, 'ვიქტორინის ფოტოს ჩატვირთვა ვერ მოხერხდა'),
+        error: getErrorMessage(error, 'ქვიზის ფოტოს ჩატვირთვა ვერ მოხერხდა'),
       });
       return '';
     }

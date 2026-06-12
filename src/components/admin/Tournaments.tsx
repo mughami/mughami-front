@@ -295,7 +295,7 @@ export const Tournaments: React.FC = () => {
       ),
     },
     {
-      title: 'ვიქტორინა',
+      title: 'ქვიზი',
       key: 'quiz',
       ellipsis: true,
       responsive: ['md'] as ('md' | 'sm' | 'lg' | 'xl' | 'xxl' | 'xs')[],
@@ -678,11 +678,11 @@ export const Tournaments: React.FC = () => {
 
           <Form.Item
             name="quizId"
-            label="ვიქტორინა"
-            rules={[{ required: true, message: 'გთხოვთ აირჩიოთ ვიქტორინა' }]}
+            label="ქვიზი"
+            rules={[{ required: true, message: 'გთხოვთ აირჩიოთ ქვიზი' }]}
           >
             <Select
-              placeholder="აირჩიეთ ვიქტორინა"
+              placeholder="აირჩიეთ ქვიზი"
               showSearch
               filterOption={(input, option) =>
                 (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase()) ??

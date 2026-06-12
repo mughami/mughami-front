@@ -102,7 +102,7 @@ const QuizSection: React.FC = () => {
           <div className="flex items-center justify-center mb-4">
             <TrophyOutlined className="text-4xl text-yellow-500 mr-3" />
             <Title level={2} className="mb-0">
-              ვიქტორინები
+              ქვიზები
             </Title>
           </div>
           <Text className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -193,7 +193,7 @@ const QuizSection: React.FC = () => {
             })}
           </Row>
         ) : (
-          <Empty description="ვიქტორინები ვერ მოიძებნა" className="py-12" />
+          <Empty description="ქვიზები ვერ მოიძებნა" className="py-12" />
         )}
 
         {/* View All Button */}
@@ -205,7 +205,7 @@ const QuizSection: React.FC = () => {
               onClick={() => navigate('/categories')}
               className="px-8 py-2 h-auto"
             >
-              ყველა ვიქტორინის ნახვა
+              ყველა ქვიზის ნახვა
             </Button>
           </div>
         )} */}

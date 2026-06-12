@@ -27,7 +27,7 @@ const CategoryCard = ({ id, title, image }: CategoryCardProps) => {
           <Link to={`/quizzes/${id}`} className="block">
             <div className="w-full bg-blue-500 hover:bg-blue-600 text-white text-center py-2 px-3 rounded-lg transition-colors text-sm flex items-center justify-center">
               <LockOutlined className="mr-1 text-xs" />
-              ვიქტორინები
+              ქვიზები
             </div>
           </Link>
         </div>

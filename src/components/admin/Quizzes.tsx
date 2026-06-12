@@ -168,12 +168,12 @@ export const Quizzes: React.FC = () => {
       };
       const newQuiz = await createQuiz(quizData);
       if (photoFile) await addQuizPhoto(newQuiz.quizId, photoFile);
-      message.success('ვიქტორინა წარმატებით დაემატა!');
+      message.success('ქვიზი წარმატებით დაემატა!');
       setIsModalVisible(false);
       form.resetFields();
       setPhotoFile(null);
     } catch {
-      message.error('ვიქტორინის დამატებისას მოხდა შეცდომა');
+      message.error('ქვიზის დამატებისას მოხდა შეცდომა');
     }
   };
 
@@ -187,12 +187,12 @@ export const Quizzes: React.FC = () => {
         quizStatus: values.quizStatus,
         quizType: values.quizType,
       });
-      message.success('ვიქტორინა წარმატებით განახლდა!');
+      message.success('ქვიზი წარმატებით განახლდა!');
       setIsModalVisible(false);
       setEditingQuiz(null);
       form.resetFields();
     } catch {
-      message.error('ვიქტორინის განახლებისას მოხდა შეცდომა');
+      message.error('ქვიზის განახლებისას მოხდა შეცდომა');
     }
   };
 
@@ -220,16 +220,16 @@ export const Quizzes: React.FC = () => {
         quizType: full.quizType || 'FREE',
       });
     } catch {
-      message.error('ვიქტორინის მონაცემების ჩატვირთვა ვერ მოხერხდა');
+      message.error('ქვიზის მონაცემების ჩატვირთვა ვერ მოხერხდა');
     }
   };
 
   const handleDeleteQuiz = async (quizId: number) => {
     try {
       await deleteAdminQuiz(quizId);
-      message.success('ვიქტორინა წარმატებით წაიშალა!');
+      message.success('ქვიზი წარმატებით წაიშალა!');
     } catch {
-      message.error('ვიქტორინის წაშლისას მოხდა შეცდომა');
+      message.error('ქვიზის წაშლისას მოხდა შეცდომა');
     }
   };
 
@@ -296,7 +296,7 @@ export const Quizzes: React.FC = () => {
           <Button type="text" icon={<EyeOutlined />} onClick={() => setSelectedQuizId(quiz.quizId)} size="small">ნახვა</Button>
           <Button type="text" icon={<EditOutlined />} onClick={() => handleEditQuiz(quiz)} size="small">რედაქტირება</Button>
           <Popconfirm
-            title="ვიქტორინის წაშლა"
+            title="ქვიზის წაშლა"
             description="ეს მოქმედება შეუქცევადია."
             onConfirm={() => handleDeleteQuiz(quiz.quizId)}
             okText="წაშლა"
@@ -321,14 +321,14 @@ export const Quizzes: React.FC = () => {
           onClick={() => { setEditingQuiz(null); form.resetFields(); setPhotoFile(null); setIsModalVisible(true); }}
           size="large"
         >
-          ახალი ვიქტორინა
+          ახალი ქვიზი
         </Button>
       </div>
 
       {/* Stats */}
       <Row gutter={16}>
         {[
-          { title: 'სულ ვიქტორინა', value: totalQuizzes, icon: <TrophyOutlined /> },
+          { title: 'სულ ქვიზი', value: totalQuizzes, icon: <TrophyOutlined /> },
           { title: 'ნაჩვენები', value: quizzes.length, icon: <TrophyOutlined /> },
           { title: 'კითხვები', value: 0, icon: <QuestionCircleOutlined /> },
         ].map((stat, i) => (
@@ -374,7 +374,7 @@ export const Quizzes: React.FC = () => {
                 <SearchOutlined className="mr-1" />სახელი
               </Text>
               <Input.Search
-                placeholder="ვიქტორინის სახელი..."
+                placeholder="ქვიზის სახელი..."
                 allowClear
                 value={nameInput}
                 onChange={(e) => {
@@ -588,7 +588,7 @@ export const Quizzes: React.FC = () => {
 
       {/* Create / Edit Modal */}
       <Modal
-        title={editingQuiz ? 'ვიქტორინის რედაქტირება' : 'ახალი ვიქტორინა'}
+        title={editingQuiz ? 'ქვიზის რედაქტირება' : 'ახალი ქვიზი'}
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
@@ -602,13 +602,13 @@ export const Quizzes: React.FC = () => {
         >
           <Form.Item
             name="quizName"
-            label="ვიქტორინის სახელი"
+            label="ქვიზის სახელი"
             rules={[
               { required: true, message: 'გთხოვთ შეიყვანოთ სახელი' },
               { min: 3, message: 'მინიმუმ 3 სიმბოლო' },
             ]}
           >
-            <Input placeholder="მაგ: მუღამის ვიქტორინა" />
+            <Input placeholder="მაგ: მუღამის ქვიზი" />
           </Form.Item>
 
           <Form.Item name="categoryId" label="კატეგორია" rules={[{ required: true, message: 'გთხოვთ აირჩიოთ კატეგორია' }]}>
@@ -632,7 +632,7 @@ export const Quizzes: React.FC = () => {
             <Select placeholder="არასავალდებულო" allowClear options={subOptions[form.getFieldValue('categoryId')] || []} />
           </Form.Item>
 
-          <Form.Item label="ვიქტორინის ფოტო">
+          <Form.Item label="ქვიზის ფოტო">
             <Upload beforeUpload={(f) => { setPhotoFile(f); return false; }} onRemove={() => setPhotoFile(null)} maxCount={1} accept="image/*">
               <Button icon={<UploadOutlined />}>ფოტოს ატვირთვა</Button>
             </Upload>

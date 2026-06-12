@@ -37,7 +37,7 @@ const useDashboardStore = create<DashboardStore>((set) => ({
       const data = await dashboardService.getQuizStats(page, size);
       set({ quizStats: data, quizStatsLoading: false });
     } catch (error) {
-      set({ error: getErrorMessage(error, 'ვიქტორინის სტატისტიკის ჩატვირთვა ვერ მოხერხდა'), quizStatsLoading: false });
+      set({ error: getErrorMessage(error, 'ქვიზის სტატისტიკის ჩატვირთვა ვერ მოხერხდა'), quizStatsLoading: false });
     }
   },
 }));

@@ -442,7 +442,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
   ];
 
   if (!currentQuiz) {
-    return <div>ვიქტორინა იტვირთება...</div>;
+    return <div>ქვიზი იტვირთება...</div>;
   }
 
   return (
@@ -497,7 +497,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
           </Card>
         </Col>
         <Col span={16}>
-          <Card title="ვიქტორინის სტატისტიკა">
+          <Card title="ქვიზის სტატისტიკა">
             <Row gutter={16}>
               <Col span={8}>
                 <div className="text-center">
@@ -520,7 +520,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
                   <Title level={3} className="text-purple-600">
                     {currentQuiz.hasPhoto ? 'დიახ' : 'არა'}
                   </Title>
-                  <Text>ვიქტორინის ფოტო</Text>
+                  <Text>ქვიზის ფოტო</Text>
                 </div>
               </Col>
             </Row>
@@ -718,7 +718,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
 
       {/* Add Quiz Photo Modal */}
       <Modal
-        title="ვიქტორინის ფოტოს დამატება"
+        title="ქვიზის ფოტოს დამატება"
         open={isPhotoModalVisible}
         onCancel={() => setIsPhotoModalVisible(false)}
         footer={null}

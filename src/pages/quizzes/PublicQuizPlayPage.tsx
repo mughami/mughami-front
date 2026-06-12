@@ -486,7 +486,7 @@ const PublicQuizPlayPage: React.FC = () => {
             </div>
             <div>
               <Title level={3} className="!mb-1">
-                შენ წარმატებით გაიარე ვიქტორინა!
+                შენ წარმატებით გაიარე ქვიზი!
               </Title>
               <Text type="secondary">შექმენი ანგარიში და მიიღე სრული გამოცდილება</Text>
             </div>
@@ -622,7 +622,7 @@ const PublicQuizPlayPage: React.FC = () => {
                   <span className="text-amber-700 font-semibold text-sm">გააგრძელე სწავლა</span>
                 </div>
                 <Title level={3} className="!mb-2 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                  რეკომენდებული ვიქტორინები
+                  რეკომენდებული ქვიზები
                 </Title>
                 <Text className="text-gray-500">აირჩიე შემდეგი გამოწვევა და გააუმჯობესე შენი ცოდნა</Text>
               </div>

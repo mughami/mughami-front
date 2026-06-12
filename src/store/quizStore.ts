@@ -131,7 +131,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       });
     } catch (error) {
       set({
-        error: getErrorMessage(error, 'ვიქტორინების ჩატვირთვა ვერ მოხერხდა'),
+        error: getErrorMessage(error, 'ქვიზების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -148,7 +148,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       });
     } catch (error) {
       set({
-        error: getErrorMessage(error, 'ვიქტორინების ჩატვირთვა ვერ მოხერხდა'),
+        error: getErrorMessage(error, 'ქვიზების ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -164,7 +164,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       });
     } catch (error) {
       set({
-        error: getErrorMessage(error, 'ვიქტორინის ჩატვირთვა ვერ მოხერხდა'),
+        error: getErrorMessage(error, 'ქვიზის ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -204,7 +204,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       }
     } catch (error) {
       set({
-        error: getErrorMessage(error, 'ვიქტორინის ჩატვირთვა ვერ მოხერხდა'),
+        error: getErrorMessage(error, 'ქვიზის ჩატვირთვა ვერ მოხერხდა'),
         loading: false,
       });
     }
@@ -284,7 +284,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       return newQuiz;
     } catch (error) {
       set({
-        error: getErrorMessage(error, 'ვიქტორინის შექმნა ვერ მოხერხდა'),
+        error: getErrorMessage(error, 'ქვიზის შექმნა ვერ მოხერხდა'),
         loading: false,
       });
       throw error;
@@ -339,7 +339,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       }));
       return updated;
     } catch (error) {
-      set({ loading: false, error: getErrorMessage(error, 'ვიქტორინის განახლება ვერ მოხერხდა') });
+      set({ loading: false, error: getErrorMessage(error, 'ქვიზის განახლება ვერ მოხერხდა') });
       throw error;
     }
   },
@@ -354,7 +354,7 @@ export const useQuizStore = create<QuizState>((set) => ({
         loading: false,
       }));
     } catch (error) {
-      set({ loading: false, error: getErrorMessage(error, 'ვიქტორინის წაშლა ვერ მოხერხდა') });
+      set({ loading: false, error: getErrorMessage(error, 'ქვიზის წაშლა ვერ მოხერხდა') });
       throw error;
     }
   },
@@ -487,7 +487,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       return photoUrl;
     } catch (error) {
       set({
-        error: getErrorMessage(error, 'ვიქტორინის ფოტოს ჩატვირთვა ვერ მოხერხდა'),
+        error: getErrorMessage(error, 'ქვიზის ფოტოს ჩატვირთვა ვერ მოხერხდა'),
       });
       return '';
     }
@@ -535,7 +535,7 @@ export const useQuizStore = create<QuizState>((set) => ({
       });
     } catch (error) {
       set({
-        error: getErrorMessage(error, 'ვიქტორინის დაწყება ვერ მოხერხდა'),
+        error: getErrorMessage(error, 'ქვიზის დაწყება ვერ მოხერხდა'),
         loading: false,
       });
     }

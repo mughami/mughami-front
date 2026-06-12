@@ -225,7 +225,7 @@ const Home = () => {
                         size="large"
                         className="text-white bg-gradient-to-r from-green-500 to-green-600 border-0 hover:from-green-600 hover:to-green-700 h-16 px-12 text-xl font-bold rounded-2xl shadow-2xl hover:shadow-green-300/30 transform hover:scale-105 transition-all duration-300"
                       >
-                        🔓 ღია ვიქტორინები
+                        🔓 ღია ქვიზები
                         <RightOutlined className="ml-2" />
                       </Button>
                     </Link>
@@ -237,7 +237,7 @@ const Home = () => {
                         size="large"
                         className="bg-gradient-to-r from-green-400 to-green-500 text-white hover:from-green-500 hover:to-green-600 border-0 h-16 px-12 text-xl font-bold rounded-2xl shadow-2xl hover:shadow-green-300/30 transform hover:scale-105 transition-all duration-300"
                       >
-                        🔓 ღია ვიქტორინები
+                        🔓 ღია ქვიზები
                         <RightOutlined className="ml-2" />
                       </Button>
                     </Link>

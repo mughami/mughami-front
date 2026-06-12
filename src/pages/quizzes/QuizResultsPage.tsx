@@ -51,7 +51,7 @@ const QuizResultsPage: React.FC = () => {
 
   const getQuizName = (quizId: number) => {
     const quiz = quizzes.find((q) => q.quizId === quizId);
-    return quiz ? quiz.quizName : `ვიქტორინა ${quizId}`;
+    return quiz ? quiz.quizName : `ქვიზი ${quizId}`;
   };
 
   const formatDate = (dateString: string) => {
@@ -96,9 +96,9 @@ const QuizResultsPage: React.FC = () => {
             <div>
               <Title level={2} className="mb-2">
                 <HistoryOutlined className="mr-2" />
-                ვიქტორინების ისტორია
+                ქვიზების ისტორია
               </Title>
-              <Text className="text-gray-600">თქვენი ყველა ვიქტორინის შედეგი</Text>
+              <Text className="text-gray-600">თქვენი ყველა ქვიზის შედეგი</Text>
             </div>
           </div>
         </div>
@@ -109,7 +109,7 @@ const QuizResultsPage: React.FC = () => {
             <Col xs={24} sm={12} lg={6}>
               <Card>
                 <Statistic
-                  title="სულ ვიქტორინები"
+                  title="სულ ქვიზები"
                   value={stats.totalQuizzes}
                   prefix={<TrophyOutlined />}
                   valueStyle={{ color: '#1890ff' }}
@@ -153,13 +153,13 @@ const QuizResultsPage: React.FC = () => {
         {/* Quiz Results List */}
         <Card>
           <Title level={3} className="mb-6">
-            ვიქტორინების სია
+            ქვიზების სია
           </Title>
 
           {Object.keys(quizResults).length === 0 ? (
-            <Empty description="თქვენ ჯერ არ გაქვთ ვიქტორინების ისტორია" className="py-12">
+            <Empty description="თქვენ ჯერ არ გაქვთ ქვიზების ისტორია" className="py-12">
               <Button type="primary" onClick={() => navigate('/')}>
-                დაწყება ვიქტორინების
+                დაწყება ქვიზების
               </Button>
             </Empty>
           ) : (

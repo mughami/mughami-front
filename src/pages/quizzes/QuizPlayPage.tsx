@@ -309,7 +309,7 @@ const QuizPlayPage: React.FC = () => {
           loading: false,
         });
       } catch (error) {
-        let msg = 'ვიქტორინის დაწყება ვერ მოხერხდა';
+        let msg = 'ქვიზის დაწყება ვერ მოხერხდა';
         if (isAxiosError(error) && error.response?.status === 400) {
           const serverMsg: string = error.response.data?.message ?? '';
           if (serverMsg.toLowerCase().includes('already completed')) {
@@ -405,7 +405,7 @@ const QuizPlayPage: React.FC = () => {
         <div className="flex justify-center items-center py-20">
           <div className="text-center">
             <Spin size="large" />
-            <div className="mt-4 text-gray-600">იტვირთება ვიქტორინა...</div>
+            <div className="mt-4 text-gray-600">იტვირთება ქვიზი...</div>
           </div>
         </div>
       </Layout>
@@ -440,7 +440,7 @@ const QuizPlayPage: React.FC = () => {
           <div className="max-w-md mx-auto">
             <div className="text-gray-400 text-6xl mb-4">🔍</div>
             <Title level={3} className="text-gray-600 mb-4">
-              ვიქტორინა ვერ მოიძებნა
+              ქვიზი ვერ მოიძებნა
             </Title>
             <Button type="primary" size="large" onClick={() => navigate('/')}>
               დაბრუნება მთავარ გვერდზე
@@ -549,7 +549,7 @@ const QuizPlayPage: React.FC = () => {
                 className="px-12 w-full max-w-[300px] py-3 h-auto text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 icon={<PlayCircleOutlined />}
               >
-                ვიქტორინის დაწყება
+                ქვიზის დაწყება
               </Button>
             </Space>
           </Card>
@@ -611,7 +611,7 @@ const QuizPlayPage: React.FC = () => {
             title={
               <div className="text-center">
                 <Title level={2} className="mb-2">
-                  {tournamentId ? 'ტურნირის ვიქტორინა დასრულდა!' : 'ვიქტორინა დასრულდა!'}
+                  {tournamentId ? 'ტურნირის ქვიზი დასრულდა!' : 'ქვიზი დასრულდა!'}
                 </Title>
                 <Badge count={grade} color={gradeColor} className="text-2xl font-bold" />
               </div>
@@ -835,7 +835,7 @@ const QuizPlayPage: React.FC = () => {
                     level={3}
                     className="!mb-2 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent "
                   >
-                    რეკომენდებული ვიქტორინები
+                    რეკომენდებული ქვიზები
                   </Title>
                 </div>
 

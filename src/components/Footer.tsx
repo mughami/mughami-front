@@ -104,7 +104,7 @@ const Footer = () => {
                     className="text-gray-300 hover:text-primary transition-colors duration-300 flex items-center group"
                   >
                     <RightOutlined className="mr-2 text-xs group-hover:translate-x-1 transition-transform duration-300" />
-                    ღია ვიქტორინები
+                    ღია ქვიზები
                   </Link>
                 </li>
                 <li>

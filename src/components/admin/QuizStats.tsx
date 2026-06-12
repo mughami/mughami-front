@@ -61,7 +61,7 @@ const QuizStats = () => {
 
   const columns: ColumnsType<RowType> = [
     {
-      title: 'ვიქტორინა',
+      title: 'ქვიზი',
       dataIndex: 'quizName',
       key: 'quizName',
     },
@@ -237,7 +237,7 @@ const QuizStats = () => {
   };
 
   return (
-    <Card title="ვიქტორინის სტატისტიკა">
+    <Card title="ქვიზის სტატისტიკა">
       <div className="mb-4 flex items-center justify-between">
         <Segmented
           value={metric}

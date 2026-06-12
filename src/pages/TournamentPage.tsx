@@ -437,7 +437,7 @@ const TournamentPage: React.FC = () => {
                 level={1}
                 className="!mb-2 sm:!mb-3 !text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold"
               >
-                ვიქტორინის ტურნირები
+                ქვიზის ტურნირები
               </Title>
 
               <Text className="text-white/80 text-sm sm:text-base lg:text-lg max-w-xl sm:max-w-2xl mx-auto block px-4">
