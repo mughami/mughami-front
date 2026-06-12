@@ -172,8 +172,8 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
         ? await publicQuizService.getPublicQuizQuestions(quizId, page, size)
         : await guestQuizService.getGuestQuizQuestions(quizId, page, size);
       set({
-        currentQuestions: response.content,
-        totalQuestions: response.totalElements,
+        currentQuestions: response.content ?? [],
+        totalQuestions: response.totalElements ?? 0,
         loading: false,
       });
     } catch (error) {
@@ -223,7 +223,7 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
         // Fetch questions for guest flow (optional prefetch)
         try {
           const q = await guestQuizService.getGuestQuizQuestions(quizId, 0, 50);
-          set({ currentQuestions: q.content, totalQuestions: q.totalElements });
+          set({ currentQuestions: q.content ?? [], totalQuestions: q.totalElements ?? 0 });
         } catch {
           // ignore prefetch failure
         }
