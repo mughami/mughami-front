@@ -1022,7 +1022,8 @@ const QuizPlayPage: React.FC = () => {
             {currentQuestion.answers.map((answer, index) => {
               const isSelected = getSelectedAnswer(currentQuestion.id) === index;
               const isCorrect = isAnswerCorrect(currentQuestion.id, index);
-              const revealed = submittedQuestions[currentQuestion.id];
+              // For tournament quizzes, don't reveal whether the answer is correct/incorrect while playing
+              const revealed = !tournamentId && submittedQuestions[currentQuestion.id];
               const showCorrect = revealed && isCorrect;
               const showIncorrect = revealed && isSelected && !isCorrect;
 
