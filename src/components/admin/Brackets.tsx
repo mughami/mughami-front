@@ -569,9 +569,12 @@ export const Brackets = () => {
               ]}
             />
           </Form.Item>
-          <Form.Item name="categoryId" label="კატეგორია">
+          <Form.Item
+            name="categoryId"
+            label="კატეგორია"
+            rules={[{ required: true, message: 'გთხოვთ აირჩიოთ კატეგორია' }]}
+          >
             <Select
-              allowClear
               placeholder="აირჩიეთ კატეგორია"
               onChange={() => createForm.setFieldsValue({ subcategoryId: undefined })}
               options={categoryOptions}
@@ -624,9 +627,12 @@ export const Brackets = () => {
               ]}
             />
           </Form.Item>
-          <Form.Item name="categoryId" label="კატეგორია">
+          <Form.Item
+            name="categoryId"
+            label="კატეგორია"
+            rules={[{ required: true, message: 'გთხოვთ აირჩიოთ კატეგორია' }]}
+          >
             <Select
-              allowClear
               placeholder="აირჩიეთ კატეგორია"
               onChange={() => editForm.setFieldsValue({ subcategoryId: undefined })}
               options={categoryOptions}
