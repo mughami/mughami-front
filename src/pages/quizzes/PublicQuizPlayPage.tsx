@@ -124,10 +124,15 @@ const PublicQuizPlayPage: React.FC = () => {
 
     if (quizId) {
       const id = parseInt(quizId);
+      // Reset any leftover playing state from a previously played quiz so the
+      // new quiz starts from its intro screen / first question.
+      resetQuiz();
+      setSubmittedQuestions({});
+      setTimeSpent(0);
       fetchPublicQuiz(id);
       fetchPublicQuizQuestions(id, 0, 50);
     }
-  }, [quizId, fetchPublicQuiz, fetchPublicQuizQuestions]);
+  }, [quizId, fetchPublicQuiz, fetchPublicQuizQuestions, resetQuiz]);
 
   // No persisted results (localStorage disabled)
 
