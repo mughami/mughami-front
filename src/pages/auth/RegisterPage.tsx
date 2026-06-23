@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { SubmitHandler } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   EyeOutlined,
   EyeInvisibleOutlined,
@@ -34,6 +34,10 @@ const RegisterPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const { register: registerUser } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Carry the intended post-auth destination (e.g. a quiz play page) through
+  // the verification flow so the user lands back where they started.
+  const from = (location.state as { from?: string } | null)?.from;
   const [api, contextHolder] = notification.useNotification();
 
   const {
@@ -64,7 +68,7 @@ const RegisterPage = () => {
 
       // Navigate to email verification page with email
       navigate('/verify-email', {
-        state: { email: data.email },
+        state: { email: data.email, from },
         replace: true,
       });
     } catch (error) {
@@ -546,7 +550,7 @@ const RegisterPage = () => {
           <div className="text-center mt-8">
             <p className="text-gray-600">
               უკვე გაქვთ ანგარიში?{' '}
-              <Link to="/login" className="form-link">
+              <Link to="/login" state={{ from }} className="form-link">
                 შედით ანგარიშზე
               </Link>
             </p>

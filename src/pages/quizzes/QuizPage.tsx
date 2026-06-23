@@ -13,11 +13,25 @@ import {
   Input,
   Select,
   Tag,
+  Modal,
 } from 'antd';
-import { ArrowLeftOutlined, PlayCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import {
+  ArrowLeftOutlined,
+  PlayCircleOutlined,
+  QuestionCircleOutlined,
+  LoginOutlined,
+  UserAddOutlined,
+  ArrowRightOutlined,
+  TrophyOutlined,
+  LineChartOutlined,
+  TeamOutlined,
+  SafetyCertificateOutlined,
+} from '@ant-design/icons';
 import { useQuizStore } from '../../store/quizStore';
 import { useCategoryStore } from '../../store/categoryStore';
+import { useAuthStore } from '../../store/authStore';
 import { type Category, quizService } from '../../services';
+import { guestQuizService } from '../../services/api/publicQuizService';
 import Layout from '../../components/Layout';
 
 const { Title, Text } = Typography;
@@ -30,6 +44,10 @@ const QuizPage: React.FC = () => {
   const { quizzes, loading, fetchQuizzesByCategory, getQuizPhoto } = useQuizStore();
 
   const { categories, fetchCategories, isLoading } = useCategoryStore();
+  const { isAuthenticated } = useAuthStore();
+
+  // Quiz the guest tried to play; drives the login/guest prompt modal.
+  const [pendingQuizId, setPendingQuizId] = useState<number | null>(null);
 
   const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
   const [quizPhotos, setQuizPhotos] = useState<Record<number, string>>({});
@@ -80,7 +98,33 @@ const QuizPage: React.FC = () => {
   }, [quizzes, getQuizPhoto]);
 
   const handlePlayQuiz = (quizId: number) => {
-    navigate(`/quiz/play/${quizId}`);
+    if (isAuthenticated) {
+      // Logged-in users play the full authorized flow.
+      navigate(`/quiz/play/${quizId}`);
+    } else {
+      // Guests are offered authorization before playing.
+      setPendingQuizId(quizId);
+    }
+  };
+
+  // Where to send the user back to after they authorize.
+  const authReturnPath = pendingQuizId !== null ? `/quiz/play/${pendingQuizId}` : undefined;
+
+  const handleContinueAsGuest = () => {
+    if (pendingQuizId !== null) {
+      navigate(`/public-quiz/play/${pendingQuizId}`);
+    }
+    setPendingQuizId(null);
+  };
+
+  const handleGoToLogin = () => {
+    navigate('/login', { state: { from: authReturnPath } });
+    setPendingQuizId(null);
+  };
+
+  const handleGoToRegister = () => {
+    navigate('/register', { state: { from: authReturnPath } });
+    setPendingQuizId(null);
   };
 
   const handleBackToCategories = () => {
@@ -112,6 +156,11 @@ const QuizPage: React.FC = () => {
       const results = await Promise.all(
         missing.map(async (q) => {
           try {
+            // Guests can't call /app/quiz/* (401); use the guest endpoint.
+            if (!isAuthenticated) {
+              const res = await guestQuizService.getGuestQuizQuestions(q.quizId, 0, 1);
+              return [q.quizId, res.totalElements] as const;
+            }
             const res = await quizService.getUserQuizQuestions(q.quizId, 0, 1);
             return [q.quizId, res.totalQuestions] as const;
           } catch {
@@ -132,7 +181,7 @@ const QuizPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [displayedQuizzes, questionCounts]);
+  }, [displayedQuizzes, questionCounts, isAuthenticated]);
 
   if (loading || isLoading) {
     return (
@@ -147,6 +196,91 @@ const QuizPage: React.FC = () => {
 
   return (
     <Layout>
+      <Modal
+        open={pendingQuizId !== null}
+        onCancel={() => setPendingQuizId(null)}
+        footer={null}
+        centered
+        width={500}
+        styles={{ body: { padding: '32px 28px 28px' } }}
+      >
+        <div className="text-center">
+          {/* Icon badge */}
+          <div className="mx-auto mb-5 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-indigo-200">
+            <TrophyOutlined className="text-white text-3xl" />
+          </div>
+
+          <Title level={4} className="!mb-2">
+            გაიარე ავტორიზაცია
+          </Title>
+          <Text type="secondary" className="block px-2">
+            შეინახე შედეგები და მიიღო სრული გამოცდილება
+          </Text>
+
+          {/* Benefits */}
+          <div className="my-6 space-y-3 text-left">
+            {[
+              {
+                icon: <LineChartOutlined />,
+                color: 'bg-blue-50 text-blue-500',
+                label: 'პროგრესის ისტორია',
+              },
+              {
+                icon: <TrophyOutlined />,
+                color: 'bg-amber-50 text-amber-500',
+                label: 'პრიზები და ჯილდოები',
+              },
+              { icon: <TeamOutlined />, color: 'bg-purple-50 text-purple-500', label: 'ლიდერბორდები' },
+              {
+                icon: <SafetyCertificateOutlined />,
+                color: 'bg-green-50 text-green-600',
+                label: 'დაცული შედეგები',
+              },
+            ].map((b) => (
+              <div key={b.label} className="flex items-center gap-3">
+                <span
+                  className={`inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full ${b.color}`}
+                >
+                  {b.icon}
+                </span>
+                <span className="text-sm font-medium text-gray-700">{b.label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Actions */}
+          <div className="space-y-2.5">
+            <Button
+              type="primary"
+              size="large"
+              block
+              icon={<LoginOutlined />}
+              className="h-11 font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 border-0 shadow-md hover:shadow-lg"
+              onClick={handleGoToLogin}
+            >
+              შესვლა
+            </Button>
+            <Button
+              size="large"
+              block
+              icon={<UserAddOutlined />}
+              className="h-11 font-semibold"
+              onClick={handleGoToRegister}
+            >
+              ანგარიშის შექმნა
+            </Button>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleContinueAsGuest}
+            className="group mt-4 inline-flex items-center justify-center gap-1 text-sm text-gray-400 transition-colors hover:text-gray-600"
+          >
+            გაგრძელება სტუმრის სახით
+            <ArrowRightOutlined className="text-xs transition-transform group-hover:translate-x-0.5" />
+          </button>
+        </div>
+      </Modal>
       <div className="page-content">
         {/* Hero Header */}
         <div className="relative mb-6 overflow-hidden rounded-xl">

@@ -149,22 +149,10 @@ function App() {
           }
         />
 
-        <Route
-          path="/categories"
-          element={
-            <ProtectedRoute>
-              <CategoriesPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/quizzes/:categoryId"
-          element={
-            <ProtectedRoute>
-              <QuizPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* Public: anyone can browse categories and a category's quizzes.
+            Auth is only required when actually starting a quiz (handled in QuizPage). */}
+        <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/quizzes/:categoryId" element={<QuizPage />} />
         <Route
           path="/quiz/play/:quizId"
           element={

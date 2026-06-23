@@ -40,9 +40,20 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   fetchCategories: async () => {
     try {
       set({ isLoading: true, error: null });
-      const currentUser = await useAuthStore.getState().getCurrentUser();
-      const isAdmin = currentUser?.userRole === 'ADMIN';
-      const categories = await categoryService.getCategories(isAdmin);
+      // Only resolve the admin flag for authenticated users. Calling
+      // getCurrentUser() as a guest hits an authenticated endpoint, 401s, and
+      // triggers a global force-logout/redirect — which would break the now
+      // public categories page.
+      const authState = useAuthStore.getState();
+      let isAdmin = false;
+      if (authState.isAuthenticated) {
+        const currentUser = await authState.getCurrentUser();
+        isAdmin = currentUser?.userRole === 'ADMIN';
+      }
+      const categories = await categoryService.getCategories(
+        isAdmin,
+        !authState.isAuthenticated,
+      );
       set({ categories, isLoading: false });
     } catch (error) {
       set({

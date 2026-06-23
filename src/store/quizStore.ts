@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { useAuthStore } from './index';
 import { getErrorMessage } from '../utils/errorMessages';
+import { guestQuizService } from '../services/api/publicQuizService';
 import quizService, {
   type Quiz,
   type QuizQuestion,
@@ -256,8 +257,24 @@ export const useQuizStore = create<QuizState>((set) => ({
   fetchQuizzesByCategory: async (categoryId: number, page = 0, size = 10) => {
     set({ loading: true, error: null });
     try {
-      const response: QuizResponse = await quizService.getUserQuizzes(page, size, { categoryId });
-      const verified = response.content.filter((q) => q.quizStatus === 'VERIFIED');
+      const isAuthenticated = useAuthStore.getState().isAuthenticated;
+      let verified: Quiz[];
+      if (isAuthenticated) {
+        const response: QuizResponse = await quizService.getUserQuizzes(page, size, { categoryId });
+        verified = response.content.filter((q) => q.quizStatus === 'VERIFIED');
+      } else {
+        // Guests can't call /app/quiz (401). The guest endpoint ignores the
+        // categoryId filter and also returns TOURNAMENT quizzes (which the
+        // authenticated /app/quiz view excludes), so filter both client-side
+        // to match what a logged-in user sees in the category.
+        const response: QuizResponse = await guestQuizService.getAvailableQuizzes(0, 1000);
+        verified = (response.content || []).filter(
+          (q) =>
+            q.categoryId === categoryId &&
+            q.quizStatus === 'VERIFIED' &&
+            q.quizType !== 'TOURNAMENT',
+        );
+      }
       set({
         quizzes: verified,
         totalQuizzes: verified.length,

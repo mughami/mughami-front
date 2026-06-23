@@ -1,6 +1,7 @@
 import apiClient from './client';
 import type { CategoryResponse, CategoryRequest } from '../../types';
-import quizService, { type QuizResponse } from './quizService';
+import quizService, { type QuizResponse, type Quiz } from './quizService';
+import { guestQuizService } from './publicQuizService';
 
 // Legacy category interface for backward compatibility
 export interface Category {
@@ -82,10 +83,36 @@ const convertToLegacyCategory = (
 
 const categoryService = {
   // Public methods that use real API data
-  getCategories: async (useAdmin: boolean = false): Promise<Category[]> => {
+  getCategories: async (
+    useAdmin: boolean = false,
+    isGuest: boolean = false,
+  ): Promise<Category[]> => {
     try {
       const endpoint = useAdmin ? '/admin/category' : '/app/category';
       const response = await apiClient.get<CategoryResponse[]>(endpoint);
+
+      // Guests can't call /app/quiz (401). Pull the public guest quiz list once
+      // and count VERIFIED, non-tournament quizzes per category client-side
+      // (matching what the authenticated /app/quiz view returns).
+      if (isGuest) {
+        let guestQuizzes: Quiz[] = [];
+        try {
+          const res = await guestQuizService.getAvailableQuizzes(0, 1000);
+          guestQuizzes = res.content || [];
+        } catch {
+          guestQuizzes = [];
+        }
+        return response.data.map((category, index) => {
+          const count = guestQuizzes.filter(
+            (q) =>
+              q.categoryId === category.categoryId &&
+              q.quizStatus === 'VERIFIED' &&
+              q.quizType !== 'TOURNAMENT',
+          ).length;
+          return convertToLegacyCategory(category, index, count);
+        });
+      }
+
       // Fetch real quiz counts per category in parallel (filter VERIFIED for non-admin)
       const counts: number[] = await Promise.all(
         response.data.map(async (category) => {

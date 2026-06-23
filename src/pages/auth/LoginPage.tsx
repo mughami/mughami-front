@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { SubmitHandler } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { EyeOutlined, EyeInvisibleOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import Footer from '../../components/Footer';
 import { useAuthStore } from '../../store/authStore';
@@ -16,6 +16,10 @@ type LoginFormInputs = {
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  // Path the user was trying to reach before being asked to authorize
+  // (e.g. a quiz play page). Falls back to the categories page.
+  const from = (location.state as { from?: string } | null)?.from;
   const {
     register,
     handleSubmit,
@@ -37,7 +41,7 @@ const LoginPage = () => {
       if (user.userRole === UserRole.ADMIN) {
         navigate('/admin');
       } else {
-        navigate('/categories');
+        navigate(from || '/categories');
       }
     }
   };
@@ -55,7 +59,7 @@ const LoginPage = () => {
           <h2 className="auth-heading">შესვლა თქვენს ანგარიშზე</h2>
           <p className="auth-subheading">
             ან{' '}
-            <Link to="/register" className="form-link">
+            <Link to="/register" state={{ from }} className="form-link">
               შექმენით ახალი ანგარიში
             </Link>
           </p>

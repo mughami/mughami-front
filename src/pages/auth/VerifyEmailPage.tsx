@@ -19,6 +19,8 @@ const VerifyEmailPage = () => {
 
   // Get email from navigation state if available
   const emailFromRegistration = location.state?.email || '';
+  // Intended post-auth destination carried through from registration.
+  const from = (location.state as { from?: string } | null)?.from;
 
   const {
     register,
@@ -42,7 +44,7 @@ const VerifyEmailPage = () => {
       });
 
       setTimeout(() => {
-        navigate('/login');
+        navigate('/login', { state: { from } });
       }, 2000);
     } catch (error) {
       console.error('Verification error:', error);

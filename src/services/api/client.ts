@@ -12,12 +12,39 @@ const apiClient = axios.create({
   },
 });
 
-// Clear auth state and redirect to login
+// Routes that guests are allowed to view. A failed token refresh on one of
+// these must NOT bounce the visitor to /login — they should just become a guest.
+const PUBLIC_PATH_PREFIXES = [
+  '/',
+  '/login',
+  '/register',
+  '/verify-email',
+  '/forgot-password',
+  '/categories',
+  '/quizzes',
+  '/public-quizzes',
+  '/public-quiz',
+  '/polls',
+  '/brackets',
+];
+
+const isOnPublicPath = (): boolean => {
+  const path = window.location.pathname;
+  return PUBLIC_PATH_PREFIXES.some((p) => (p === '/' ? path === '/' : path.startsWith(p)));
+};
+
+// Clear auth state. On protected pages, redirect to login. On public pages,
+// reload as a guest so stale in-memory auth state is reset without disrupting
+// the visitor with an unwanted login redirect.
 const forceLogout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('auth-storage');
-  window.location.href = '/login';
+  if (isOnPublicPath()) {
+    window.location.reload();
+  } else {
+    window.location.href = '/login';
+  }
 };
 
 // --- Single-flight refresh ----------------------------------------------
@@ -87,8 +114,11 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // If error is 401 and we haven't tried to refresh token yet
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // If error is 401 and we haven't tried to refresh token yet.
+    // Skip entirely for guests (no stored token): there is nothing to refresh
+    // and we must not redirect them to /login from public pages.
+    const hasToken = !!localStorage.getItem('token');
+    if (error.response?.status === 401 && !originalRequest._retry && hasToken) {
       originalRequest._retry = true;
 
       try {
