@@ -79,7 +79,7 @@ const Header = () => {
             <div className="hidden sm:flex items-center">
               <Link
                 to="/"
-                className="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors"
+                className="px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors"
               >
                 <HomeOutlined className="mr-1" />
                 მთავარი
@@ -92,7 +92,7 @@ const Header = () => {
             <div className="sm:hidden py-2 pb-4 space-y-1">
               <Link
                 to="/"
-                className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors"
+                className="block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <HomeOutlined className="mr-1" />
@@ -138,7 +138,7 @@ const Header = () => {
             <div className="hidden xl:flex items-center">
               <Link
                 to="/"
-                className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                className={`px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                   location.pathname === '/' ? 'bg-primary-dark' : ''
                 }`}
               >
@@ -147,7 +147,7 @@ const Header = () => {
 
               <Link
                 to="/public-quizzes"
-                className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                className={`ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                   location.pathname === '/public-quizzes' ? 'bg-primary-dark' : ''
                 }`}
               >
@@ -156,7 +156,7 @@ const Header = () => {
 
               <Link
                 to="/categories"
-                className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                className={`ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                   location.pathname === '/categories' ? 'bg-primary-dark' : ''
                 }`}
               >
@@ -165,7 +165,7 @@ const Header = () => {
 
               <Link
                 to="/polls"
-                className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                className={`ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                   location.pathname === '/polls' ? 'bg-primary-dark' : ''
                 }`}
               >
@@ -174,7 +174,7 @@ const Header = () => {
 
               <Link
                 to="/brackets"
-                className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+                className={`ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                   location.pathname.startsWith('/brackets') ? 'bg-primary-dark' : ''
                 }`}
               >
@@ -183,7 +183,7 @@ const Header = () => {
 
               <Link
                 to="/login"
-                className="ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors"
+                className="ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors"
               >
                 <TrophyOutlined className="mr-1" /> ტურნირები
               </Link>
@@ -191,13 +191,13 @@ const Header = () => {
               <div className="ml-6 flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="px-3 py-1.5 rounded-md text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 transition-colors inline-flex items-center"
+                  className="px-3 py-1.5 rounded-md text-[13px] font-medium text-white/90 hover:text-white hover:bg-white/10 transition-colors inline-flex items-center"
                 >
                   <LoginOutlined className="mr-1" /> შესვლა
                 </Link>
                 <Link
                   to="/register"
-                  className="px-3 py-1.5 rounded-md text-sm font-semibold text-white bg-white/20 hover:bg-white/30 transition-colors inline-flex items-center"
+                  className="px-3 py-1.5 rounded-md text-[13px] font-semibold text-white bg-white/20 hover:bg-white/30 transition-colors inline-flex items-center"
                 >
                   <UserAddOutlined className="mr-1" /> რეგისტრაცია
                 </Link>
@@ -210,7 +210,7 @@ const Header = () => {
             <div className="xl:hidden py-2 pb-4 space-y-1">
               <Link
                 to="/"
-                className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                className={`block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                   location.pathname === '/' ? 'bg-primary-dark' : ''
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
@@ -219,7 +219,7 @@ const Header = () => {
               </Link>
               <Link
                 to="/public-quizzes"
-                className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                className={`block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                   location.pathname === '/public-quizzes' ? 'bg-primary-dark' : ''
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
@@ -228,7 +228,7 @@ const Header = () => {
               </Link>
               <Link
                 to="/categories"
-                className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                className={`block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                   location.pathname === '/categories' ? 'bg-primary-dark' : ''
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
@@ -237,7 +237,7 @@ const Header = () => {
               </Link>
               <Link
                 to="/polls"
-                className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                className={`block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                   location.pathname === '/polls' ? 'bg-primary-dark' : ''
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
@@ -246,7 +246,7 @@ const Header = () => {
               </Link>
               <Link
                 to="/brackets"
-                className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+                className={`block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                   location.pathname.startsWith('/brackets') ? 'bg-primary-dark' : ''
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
@@ -255,7 +255,7 @@ const Header = () => {
               </Link>
               <Link
                 to="/login"
-                className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors"
+                className="block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <TrophyOutlined className="mr-1" /> ტურნირები
@@ -263,13 +263,13 @@ const Header = () => {
               <div className="pt-2 flex items-center gap-2 px-3">
                 <Link
                   to="/login"
-                  className="flex-1 text-center px-3 py-2 rounded-md text-base font-medium text-white/90 hover:text-white hover:bg-white/10 transition-colors"
+                  className="flex-1 text-center px-3 py-2 rounded-md text-[13px] font-medium text-white/90 hover:text-white hover:bg-white/10 transition-colors"
                 >
                   შესვლა
                 </Link>
                 <Link
                   to="/register"
-                  className="flex-1 text-center px-3 py-2 rounded-md text-base font-semibold text-white bg-white/20 hover:bg-white/30 transition-colors"
+                  className="flex-1 text-center px-3 py-2 rounded-md text-[13px] font-semibold text-white bg-white/20 hover:bg-white/30 transition-colors"
                 >
                   რეგისტრაცია
                 </Link>
@@ -313,7 +313,7 @@ const Header = () => {
           <div className="hidden xl:flex items-center space-x-4">
             <Link
               to="/"
-              className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                 location.pathname === '/' ? 'bg-primary-dark' : ''
               }`}
             >
@@ -322,7 +322,7 @@ const Header = () => {
 
             <Link
               to="/public-quizzes"
-              className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                 location.pathname === '/public-quizzes' ? 'bg-primary-dark' : ''
               }`}
             >
@@ -332,7 +332,7 @@ const Header = () => {
 
             <Link
               to="/categories"
-              className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                 location.pathname === '/categories' ? 'bg-primary-dark' : ''
               }`}
             >
@@ -341,7 +341,7 @@ const Header = () => {
 
             <Link
               to="/tournaments"
-              className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                 location.pathname === '/tournaments' ? 'bg-primary-dark' : ''
               }`}
             >
@@ -351,7 +351,7 @@ const Header = () => {
 
             <Link
               to="/polls"
-              className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                 location.pathname === '/polls' ? 'bg-primary-dark' : ''
               }`}
             >
@@ -361,7 +361,7 @@ const Header = () => {
 
             <Link
               to="/brackets"
-              className={`ml-4 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                 location.pathname.startsWith('/brackets') ? 'bg-primary-dark' : ''
               }`}
             >
@@ -372,7 +372,7 @@ const Header = () => {
             {/* More dropdown to reduce clutter on smaller desktop widths */}
             <div className="ml-4 relative">
               <button
-                className="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-primary-dark transition-colors inline-flex items-center"
+                className="px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors inline-flex items-center"
                 onClick={() => setMoreOpen((prev) => !prev)}
               >
                 <MoreOutlined className="mr-1" /> მეტი
@@ -383,14 +383,14 @@ const Header = () => {
                   <div className="py-1">
                     {/* <Link
                       to="/leaderboard"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-[13px] text-gray-700 hover:bg-gray-100"
                       onClick={() => setMoreOpen(false)}
                     >
                       <TrophyOutlined className="mr-2 text-yellow-500" /> ლიდერბორდი
                     </Link> */}
                     <Link
                       to="/quiz/results"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-[13px] text-gray-700 hover:bg-gray-100"
                       onClick={() => setMoreOpen(false)}
                     >
                       <HistoryOutlined className="mr-2 text-blue-500" /> ჩემი შედეგები
@@ -398,7 +398,7 @@ const Header = () => {
                     {isAdmin && (
                       <Link
                         to="/admin"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block px-4 py-2 text-[13px] text-gray-700 hover:bg-gray-100"
                         onClick={() => setMoreOpen(false)}
                       >
                         <DashboardOutlined className="mr-2 text-purple-500" /> ადმინ პანელი
@@ -406,13 +406,13 @@ const Header = () => {
                     )}
                     <Link
                       to="/profile"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-[13px] text-gray-700 hover:bg-gray-100"
                       onClick={() => setMoreOpen(false)}
                     >
                       <UserOutlined className="mr-2 text-gray-700" /> პროფილი
                     </Link>
                     <button
-                      className="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                      className="w-full text-left block px-4 py-2 text-[13px] text-red-600 hover:bg-gray-100"
                       onClick={() => {
                         setShowLogoutConfirm(true);
                         setMoreOpen(false);
@@ -432,7 +432,7 @@ const Header = () => {
           <div className="xl:hidden py-2 pb-4 space-y-1">
             <Link
               to="/"
-              className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                 location.pathname === '/' ? 'bg-primary-dark' : ''
               }`}
               onClick={() => setMobileMenuOpen(false)}
@@ -442,7 +442,7 @@ const Header = () => {
 
             <Link
               to="/public-quizzes"
-              className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                 location.pathname === '/public-quizzes' ? 'bg-primary-dark' : ''
               }`}
               onClick={() => setMobileMenuOpen(false)}
@@ -453,7 +453,7 @@ const Header = () => {
 
             <Link
               to="/categories"
-              className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                 location.pathname === '/categories' ? 'bg-primary-dark' : ''
               }`}
               onClick={() => setMobileMenuOpen(false)}
@@ -463,7 +463,7 @@ const Header = () => {
 
             <Link
               to="/tournaments"
-              className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                 location.pathname === '/tournaments' ? 'bg-primary-dark' : ''
               }`}
               onClick={() => setMobileMenuOpen(false)}
@@ -474,7 +474,7 @@ const Header = () => {
 
             <Link
               to="/polls"
-              className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                 location.pathname === '/polls' ? 'bg-primary-dark' : ''
               }`}
               onClick={() => setMobileMenuOpen(false)}
@@ -485,7 +485,7 @@ const Header = () => {
 
             <Link
               to="/brackets"
-              className={`block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
                 location.pathname.startsWith('/brackets') ? 'bg-primary-dark' : ''
               }`}
               onClick={() => setMobileMenuOpen(false)}
@@ -496,7 +496,7 @@ const Header = () => {
 
             <Link
               to="/quiz/results"
-              className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors"
+              className="block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               <HistoryOutlined className="mr-1" />
@@ -506,7 +506,7 @@ const Header = () => {
             {isAdmin && (
               <Link
                 to="/admin"
-                className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors"
+                className="block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <DashboardOutlined className="mr-1" />
@@ -516,7 +516,7 @@ const Header = () => {
 
             <Link
               to="/profile"
-              className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors"
+              className="block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               <UserOutlined className="mr-1" />
@@ -524,7 +524,7 @@ const Header = () => {
             </Link>
 
             <button
-              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-dark transition-colors"
+              className="block w-full text-left px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors"
               onClick={() => setShowLogoutConfirm(true)}
             >
               <LogoutOutlined className="mr-1" />
