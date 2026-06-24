@@ -125,7 +125,7 @@ const Header = () => {
             </div>
 
             {/* Mobile menu button */}
-            <div className="flex items-center xl:hidden">
+            <div className="flex items-center lg:hidden">
               <button
                 onClick={toggleMobileMenu}
                 className="text-white hover:bg-primary-dark p-2 rounded-md"
@@ -135,10 +135,10 @@ const Header = () => {
             </div>
 
             {/* Desktop menu for unauthenticated users */}
-            <div className="hidden xl:flex items-center">
+            <div className="hidden lg:flex items-center gap-1 xl:gap-2">
               <Link
                 to="/"
-                className={`px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
+                className={`px-2 xl:px-3 py-2 rounded-md text-[12px] xl:text-[13px] font-medium text-white hover:bg-primary-dark transition-colors whitespace-nowrap ${
                   location.pathname === '/' ? 'bg-primary-dark' : ''
                 }`}
               >
@@ -147,7 +147,7 @@ const Header = () => {
 
               <Link
                 to="/public-quizzes"
-                className={`ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
+                className={`px-2 xl:px-3 py-2 rounded-md text-[12px] xl:text-[13px] font-medium text-white hover:bg-primary-dark transition-colors whitespace-nowrap ${
                   location.pathname === '/public-quizzes' ? 'bg-primary-dark' : ''
                 }`}
               >
@@ -156,7 +156,7 @@ const Header = () => {
 
               <Link
                 to="/categories"
-                className={`ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
+                className={`px-2 xl:px-3 py-2 rounded-md text-[12px] xl:text-[13px] font-medium text-white hover:bg-primary-dark transition-colors whitespace-nowrap ${
                   location.pathname === '/categories' ? 'bg-primary-dark' : ''
                 }`}
               >
@@ -165,7 +165,7 @@ const Header = () => {
 
               <Link
                 to="/polls"
-                className={`ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
+                className={`px-2 xl:px-3 py-2 rounded-md text-[12px] xl:text-[13px] font-medium text-white hover:bg-primary-dark transition-colors whitespace-nowrap ${
                   location.pathname === '/polls' ? 'bg-primary-dark' : ''
                 }`}
               >
@@ -174,7 +174,7 @@ const Header = () => {
 
               <Link
                 to="/brackets"
-                className={`ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
+                className={`px-2 xl:px-3 py-2 rounded-md text-[12px] xl:text-[13px] font-medium text-white hover:bg-primary-dark transition-colors whitespace-nowrap ${
                   location.pathname.startsWith('/brackets') ? 'bg-primary-dark' : ''
                 }`}
               >
@@ -183,21 +183,21 @@ const Header = () => {
 
               <Link
                 to="/login"
-                className="ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors"
+                className="px-2 xl:px-3 py-2 rounded-md text-[12px] xl:text-[13px] font-medium text-white hover:bg-primary-dark transition-colors whitespace-nowrap"
               >
                 <TrophyOutlined className="mr-1" /> ტურნირები
               </Link>
 
-              <div className="ml-6 flex items-center gap-2">
+              <div className="ml-2 xl:ml-4 flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="px-3 py-1.5 rounded-md text-[13px] font-medium text-white/90 hover:text-white hover:bg-white/10 transition-colors inline-flex items-center"
+                  className="px-2 xl:px-3 py-1.5 rounded-md text-[12px] xl:text-[13px] font-medium text-white/90 hover:text-white hover:bg-white/10 transition-colors inline-flex items-center whitespace-nowrap"
                 >
                   <LoginOutlined className="mr-1" /> შესვლა
                 </Link>
                 <Link
                   to="/register"
-                  className="px-3 py-1.5 rounded-md text-[13px] font-semibold text-white bg-white/20 hover:bg-white/30 transition-colors inline-flex items-center"
+                  className="px-2 xl:px-3 py-1.5 rounded-md text-[12px] xl:text-[13px] font-semibold text-white bg-white/20 hover:bg-white/30 transition-colors inline-flex items-center whitespace-nowrap"
                 >
                   <UserAddOutlined className="mr-1" /> რეგისტრაცია
                 </Link>
@@ -207,7 +207,7 @@ const Header = () => {
 
           {/* Mobile menu for unauthenticated users */}
           {mobileMenuOpen && (
-            <div className="xl:hidden py-2 pb-4 space-y-1">
+            <div className="lg:hidden py-2 pb-4 space-y-1">
               <Link
                 to="/"
                 className={`block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
@@ -300,7 +300,7 @@ const Header = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="flex items-center xl:hidden">
+          <div className="flex items-center lg:hidden">
             <button
               onClick={toggleMobileMenu}
               className="text-white hover:bg-primary-dark p-2 rounded-md"
@@ -310,10 +310,10 @@ const Header = () => {
           </div>
 
           {/* Desktop menu */}
-          <div className="hidden xl:flex items-center space-x-4">
+          <div className="hidden lg:flex items-center gap-1 xl:gap-3">
             <Link
               to="/"
-              className={`px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`px-2 xl:px-3 py-2 rounded-md text-[12px] xl:text-[13px] font-medium text-white hover:bg-primary-dark transition-colors whitespace-nowrap ${
                 location.pathname === '/' ? 'bg-primary-dark' : ''
               }`}
             >
@@ -322,7 +322,7 @@ const Header = () => {
 
             <Link
               to="/public-quizzes"
-              className={`px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`px-2 xl:px-3 py-2 rounded-md text-[12px] xl:text-[13px] font-medium text-white hover:bg-primary-dark transition-colors whitespace-nowrap ${
                 location.pathname === '/public-quizzes' ? 'bg-primary-dark' : ''
               }`}
             >
@@ -332,7 +332,7 @@ const Header = () => {
 
             <Link
               to="/categories"
-              className={`ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`px-2 xl:px-3 py-2 rounded-md text-[12px] xl:text-[13px] font-medium text-white hover:bg-primary-dark transition-colors whitespace-nowrap ${
                 location.pathname === '/categories' ? 'bg-primary-dark' : ''
               }`}
             >
@@ -341,7 +341,7 @@ const Header = () => {
 
             <Link
               to="/tournaments"
-              className={`ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`px-2 xl:px-3 py-2 rounded-md text-[12px] xl:text-[13px] font-medium text-white hover:bg-primary-dark transition-colors whitespace-nowrap ${
                 location.pathname === '/tournaments' ? 'bg-primary-dark' : ''
               }`}
             >
@@ -351,7 +351,7 @@ const Header = () => {
 
             <Link
               to="/polls"
-              className={`ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`px-2 xl:px-3 py-2 rounded-md text-[12px] xl:text-[13px] font-medium text-white hover:bg-primary-dark transition-colors whitespace-nowrap ${
                 location.pathname === '/polls' ? 'bg-primary-dark' : ''
               }`}
             >
@@ -361,7 +361,7 @@ const Header = () => {
 
             <Link
               to="/brackets"
-              className={`ml-4 px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
+              className={`px-2 xl:px-3 py-2 rounded-md text-[12px] xl:text-[13px] font-medium text-white hover:bg-primary-dark transition-colors whitespace-nowrap ${
                 location.pathname.startsWith('/brackets') ? 'bg-primary-dark' : ''
               }`}
             >
@@ -370,9 +370,9 @@ const Header = () => {
             </Link>
 
             {/* More dropdown to reduce clutter on smaller desktop widths */}
-            <div className="ml-4 relative">
+            <div className="relative">
               <button
-                className="px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors inline-flex items-center"
+                className="px-2 xl:px-3 py-2 rounded-md text-[12px] xl:text-[13px] font-medium text-white hover:bg-primary-dark transition-colors inline-flex items-center whitespace-nowrap"
                 onClick={() => setMoreOpen((prev) => !prev)}
               >
                 <MoreOutlined className="mr-1" /> მეტი
@@ -429,7 +429,7 @@ const Header = () => {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="xl:hidden py-2 pb-4 space-y-1">
+          <div className="lg:hidden py-2 pb-4 space-y-1">
             <Link
               to="/"
               className={`block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors ${
