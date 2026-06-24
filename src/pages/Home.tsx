@@ -36,6 +36,25 @@ const Home = () => {
   const videoIframeRefs = useRef<(HTMLIFrameElement | null)[]>([]);
   const pollsContainerRef = useRef<HTMLDivElement | null>(null);
 
+  useEffect(() => {
+    // Google tag (gtag.js)
+    const GA_ID = 'G-9GNLNM4FDH';
+    if (document.getElementById('ga-gtag')) return;
+
+    const script = document.createElement('script');
+    script.id = 'ga-gtag';
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+    document.head.appendChild(script);
+
+    window.dataLayer = window.dataLayer || [];
+    function gtag(...args: unknown[]) {
+      window.dataLayer.push(args);
+    }
+    gtag('js', new Date());
+    gtag('config', GA_ID);
+  }, []);
+
   // Safety check to ensure currentSlide is always valid for 2 slides
   useEffect(() => {
     if (currentSlide > 1) {
