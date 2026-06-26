@@ -3,7 +3,7 @@ import {
   Route,
   Navigate,
   useNavigate,
-  // useLocation
+  useLocation,
 } from 'react-router-dom';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import Loading from './components/Loading';
@@ -33,6 +33,7 @@ import './App.css';
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
   const { isAuthenticated, getCurrentUser, logout } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -53,7 +54,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
 
   if (!isAuthenticated) {
     logout();
-    return <Navigate to="/login" replace />;
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{ from: location.pathname + location.search }}
+      />
+    );
   }
 
   return children;
