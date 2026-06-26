@@ -183,6 +183,7 @@ const Header = () => {
 
               <Link
                 to="/login"
+                state={{ from: '/tournaments' }}
                 className="px-2 xl:px-3 py-2 rounded-md text-[12px] xl:text-[13px] font-medium text-white hover:bg-primary-dark transition-colors whitespace-nowrap"
               >
                 <TrophyOutlined className="mr-1" /> ტურნირები
@@ -255,6 +256,7 @@ const Header = () => {
               </Link>
               <Link
                 to="/login"
+                state={{ from: '/tournaments' }}
                 className="block px-3 py-2 rounded-md text-[13px] font-medium text-white hover:bg-primary-dark transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
