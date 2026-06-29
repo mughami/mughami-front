@@ -101,11 +101,16 @@ export const useAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true, error: null });
           await authService.register({ name, lastname, username, email, password, age, gender, phoneNumber });
+          set({ isLoading: false });
         } catch (error) {
           set({
             isLoading: false,
             error: getErrorMessage(error, 'შეცდომა რეგისტრაციისას'),
           });
+          // Re-throw so the caller (RegisterPage) can halt the flow instead of
+          // advancing to email verification on a failed registration (e.g. 409
+          // when the username/email is already taken).
+          throw error;
         }
       },
 
