@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import type { SubmitHandler } from 'react-hook-form';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -7,13 +7,20 @@ import {
   EyeInvisibleOutlined,
   UserOutlined,
   MailOutlined,
-  PhoneOutlined,
   LockOutlined,
   CheckOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../../store/authStore';
 import { notification } from 'antd';
 import type { Gender } from '../../services/api/authService';
+
+// Format the local part of a Georgian phone number as "555 555 555".
+// The leading "+995" is shown as a fixed prefix, so the stored value stays
+// the raw 9 digits the backend expects.
+const formatGeorgianPhone = (raw: string): string => {
+  const digits = (raw || '').replace(/\D/g, '').slice(0, 9);
+  return [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 9)].filter(Boolean).join(' ');
+};
 
 type RegisterFormInputs = {
   username: string;
@@ -44,6 +51,7 @@ const RegisterPage = () => {
     formState: { errors },
     watch,
     setError,
+    control,
   } = useForm<RegisterFormInputs>();
   const password = watch('password', '');
 
@@ -324,29 +332,35 @@ const RegisterPage = () => {
                 ტელეფონის ნომერი
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <PhoneOutlined className="text-gray-400" />
+                <div className="absolute inset-y-0 left-0 z-20 pl-3 flex items-center pointer-events-none text-gray-500 sm:text-sm">
+                  (+995)
                 </div>
-                <input
-                  id="phoneNumber"
-                  type="tel"
-                  autoComplete="tel"
-                  placeholder="ტელეფონის ნომერი"
-                  maxLength={9}
-                  className={`form-input ${
-                    errors.phoneNumber ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''
-                  }`}
-                  {...register('phoneNumber', {
+                <Controller
+                  name="phoneNumber"
+                  control={control}
+                  rules={{
                     required: 'ტელეფონის ნომერი აუცილებელია',
-                    minLength: {
-                      value: 9,
-                      message: 'არასწორი ტელეფონის ნომრის ფორმატი',
-                    },
-                    maxLength: {
-                      value: 9,
-                      message: 'არასწორი ტელეფონის ნომრის ფორმატი',
-                    },
-                  })}
+                    validate: (value) =>
+                      (value || '').replace(/\D/g, '').length === 9 ||
+                      'არასწორი ტელეფონის ნომრის ფორმატი',
+                  }}
+                  render={({ field }) => (
+                    <input
+                      id="phoneNumber"
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="tel"
+                      placeholder="555 555 555"
+                      value={formatGeorgianPhone(field.value || '')}
+                      onChange={(e) =>
+                        field.onChange(e.target.value.replace(/\D/g, '').slice(0, 9))
+                      }
+                      onBlur={field.onBlur}
+                      className={`form-input pl-[68px] ${
+                        errors.phoneNumber ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''
+                      }`}
+                    />
+                  )}
                 />
               </div>
               {errors.phoneNumber && <p className="input-error">{errors.phoneNumber.message}</p>}
