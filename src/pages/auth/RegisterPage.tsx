@@ -43,8 +43,18 @@ const RegisterPage = () => {
     handleSubmit,
     formState: { errors },
     watch,
+    setError,
   } = useForm<RegisterFormInputs>();
   const password = watch('password', '');
+
+  // Extract the backend message (e.g. from a 409 ALREADY_EXISTS response).
+  const getBackendMessage = (error: unknown): string => {
+    if (typeof error === 'object' && error !== null && 'response' in error) {
+      const response = (error as { response?: { data?: { message?: string } } }).response;
+      return response?.data?.message ?? '';
+    }
+    return '';
+  };
 
   const onSubmit: SubmitHandler<RegisterFormInputs> = async (data) => {
     try {
@@ -66,12 +76,44 @@ const RegisterPage = () => {
       });
     } catch (error) {
       console.error('Registration error:', error);
-      api['error']({
-        message: 'მონაცემები არასწორია',
-        description:
-          'შესაძლოა თქვენს მიერ შეყვანილი მომხმარებლის სახელი ან ელ-ფოსტა ან ტელეფონის ნომერი უკვე გამოყენებულია',
-      });
-      // Handle error without causing page refresh
+
+      // Map backend "already exists" (409) responses to the specific field so
+      // its input turns red and shows a Georgian message.
+      const backendMessage = getBackendMessage(error).toLowerCase();
+      let handled = false;
+
+      if (backendMessage.includes('email')) {
+        setError(
+          'email',
+          { type: 'server', message: 'ამ ელ-ფოსტით მომხმარებელი უკვე არსებობს' },
+          { shouldFocus: !handled },
+        );
+        handled = true;
+      }
+      if (backendMessage.includes('username')) {
+        setError(
+          'username',
+          { type: 'server', message: 'ეს მომხმარებლის სახელი უკვე გამოყენებულია' },
+          { shouldFocus: !handled },
+        );
+        handled = true;
+      }
+      if (backendMessage.includes('phone')) {
+        setError(
+          'phoneNumber',
+          { type: 'server', message: 'ეს ტელეფონის ნომერი უკვე გამოყენებულია' },
+          { shouldFocus: !handled },
+        );
+        handled = true;
+      }
+
+      // Fall back to a generic notification for anything we can't pinpoint.
+      if (!handled) {
+        api['error']({
+          message: 'რეგისტრაცია ვერ მოხერხდა',
+          description: 'დაფიქსირდა შეცდომა. გთხოვთ სცადოთ ხელახლა.',
+        });
+      }
     }
   };
 
