@@ -187,10 +187,12 @@ export const Quizzes: React.FC = () => {
         quizStatus: values.quizStatus,
         quizType: values.quizType,
       });
+      if (photoFile) await addQuizPhoto(editingQuiz.quizId, photoFile);
       message.success('ქვიზი წარმატებით განახლდა!');
       setIsModalVisible(false);
       setEditingQuiz(null);
       form.resetFields();
+      setPhotoFile(null);
     } catch {
       message.error('ქვიზის განახლებისას მოხდა შეცდომა');
     }
@@ -201,6 +203,7 @@ export const Quizzes: React.FC = () => {
 
   const handleEditQuiz = async (quiz: Quiz) => {
     setEditingQuiz(quiz);
+    setPhotoFile(null);
     setIsModalVisible(true);
     try {
       const full = await quizService.getAdminQuiz(quiz.quizId);
@@ -633,8 +636,22 @@ export const Quizzes: React.FC = () => {
           </Form.Item>
 
           <Form.Item label="ქვიზის ფოტო">
+            {editingQuiz?.hasPhoto && quizPhotos[editingQuiz.quizId] && !photoFile && (
+              <div className="mb-2 flex items-center gap-2">
+                <Image
+                  src={quizPhotos[editingQuiz.quizId]}
+                  alt={editingQuiz.quizName}
+                  width={64}
+                  height={64}
+                  className="rounded-lg object-cover"
+                />
+                <Text type="secondary" className="text-xs">მიმდინარე ფოტო</Text>
+              </div>
+            )}
             <Upload beforeUpload={(f) => { setPhotoFile(f); return false; }} onRemove={() => setPhotoFile(null)} maxCount={1} accept="image/*">
-              <Button icon={<UploadOutlined />}>ფოტოს ატვირთვა</Button>
+              <Button icon={<UploadOutlined />}>
+                {editingQuiz?.hasPhoto ? 'ფოტოს შეცვლა' : 'ფოტოს ატვირთვა'}
+              </Button>
             </Upload>
             <Text type="secondary" className="text-xs">800×600px, მაქს. 2MB</Text>
           </Form.Item>

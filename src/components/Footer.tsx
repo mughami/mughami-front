@@ -144,8 +144,8 @@ const Footer = () => {
                   <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center mr-3">
                     <PhoneOutlined className="text-primary" />
                   </div>
-                  <a href="tel:+995322123456" className="hover:text-primary transition-colors">
-                    +995 32 2 123 456
+                  <a href="tel:+995551081204" className="hover:text-primary transition-colors">
+                    +995 551 08 12 04
                   </a>
                 </div>
                 <div className="flex items-center text-gray-300">
@@ -164,7 +164,7 @@ const Footer = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-gray-400 text-sm mb-4 md:mb-0">
-                © 2024 მუღამი. ყველა უფლება დაცულია.
+                © 2026 მუღამი. ყველა უფლება დაცულია.
               </div>
               <div className="flex space-x-6">
                 <Link

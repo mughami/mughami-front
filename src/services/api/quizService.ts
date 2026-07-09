@@ -150,11 +150,12 @@ const quizService = {
     return response.data;
   },
 
+  // Admin: add or update quiz photo. Endpoint expects the raw image bytes
+  // (application/octet-stream), not multipart form data.
   addQuizPhoto: async (quizId: number, photo: File): Promise<Quiz> => {
-    const formData = new FormData();
-    formData.append('photo', photo);
-
-    const response = await apiClient.post<Quiz>(`/admin/quiz/add-photo/${quizId}`, formData);
+    const response = await apiClient.put<Quiz>(`/admin/quiz/add-photo/${quizId}`, photo, {
+      headers: { 'Content-Type': 'application/octet-stream' },
+    });
     return response.data;
   },
 
