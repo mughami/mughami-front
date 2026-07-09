@@ -657,7 +657,7 @@ const Home = () => {
                 {/* Mobile Scroll Hint */}
                 <div className="flex justify-center mt-4 sm:hidden">
                   <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-md border border-gray-200">
-                    <span className="text-xs text-gray-600 mr-2">გადაფურცavanje</span>
+                    <span className="text-xs text-gray-600 mr-2">გადაფურცლე</span>
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
                       <div className="w-2 h-2 bg-gray-300 rounded-full animate-pulse delay-100"></div>
