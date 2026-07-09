@@ -50,6 +50,7 @@ const PublicQuizPlayPage: React.FC = () => {
     quizStarted,
     quizCompleted,
     quizScore,
+    authResult,
     loading,
     error,
     suggestions,
@@ -322,7 +323,7 @@ const PublicQuizPlayPage: React.FC = () => {
 
   const isAnswerCorrect = (questionId: number, answerIndex: number) => {
     const question = currentQuestions.find((q) => q.id === questionId);
-    return question?.answers[answerIndex]?.isCorrect || false;
+    return question?.answers?.[answerIndex]?.isCorrect || false;
   };
 
   const formatTime = (seconds: number) => {
@@ -562,6 +563,11 @@ const PublicQuizPlayPage: React.FC = () => {
                   {quizScore}/{currentQuestions.length} ({percentage}%)
                 </div>
                 <div className="text-gray-600">დრო: {formatTime(timeSpent)}</div>
+                {authResult && (
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 text-amber-700 font-semibold">
+                    <TrophyOutlined /> რეიტინგი: #{authResult.rank}
+                  </div>
+                )}
               </div>
             }
             extra={
@@ -837,7 +843,7 @@ const PublicQuizPlayPage: React.FC = () => {
 
             {/* Answers */}
             <div className="space-y-4">
-              {currentQuestion.answers.map((answer, index) => {
+              {(currentQuestion.answers || []).map((answer, index) => {
                 const isSelected = getSelectedAnswer(currentQuestion.id) === index;
                 const isCorrect = isAnswerCorrect(currentQuestion.id, index);
                 const revealed = submittedQuestions[currentQuestion.id];

@@ -1,28 +1,83 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Spin, Typography, Skeleton } from 'antd';
+import { Card, Button, Typography, Skeleton, Input, Select, Row, Col, Pagination } from 'antd';
 import {
   PlayCircleOutlined,
   FireOutlined,
   StarOutlined,
   QuestionCircleOutlined,
+  SearchOutlined,
+  FilterOutlined,
+  CloseCircleOutlined,
+  SortAscendingOutlined,
 } from '@ant-design/icons';
 import { usePublicQuizStore, cleanupBlobUrl } from '../../store/publicQuizStore';
+import categoryService from '../../services/api/categoryService';
+import type { PublicQuizFilters } from '../../services/api/publicQuizService';
+import type { CategoryResponse } from '../../types';
 import Layout from '../../components/Layout';
 
 const { Title, Text } = Typography;
 
 const PublicQuizzesPage: React.FC = () => {
-  const { quizzes, loading, error, fetchPublicQuizzes, getQuizPhoto } = usePublicQuizStore();
+  const { quizzes, loading, error, totalQuizzes, fetchPublicQuizzes, getQuizPhoto } =
+    usePublicQuizStore();
   const navigate = useNavigate();
   const [quizPhotos, setQuizPhotos] = useState<Record<number, string>>({});
   const blobUrlsRef = useRef<Set<string>>(new Set());
 
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
+  const [nameInput, setNameInput] = useState('');
+  const [filters, setFilters] = useState<PublicQuizFilters>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const subcategoryOptions = useMemo(() => {
+    if (filters.categoryId == null) return [];
+    const cat = categories.find((c) => c.categoryId === filters.categoryId);
+    return (cat?.subCategoryResponseList || []).map((s) => ({
+      label: s.subCategoryName,
+      value: s.subCategoryId,
+    }));
+  }, [filters.categoryId, categories]);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.quizName) count++;
+    if (filters.categoryId != null) count++;
+    if (filters.subCategoryId != null) count++;
+    if (filters.sortBy) count++;
+    return count;
+  }, [filters]);
+
+  const updateFilter = (partial: Partial<PublicQuizFilters>) => {
+    setCurrentPage(1);
+    setFilters((f) => ({ ...f, ...partial }));
+  };
+
+  const clearFilters = () => {
+    setCurrentPage(1);
+    setFilters({});
+    setNameInput('');
+  };
+
+  // Category list powers the category/subcategory selects. Not available to
+  // signed-out guests, so failures degrade to name search + sort only.
+  useEffect(() => {
+    categoryService
+      .getPublicCategories()
+      .then((cats) => setCategories(cats || []))
+      .catch(() => setCategories([]));
+  }, []);
+
   useEffect(() => {
     // Scroll to top when component mounts
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    fetchPublicQuizzes(0, 50); // Fetch first 50 quizzes
-  }, [fetchPublicQuizzes]);
+  }, []);
+
+  useEffect(() => {
+    fetchPublicQuizzes(currentPage - 1, pageSize, filters);
+  }, [fetchPublicQuizzes, filters, currentPage, pageSize]);
 
   useEffect(() => {
     // Fetch photos for quizzes that have photos
@@ -64,19 +119,6 @@ const PublicQuizzesPage: React.FC = () => {
     navigate(`/public-quiz/play/${quizId}`);
   };
 
-  if (loading) {
-    return (
-      <Layout>
-        <div className="flex justify-center items-center py-12">
-          <div className="text-center">
-            <Spin size="large" />
-            <div className="mt-4 text-gray-600">იტვირთება...</div>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
-
   if (error) {
     return (
       <Layout>
@@ -89,7 +131,11 @@ const PublicQuizzesPage: React.FC = () => {
             <Text type="danger" className="text-lg block mb-6">
               {error}
             </Text>
-            <Button type="primary" size="large" onClick={() => fetchPublicQuizzes(0, 50)}>
+            <Button
+              type="primary"
+              size="large"
+              onClick={() => fetchPublicQuizzes(currentPage - 1, pageSize, filters)}
+            >
               კვლავ სცადეთ
             </Button>
           </div>
@@ -163,7 +209,106 @@ const PublicQuizzesPage: React.FC = () => {
 
         {/* Content Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-          {/* Rest of content */}
+          {/* Filters */}
+          <Card
+            className="mb-8 border-0 shadow-md"
+            style={{ borderRadius: '16px' }}
+            styles={{ body: { padding: '16px 20px' } }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2 text-gray-700">
+                <FilterOutlined className="text-blue-500" />
+                <span className="font-semibold">ფილტრები</span>
+                {activeFilterCount > 0 && (
+                  <span className="ml-1 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </div>
+              {activeFilterCount > 0 && (
+                <Button size="small" type="text" danger icon={<CloseCircleOutlined />} onClick={clearFilters}>
+                  გასუფთავება
+                </Button>
+              )}
+            </div>
+
+            <Row gutter={[12, 12]}>
+              <Col xs={24} md={8}>
+                <Input.Search
+                  allowClear
+                  size="large"
+                  placeholder="ქვიზის ძებნა..."
+                  prefix={<SearchOutlined className="text-gray-400" />}
+                  value={nameInput}
+                  onChange={(e) => {
+                    setNameInput(e.target.value);
+                    if (!e.target.value) updateFilter({ quizName: undefined });
+                  }}
+                  onSearch={(v) => updateFilter({ quizName: v || undefined })}
+                />
+              </Col>
+
+              {categories.length > 0 && (
+                <>
+                  <Col xs={12} md={5}>
+                    <Select
+                      size="large"
+                      placeholder="კატეგორია"
+                      allowClear
+                      showSearch
+                      optionFilterProp="label"
+                      style={{ width: '100%' }}
+                      value={filters.categoryId}
+                      onChange={(v: number | undefined) =>
+                        updateFilter({ categoryId: v, subCategoryId: undefined })
+                      }
+                      options={categories.map((c) => ({ label: c.categoryName, value: c.categoryId }))}
+                    />
+                  </Col>
+                  <Col xs={12} md={5}>
+                    <Select
+                      size="large"
+                      placeholder="ქვეკატეგორია"
+                      allowClear
+                      style={{ width: '100%' }}
+                      disabled={filters.categoryId == null}
+                      value={filters.subCategoryId}
+                      onChange={(v) => updateFilter({ subCategoryId: v })}
+                      options={subcategoryOptions}
+                    />
+                  </Col>
+                </>
+              )}
+
+              <Col xs={24} md={6}>
+                <Select
+                  size="large"
+                  placeholder="სორტირება"
+                  allowClear
+                  suffixIcon={<SortAscendingOutlined />}
+                  style={{ width: '100%' }}
+                  value={filters.sortBy ? `${filters.sortBy}:${filters.sortDirection || 'DESC'}` : undefined}
+                  onChange={(v?: string) => {
+                    if (!v) {
+                      updateFilter({ sortBy: undefined, sortDirection: undefined });
+                      return;
+                    }
+                    const [sortBy, sortDirection] = v.split(':') as [
+                      PublicQuizFilters['sortBy'],
+                      PublicQuizFilters['sortDirection'],
+                    ];
+                    updateFilter({ sortBy, sortDirection });
+                  }}
+                  options={[
+                    { label: 'ახალი ჯერ', value: 'CREATED_AT:DESC' },
+                    { label: 'ძველი ჯერ', value: 'CREATED_AT:ASC' },
+                    { label: 'სახელი (ა-ჰ)', value: 'NAME:ASC' },
+                    { label: 'სახელი (ჰ-ა)', value: 'NAME:DESC' },
+                  ]}
+                />
+              </Col>
+            </Row>
+          </Card>
 
           {/* Quiz Grid */}
           {loading ? (
@@ -280,6 +425,23 @@ const PublicQuizzesPage: React.FC = () => {
                   </Card>
                 </div>
               ))}
+            </div>
+          )}
+
+          {!loading && quizzes.length > 0 && totalQuizzes > 10 && (
+            <div className="flex justify-center mt-10">
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={totalQuizzes}
+                showSizeChanger
+                pageSizeOptions={['10', '20', '50']}
+                onChange={(page, size) => {
+                  setCurrentPage(page);
+                  setPageSize(size);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              />
             </div>
           )}
         </div>

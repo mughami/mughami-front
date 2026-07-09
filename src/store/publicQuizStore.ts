@@ -4,7 +4,32 @@ import publicQuizService, {
   guestQuizService,
   type GuestQuizStartResponse,
   type GuestQuizResultsResponse,
+  type AuthQuizSubmitResponse,
+  type PublicQuizFilters,
 } from '../services/api/publicQuizService';
+
+// The guest /available endpoint has no query filters, so apply them client-side
+// to keep the public list filterable for signed-out visitors too.
+const applyClientFilters = (list: Quiz[], filters: PublicQuizFilters): Quiz[] => {
+  let out = [...list];
+  if (filters.quizName) {
+    const needle = filters.quizName.toLowerCase();
+    out = out.filter((q) => q.quizName.toLowerCase().includes(needle));
+  }
+  if (filters.categoryId != null) out = out.filter((q) => q.categoryId === filters.categoryId);
+  if (filters.subCategoryId != null) {
+    out = out.filter(
+      (q) =>
+        ((q as { subCategoryId?: number }).subCategoryId ??
+          (q as { subcategoryId?: number }).subcategoryId) === filters.subCategoryId,
+    );
+  }
+  if (filters.sortBy === 'NAME') {
+    out.sort((a, b) => a.quizName.localeCompare(b.quizName));
+    if (filters.sortDirection === 'DESC') out.reverse();
+  }
+  return out;
+};
 import { useAuthStore } from './authStore';
 import quizService from '../services/api/quizService';
 import type { Quiz, QuizQuestion, QuizResponse, QuestionsResponse } from '../services/api/quizService';
@@ -17,7 +42,7 @@ const calculateScore = (
   let score = 0;
   questions.forEach((question) => {
     const selectedAnswerIndex = selectedAnswers[question.id];
-    if (selectedAnswerIndex !== undefined && question.answers[selectedAnswerIndex]?.isCorrect) {
+    if (selectedAnswerIndex !== undefined && question.answers?.[selectedAnswerIndex]?.isCorrect) {
       score++;
     }
   });
@@ -59,9 +84,13 @@ interface PublicQuizState {
   // Guest session state
   sessionId: string | null;
   guestResults: GuestQuizResultsResponse | null;
+  // Authenticated submit result (rank / score / percentage)
+  authResult: AuthQuizSubmitResponse | null;
+  // Per-question correctness as reported by the backend answer endpoints
+  answerResults: Record<number, boolean>;
 
   // Fetch operations
-  fetchPublicQuizzes: (page?: number, size?: number) => Promise<void>;
+  fetchPublicQuizzes: (page?: number, size?: number, filters?: PublicQuizFilters) => Promise<void>;
   fetchPublicQuiz: (quizId: number) => Promise<void>;
   fetchPublicQuizQuestions: (quizId: number, page?: number, size?: number) => Promise<void>;
 
@@ -108,18 +137,25 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
   sessionId:
     (typeof localStorage !== 'undefined' && localStorage.getItem('guestQuizSessionId')) || null,
   guestResults: null,
+  authResult: null,
+  answerResults: {},
 
-  fetchPublicQuizzes: async (page = 0, size = 10) => {
+  fetchPublicQuizzes: async (page = 0, size = 10, filters = {}) => {
     set({ loading: true, error: null });
     try {
       const isAuthenticated = useAuthStore.getState().isAuthenticated;
+      // Authenticated /app/quiz filters server-side; guest /available cannot, so
+      // fetch then filter client-side to keep the UX consistent for everyone.
       const response: QuizResponse = isAuthenticated
-        ? await publicQuizService.getPublicQuizzes(page, size)
+        ? await publicQuizService.getPublicQuizzes(page, size, filters)
         : await guestQuizService.getAvailableQuizzes(page, size);
-      const verified = (response.content || []).filter((q: Quiz) => q.quizStatus === 'VERIFIED');
+      let verified = (response.content || []).filter((q: Quiz) => q.quizStatus === 'VERIFIED');
+      if (!isAuthenticated) verified = applyClientFilters(verified, filters);
       set({
         quizzes: verified,
-        totalQuizzes: verified.length,
+        // Server total drives pagination; fall back to the page length only when
+        // the response omits it.
+        totalQuizzes: response.totalElements ?? verified.length,
         loading: false,
       });
 
@@ -186,13 +222,30 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
 
   // Quiz playing actions
   startQuiz: async (quizId: number) => {
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, answerResults: {}, authResult: null });
     try {
       const isAuthenticated = useAuthStore.getState().isAuthenticated;
-      console.log('isAuthenticated', isAuthenticated);
       if (isAuthenticated) {
-        await publicQuizService.getPublicQuizQuestions(quizId, 0, 50);
+        // Record the attempt on the backend, then load the questions. The
+        // authenticated list omits answers, so hydrate each question's answers
+        // from the single-question endpoint.
+        await publicQuizService.startPublicQuiz(quizId);
+        const q = await publicQuizService.getPublicQuizQuestions(quizId, 0, 50);
+        // The authenticated list returns only stubs (id/hasPhoto), so pull the
+        // full question — text + answers — from the single-question endpoint.
+        const questions = await Promise.all(
+          (q.content ?? []).map(async (question) => {
+            if (question.question && question.answers && question.answers.length) return question;
+            try {
+              return await publicQuizService.getPublicQuestion(question.id);
+            } catch {
+              return { ...question, answers: question.answers ?? [] };
+            }
+          }),
+        );
         set({
+          currentQuestions: questions,
+          totalQuestions: q.totalElements ?? questions.length,
           quizStarted: true,
           currentQuestionIndex: 0,
           selectedAnswers: {},
@@ -246,28 +299,38 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
     }));
   },
 
-  // Explicit submit per question for guest flow
+  // Submit a single answer to the backend. Both flows return whether the
+  // selected answer was correct; store it so the UI can rely on backend truth.
   submitAnswer: async (questionId: number) => {
-    if (!useAuthStore.getState().isAuthenticated) {
-      const state = get();
-      const sid = state.sessionId || localStorage.getItem('guestQuizSessionId') || null;
-      if (!state.sessionId && sid) {
-        set({ sessionId: sid });
-      }
-      const selectedIndex = state.selectedAnswers[questionId];
-      const question = state.currentQuestions.find((q) => q.id === questionId);
-      const selected = selectedIndex !== undefined ? question?.answers[selectedIndex] : undefined;
-      if (sid && state.currentQuiz && selected) {
-        await guestQuizService.submitGuestQuizAnswer(
-          sid,
-          state.currentQuiz.quizId,
-          questionId,
-          selected.id,
-        );
-      } else {
-        throw new Error('Missing session or selection');
-      }
+    const isAuthenticated = useAuthStore.getState().isAuthenticated;
+    const state = get();
+    const selectedIndex = state.selectedAnswers[questionId];
+    const question = state.currentQuestions.find((q) => q.id === questionId);
+    const selected = selectedIndex !== undefined ? question?.answers?.[selectedIndex] : undefined;
+    if (!state.currentQuiz || !selected) {
+      throw new Error('Missing selection');
     }
+
+    let correct = false;
+    if (isAuthenticated) {
+      correct = await publicQuizService.fillPublicQuizAnswer(
+        state.currentQuiz.quizId,
+        questionId,
+        selected.id,
+      );
+    } else {
+      const sid = state.sessionId || localStorage.getItem('guestQuizSessionId') || null;
+      if (!sid) throw new Error('Missing session');
+      if (!state.sessionId) set({ sessionId: sid });
+      correct = await guestQuizService.submitGuestQuizAnswer(
+        sid,
+        state.currentQuiz.quizId,
+        questionId,
+        selected.id,
+      );
+    }
+
+    set((s) => ({ answerResults: { ...s.answerResults, [questionId]: correct } }));
   },
 
   nextQuestion: () => {
@@ -284,39 +347,57 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
 
   completeQuiz: async (email?: string) => {
     const isAuthenticated = useAuthStore.getState().isAuthenticated;
-    if (!isAuthenticated) {
-      const state = get();
-      const sid = state.sessionId || localStorage.getItem('guestQuizSessionId') || null;
-      if (!state.sessionId && sid) {
-        set({ sessionId: sid });
+    const state = get();
+
+    // Score comes from the backend when possible; fall back to a local count
+    // (using per-answer isCorrect) only if the submit request fails.
+    let score = calculateScore(state.currentQuestions, state.selectedAnswers);
+    let totalQuestions = state.currentQuestions.length;
+
+    if (isAuthenticated) {
+      if (state.currentQuiz) {
+        try {
+          const result = await publicQuizService.submitPublicQuiz(state.currentQuiz.quizId);
+          set({ authResult: result });
+          score = result.correctAnswers;
+          totalQuestions = result.totalQuestions || totalQuestions;
+        } catch {
+          // ignore; keep locally-computed score as fallback
+        }
       }
+    } else {
+      const sid = state.sessionId || localStorage.getItem('guestQuizSessionId') || null;
+      if (!state.sessionId && sid) set({ sessionId: sid });
       if (sid) {
         try {
           const results = await guestQuizService.submitGuestQuiz(sid, email);
+          const stats = results.quizStatsResponse || [];
           set({ guestResults: results });
+          // Correct when the picked answer matches the correct answer id.
+          score = stats.filter(
+            (s) =>
+              s.selectedAnswer != null &&
+              s.questionAnswerResponse != null &&
+              s.selectedAnswer.id === s.questionAnswerResponse.id,
+          ).length;
+          if (stats.length) totalQuestions = stats.length;
         } catch {
           // ignore submit failure here; component can handle retry
         }
       }
     }
-    set((state) => {
-      const score = calculateScore(state.currentQuestions, state.selectedAnswers);
+
+    set((s) => {
       const quizResult = {
-        quizId: state.currentQuiz?.quizId || 0,
+        quizId: s.currentQuiz?.quizId || 0,
         score,
-        totalQuestions: state.currentQuestions.length,
+        totalQuestions,
         completedAt: new Date().toISOString(),
       };
-
-      const updatedResults = {
-        ...state.quizResults,
-        [quizResult.quizId]: quizResult,
-      };
-
       return {
         quizCompleted: true,
         quizScore: score,
-        quizResults: updatedResults,
+        quizResults: { ...s.quizResults, [quizResult.quizId]: quizResult },
       };
     });
   },
@@ -330,6 +411,8 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
       quizScore: 0,
       sessionId: null,
       guestResults: null,
+      authResult: null,
+      answerResults: {},
       suggestions: [],
     });
   },
