@@ -150,12 +150,12 @@ const quizService = {
     return response.data;
   },
 
-  // Admin: add or update quiz photo. Endpoint expects the raw image bytes
-  // (application/octet-stream), not multipart form data.
+  // Admin: add or update quiz photo. Despite swagger showing octet-stream, the
+  // backend expects a multipart `photo` field via PUT (same as bracket add-photo).
   addQuizPhoto: async (quizId: number, photo: File): Promise<Quiz> => {
-    const response = await apiClient.put<Quiz>(`/admin/quiz/add-photo/${quizId}`, photo, {
-      headers: { 'Content-Type': 'application/octet-stream' },
-    });
+    const formData = new FormData();
+    formData.append('photo', photo);
+    const response = await apiClient.put<Quiz>(`/admin/quiz/add-photo/${quizId}`, formData);
     return response.data;
   },
 

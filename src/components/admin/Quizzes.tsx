@@ -80,6 +80,7 @@ export const Quizzes: React.FC = () => {
   const [selectedQuizId, setSelectedQuizId] = useState<number | null>(null);
   const [form] = Form.useForm<FormValues>();
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [quizPhotos, setQuizPhotos] = useState<Record<number, string>>({});
   const blobUrlsRef = useRef<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -156,6 +157,16 @@ export const Quizzes: React.FC = () => {
       blobUrlsRef.current.forEach((url) => cleanupBlobUrl(url));
     };
   }, [quizzes, getQuizPhoto]);
+
+  useEffect(() => {
+    if (!photoFile) {
+      setPhotoPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(photoFile);
+    setPhotoPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [photoFile]);
 
   const handleCreateQuiz = async (values: FormValues) => {
     try {
@@ -636,17 +647,30 @@ export const Quizzes: React.FC = () => {
           </Form.Item>
 
           <Form.Item label="ქვიზის ფოტო">
-            {editingQuiz?.hasPhoto && quizPhotos[editingQuiz.quizId] && !photoFile && (
+            {photoFile && photoPreview ? (
               <div className="mb-2 flex items-center gap-2">
                 <Image
-                  src={quizPhotos[editingQuiz.quizId]}
-                  alt={editingQuiz.quizName}
+                  src={photoPreview}
+                  alt={photoFile.name}
                   width={64}
                   height={64}
                   className="rounded-lg object-cover"
                 />
-                <Text type="secondary" className="text-xs">მიმდინარე ფოტო</Text>
+                <Text type="secondary" className="text-xs">ახალი ფოტო</Text>
               </div>
+            ) : (
+              editingQuiz?.hasPhoto && quizPhotos[editingQuiz.quizId] && (
+                <div className="mb-2 flex items-center gap-2">
+                  <Image
+                    src={quizPhotos[editingQuiz.quizId]}
+                    alt={editingQuiz.quizName}
+                    width={64}
+                    height={64}
+                    className="rounded-lg object-cover"
+                  />
+                  <Text type="secondary" className="text-xs">მიმდინარე ფოტო</Text>
+                </div>
+              )
             )}
             <Upload beforeUpload={(f) => { setPhotoFile(f); return false; }} onRemove={() => setPhotoFile(null)} maxCount={1} accept="image/*">
               <Button icon={<UploadOutlined />}>
