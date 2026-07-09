@@ -218,6 +218,7 @@ export const Users = () => {
       {/* Table */}
       <Card size="small">
         <Table
+          scroll={{ x: 'max-content' }}
           dataSource={users}
           loading={usersLoading}
           rowKey="id"

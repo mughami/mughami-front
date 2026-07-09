@@ -515,6 +515,7 @@ export const Brackets = () => {
         </div>
         <Table
           columns={columns}
+          scroll={{ x: 'max-content' }}
           dataSource={adminBrackets}
           loading={loading}
           rowKey="id"

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Layout, Menu, Button } from 'antd';
+import { Layout, Menu, Button, Drawer, Grid } from 'antd';
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 
 const { Header, Sider, Content } = Layout;
+const { useBreakpoint } = Grid;
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -27,8 +28,13 @@ interface AdminLayoutProps {
 
 export const AdminLayout = ({ children, selectedKey, onMenuSelect }: AdminLayoutProps) => {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
   const { logout } = useAuthStore();
+  const screens = useBreakpoint();
+  // Desktop-first: useBreakpoint is empty on first render, so only treat as
+  // mobile once we positively know the viewport is below the lg breakpoint.
+  const isMobile = screens.lg === false;
 
   const menuItems = [
     {
@@ -83,33 +89,73 @@ export const AdminLayout = ({ children, selectedKey, onMenuSelect }: AdminLayout
     navigate('/login');
   };
 
+  const brand = (
+    <div className="h-16 flex items-center justify-center">
+      <h1 className="text-white text-xl font-bold">მუღამი</h1>
+    </div>
+  );
+
+  const menu = (
+    <Menu
+      theme="dark"
+      mode="inline"
+      selectedKeys={[selectedKey]}
+      items={menuItems}
+      onClick={({ key }) => {
+        onMenuSelect(key);
+        setMobileOpen(false);
+      }}
+    />
+  );
+
   return (
     <Layout className="min-h-screen">
-      <Sider trigger={null} collapsible collapsed={collapsed}>
-        <div className="h-16 flex items-center justify-center">
-          <h1 className="text-white text-xl font-bold">მუღამი</h1>
-        </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[selectedKey]}
-          items={menuItems}
-          onClick={({ key }) => onMenuSelect(key)}
-        />
-      </Sider>
+      {/* Desktop / tablet: fixed collapsible sidebar */}
+      {!isMobile && (
+        <Sider trigger={null} collapsible collapsed={collapsed}>
+          {brand}
+          {menu}
+        </Sider>
+      )}
+
+      {/* Mobile: sidebar becomes a slide-in drawer */}
+      {isMobile && (
+        <Drawer
+          placement="left"
+          open={mobileOpen}
+          onClose={() => setMobileOpen(false)}
+          width={240}
+          closable={false}
+          styles={{ body: { padding: 0, background: '#001529' } }}
+        >
+          {brand}
+          {menu}
+        </Drawer>
+      )}
+
       <Layout>
         <Header className="bg-white p-0 flex items-center justify-between px-4">
           <Button
             type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
+            icon={
+              isMobile ? (
+                <MenuUnfoldOutlined />
+              ) : collapsed ? (
+                <MenuUnfoldOutlined />
+              ) : (
+                <MenuFoldOutlined />
+              )
+            }
+            onClick={() => (isMobile ? setMobileOpen(true) : setCollapsed(!collapsed))}
             className="text-lg"
           />
           <Button type="text" icon={<LogoutOutlined />} onClick={handleLogout} className="text-lg">
-            გასვლა
+            <span className="hidden sm:inline">გასვლა</span>
           </Button>
         </Header>
-        <Content className="m-6 p-6 bg-white min-h-[280px]">{children}</Content>
+        <Content className="m-3 p-3 sm:m-6 sm:p-6 bg-white min-h-[280px] overflow-x-auto">
+          {children}
+        </Content>
       </Layout>
     </Layout>
   );

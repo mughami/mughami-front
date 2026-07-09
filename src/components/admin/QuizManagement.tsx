@@ -532,6 +532,7 @@ export const QuizManagement: React.FC<QuizManagementProps> = ({ quizId, onBack }
       <Card title="კითხვები" extra={<Text>სულ: {currentQuestions.length}</Text>}>
         <Table
           columns={questionColumns}
+          scroll={{ x: 'max-content' }}
           dataSource={currentQuestions}
           rowKey="id"
           loading={loading}

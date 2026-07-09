@@ -581,6 +581,7 @@ export const Quizzes: React.FC = () => {
       <Card size="small">
         <Table
           columns={columns}
+          scroll={{ x: 'max-content' }}
           dataSource={quizzes}
           rowKey="quizId"
           loading={loading}

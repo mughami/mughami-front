@@ -295,6 +295,7 @@ export const Categories = () => {
       <Card>
         <Table
           columns={columns}
+          scroll={{ x: 'max-content' }}
           dataSource={adminCategories}
           loading={isLoading}
           rowKey="categoryId"
