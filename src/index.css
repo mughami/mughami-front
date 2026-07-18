@@ -667,3 +667,104 @@
     box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
   }
 }
+
+/* Home hero quiz-card animation (7s synced loop) */
+@keyframes hero-progress {
+  0%,
+  45% {
+    width: 46%;
+  }
+  58%,
+  90% {
+    width: 62%;
+  }
+  100% {
+    width: 46%;
+  }
+}
+
+@keyframes hero-option-correct {
+  0%,
+  25% {
+    border-color: #e2e8f0;
+    background-color: #ffffff;
+  }
+  33%,
+  45% {
+    border-color: #2b6cb0;
+    background-color: #eaf1f8;
+  }
+  53%,
+  85% {
+    border-color: #27a069;
+    background-color: #e9f6ef;
+  }
+  95%,
+  100% {
+    border-color: #e2e8f0;
+    background-color: #ffffff;
+  }
+}
+
+@keyframes hero-check-pop {
+  0%,
+  50% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  56%,
+  88% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  96%,
+  100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+@keyframes hero-xp-pop {
+  0%,
+  53% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  60%,
+  88% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  96%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.hero-anim-progress {
+  animation: hero-progress 7s ease-in-out infinite;
+}
+
+.hero-anim-option {
+  animation: hero-option-correct 7s ease-in-out infinite;
+}
+
+.hero-anim-check {
+  display: inline-flex;
+  animation: hero-check-pop 7s ease-in-out infinite;
+}
+
+.hero-anim-xp {
+  animation: hero-xp-pop 7s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-anim-progress,
+  .hero-anim-option,
+  .hero-anim-check,
+  .hero-anim-xp,
+  .animate-float {
+    animation: none;
+  }
+}

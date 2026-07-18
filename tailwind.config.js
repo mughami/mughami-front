@@ -10,6 +10,19 @@ export default {
         'primary-dark': '#236744',
         'secondary-light': '#4ba3ff',
         'secondary-dark': '#1670c5',
+        brand: {
+          blue: '#2B6CB0', // logo question bubble
+          'blue-deep': '#17395E', // logo bubble outline
+          'blue-soft': '#EAF1F8',
+          'blue-border': '#C9DCEE',
+          green: '#27A069', // logo lari bubble
+          'green-deep': '#1D7C50',
+          'green-soft': '#E9F6EF',
+          ink: '#132A40',
+          'ink-2': '#47596C',
+          'ink-3': '#7D8B9B',
+          cream: '#F7F1E2', // logo glyphs
+        },
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
