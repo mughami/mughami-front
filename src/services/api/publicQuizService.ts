@@ -211,9 +211,22 @@ export type GuestQuizResultsResponse = {
 export type GuestQuizSubmitResponse = GuestQuizResultsResponse;
 
 export const guestQuizService = {
-  getAvailableQuizzes: async (page: number = 0, size: number = 10): Promise<QuizResponse> => {
+  // Mirrors the authenticated /app/quiz filters so signed-out visitors get the
+  // same server-side filtering (name/category/sort) across the full result set,
+  // rather than client-side filtering that only sees the current page.
+  getAvailableQuizzes: async (
+    page: number = 0,
+    size: number = 10,
+    filters: PublicQuizFilters = {},
+  ): Promise<QuizResponse> => {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (filters.quizName) params.set('quizName', filters.quizName);
+    if (filters.categoryId != null) params.set('categoryId', String(filters.categoryId));
+    if (filters.subCategoryId != null) params.set('subCategoryId', String(filters.subCategoryId));
+    if (filters.sortDirection) params.set('sortDirection', filters.sortDirection);
+    if (filters.sortBy) params.set('sortBy', filters.sortBy);
     const response = await apiClient.get<QuizResponse>(
-      `/app/guest/quiz/available?page=${page}&size=${size}`,
+      `/app/guest/quiz/available?${params.toString()}`,
     );
     return response.data;
   },

@@ -8,28 +8,6 @@ import publicQuizService, {
   type PublicQuizFilters,
 } from '../services/api/publicQuizService';
 
-// The guest /available endpoint has no query filters, so apply them client-side
-// to keep the public list filterable for signed-out visitors too.
-const applyClientFilters = (list: Quiz[], filters: PublicQuizFilters): Quiz[] => {
-  let out = [...list];
-  if (filters.quizName) {
-    const needle = filters.quizName.toLowerCase();
-    out = out.filter((q) => q.quizName.toLowerCase().includes(needle));
-  }
-  if (filters.categoryId != null) out = out.filter((q) => q.categoryId === filters.categoryId);
-  if (filters.subCategoryId != null) {
-    out = out.filter(
-      (q) =>
-        ((q as { subCategoryId?: number }).subCategoryId ??
-          (q as { subcategoryId?: number }).subcategoryId) === filters.subCategoryId,
-    );
-  }
-  if (filters.sortBy === 'NAME') {
-    out.sort((a, b) => a.quizName.localeCompare(b.quizName));
-    if (filters.sortDirection === 'DESC') out.reverse();
-  }
-  return out;
-};
 import { useAuthStore } from './authStore';
 import quizService from '../services/api/quizService';
 import type { Quiz, QuizQuestion, QuizResponse, QuestionsResponse } from '../services/api/quizService';
@@ -144,13 +122,12 @@ export const usePublicQuizStore = create<PublicQuizState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const isAuthenticated = useAuthStore.getState().isAuthenticated;
-      // Authenticated /app/quiz filters server-side; guest /available cannot, so
-      // fetch then filter client-side to keep the UX consistent for everyone.
+      // Both endpoints filter server-side, so the guest path forwards the same
+      // filters instead of filtering the current page client-side.
       const response: QuizResponse = isAuthenticated
         ? await publicQuizService.getPublicQuizzes(page, size, filters)
-        : await guestQuizService.getAvailableQuizzes(page, size);
-      let verified = (response.content || []).filter((q: Quiz) => q.quizStatus === 'VERIFIED');
-      if (!isAuthenticated) verified = applyClientFilters(verified, filters);
+        : await guestQuizService.getAvailableQuizzes(page, size, filters);
+      const verified = (response.content || []).filter((q: Quiz) => q.quizStatus === 'VERIFIED');
       set({
         quizzes: verified,
         // Server total drives pagination; fall back to the page length only when
